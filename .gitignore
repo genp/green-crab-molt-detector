@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ML Models (except our trained models)
+*.h5
+*.pkl
+*.joblib
+# Keep our specific trained models
+!models/molt_detector_*.pt
+!models/molt_detector_*.pth
+
+# Data
+*.xlsx
+*.xls
+*.csv
+# Keep original Excel files
+!NH\ Green\ Crab\ Project\ 2016/*.xlsx
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+
+# Large files
+*.zip
+*.tar
+*.gz
+
+# Temporary files
+*.tmp
+temp/
+tmp/
