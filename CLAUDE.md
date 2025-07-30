@@ -101,3 +101,35 @@ NH Green Crab Project 2016/
 - Clear separation of molt phases in t-SNE visualization
 - User-friendly web interface
 - Deployment accessible to fishermen in the field
+
+## Running the System
+
+### Quick Start
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run complete pipeline
+python run_pipeline.py
+
+# Start web app
+python app.py
+```
+
+### Key Scripts
+- `run_pipeline.py`: Runs entire pipeline automatically
+- `run_feature_analysis.py`: Feature extraction and t-SNE visualization
+- `train_model.py`: Train and evaluate regression models
+- `app.py`: Web application for molt detection
+- `deploy.py`: Create deployment files
+
+### Expected Runtime
+- Feature extraction: 5-10 minutes (depending on GPU availability)
+- Model training: 2-5 minutes
+- Web app startup: <30 seconds
+
+### Output Files
+- `data/processed/`: Extracted features and dataset CSV
+- `models/`: Trained regression models (.joblib files)
+- `plots/`: t-SNE visualizations and model comparisons
+- `DEPLOYMENT.md`: Cloud deployment instructions
