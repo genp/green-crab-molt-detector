@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Crab Molt Phase Detector</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #0d6efd 0%, #198754 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+        }
+        .upload-area {
+            border: 3px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 3rem;
+            text-align: center;
+            transition: all 0.3s;
+            background-color: white;
+        }
+        .upload-area:hover {
+            border-color: #0d6efd;
+            background-color: #f8f9fa;
+        }
+        .upload-area.dragover {
+            border-color: #198754;
+            background-color: #e7f3ff;
+        }
+        .result-card {
+            display: none;
+            margin-top: 2rem;
+        }
+        .phase-badge {
+            font-size: 1.2rem;
+            padding: 0.5rem 1rem;
+        }
+        .info-card {
+            border-left: 4px solid #0d6efd;
+        }
+        .harvest-alert {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .footer {
+            margin-top: 4rem;
+            padding: 2rem 0;
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-4 fw-bold">Green Crab Molt Phase Detector</h1>
+                    <p class="lead">AI-powered tool for sustainable green crab harvesting in New Hampshire and Maine</p>
+                    <p>Upload a photo of a green crab to predict when it will molt and determine the optimal harvest time.</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="bi bi-water" style="font-size: 6rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <!-- Upload Section -->
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">Upload Crab Image</h3>
+                        
+                        <div class="upload-area" id="uploadArea">
+                            <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #6c757d;"></i>
+                            <h4 class="mt-3">Drop image here or click to browse</h4>
+                            <p class="text-muted">Supports JPG, PNG, GIF up to 16MB</p>
+                            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                            <button class="btn btn-primary mt-3" onclick="document.getElementById('fileInput').click()">
+                                <i class="bi bi-folder2-open"></i> Choose File
+                            </button>
+                        </div>
+                        
+                        <div class="mt-3" id="imagePreview" style="display: none;">
+                            <h5>Selected Image:</h5>
+                            <img id="previewImg" class="img-fluid rounded" style="max-height: 300px;">
+                            <div class="mt-3">
+                                <button class="btn btn-success" id="predictBtn" onclick="predictMoltPhase()">
+                                    <i class="bi bi-cpu"></i> Analyze Molt Phase
+                                </button>
+                                <button class="btn btn-secondary" onclick="resetUpload()">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="card shadow-sm result-card" id="resultCard">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">Analysis Results</h3>
+                        
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <img id="resultThumbnail" class="img-fluid rounded mb-3">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <span class="badge phase-badge" id="phaseBadge"></span>
+                                    <span class="badge bg-secondary ms-2" id="confidenceBadge"></span>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <h5>Days Until Molt:</h5>
+                                    <h2 class="text-primary" id="daysUntilMolt"></h2>
+                                </div>
+                                
+                                <div class="alert" id="recommendationAlert">
+                                    <h6 class="alert-heading">Recommendation:</h6>
+                                    <p id="recommendationText" class="mb-0"></p>
+                                </div>
+                                
+                                <div class="text-muted">
+                                    <small>Analysis powered by <span id="modelType"></span> model</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button class="btn btn-primary" onclick="resetUpload()">
+                                <i class="bi bi-arrow-repeat"></i> Analyze Another Crab
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Cards -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card info-card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-info-circle"></i> How It Works
+                                </h5>
+                                <ol class="small">
+                                    <li>Take a clear photo of the crab (top or underside view)</li>
+                                    <li>Upload the image using the form above</li>
+                                    <li>Our AI analyzes visual features to predict molt timing</li>
+                                    <li>Follow the harvest recommendations</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card info-card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-lightbulb"></i> Best Practices
+                                </h5>
+                                <ul class="small">
+                                    <li>Use good lighting for clear photos</li>
+                                    <li>Include the entire crab in frame</li>
+                                    <li>Harvest "peeler" crabs (0-3 days before molt)</li>
+                                    <li>Handle crabs carefully to avoid stress</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container text-center text-muted">
+            <p>Green Crab Molt Detection System | Supporting sustainable fisheries in NH & ME</p>
+            <p><small>Developed for marine biology research and commercial harvesting</small></p>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5>Analyzing Crab Image...</h5>
+                    <p class="text-muted mb-0">This may take a few seconds</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // File upload handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        const resultCard = document.getElementById('resultCard');
+        
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        
+        // Click to upload
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                uploadArea.style.display = 'none';
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function resetUpload() {
+            fileInput.value = '';
+            uploadArea.style.display = 'block';
+            imagePreview.style.display = 'none';
+            resultCard.style.display = 'none';
+        }
+        
+        async function predictMoltPhase() {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select an image first');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Show loading modal
+            const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+            loadingModal.show();
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults(data);
+                } else {
+                    alert(data.error || 'Prediction failed');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                loadingModal.hide();
+            }
+        }
+        
+        function displayResults(data) {
+            // Update result elements
+            document.getElementById('resultThumbnail').src = data.thumbnail;
+            document.getElementById('daysUntilMolt').textContent = 
+                data.days_until_molt.toFixed(1) + ' days';
+            
+            // Phase badge
+            const phaseBadge = document.getElementById('phaseBadge');
+            phaseBadge.textContent = data.phase;
+            phaseBadge.className = `badge phase-badge bg-${data.color}`;
+            
+            // Confidence badge
+            document.getElementById('confidenceBadge').textContent = 
+                `${data.confidence} Confidence`;
+            
+            // Recommendation
+            const recommendationAlert = document.getElementById('recommendationAlert');
+            recommendationAlert.className = `alert alert-${data.color}`;
+            document.getElementById('recommendationText').textContent = data.recommendation;
+            
+            // Add harvest alert animation if ready
+            if (data.harvest_ready) {
+                recommendationAlert.classList.add('harvest-alert');
+            }
+            
+            // Model type
+            document.getElementById('modelType').textContent = data.feature_type;
+            
+            // Show results
+            resultCard.style.display = 'block';
+            resultCard.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
