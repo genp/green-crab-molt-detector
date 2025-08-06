@@ -101,3 +101,83 @@ Note on Claude's model interpretation:
   incorrect.
 
   Proper approach: Would need to run interpretability analysis on the actual trained models to determine what visual features they use for molt phase prediction.
+
+********
+dataset notes
+
+ Molt Bin Population Breakdown - Training Set
+
+  Key Findings:
+
+  📊 Dataset Composition:
+  - 230 total training samples from 11 crabs
+  - 188 female samples (81.7%) vs 42 male samples (18.3%)
+  - Severe gender imbalance (4.5:1 ratio)
+
+  ⏰ Molt Phase Distribution:
+  - 0-5 days: 90 samples (39.1%) - Most populated
+  - 6-10 days: 29 samples (12.6%) - Least populated
+  - 11-15 days: 48 samples (20.9%)
+  - 16-20 days: 31 samples (13.5%)
+  - 21+ days: 32 samples (13.9%)
+
+  ⚠️ Critical Issues:
+
+  1. Severe Class Imbalance (3.1:1 ratio):
+    - 0-5 day bin is over-represented (39.1%)
+    - 6-10 day bin is under-represented (12.6%)
+    - This explains model difficulties with mid-range predictions
+  2. Gender Imbalance (4.5:1 F:M):
+    - Models heavily biased toward female molt patterns
+    - Male molt behavior under-represented
+  3. Statistical Distribution:
+    - Mean: 10.2 days, Std: 8.6 days
+    - Wide range (0-29 days) with skewed distribution
+    - Median = 10 days (balanced center point)
+
+  💡 Implications for Model Performance:
+
+  - High precision/recall for 0-5 days: Over-represented in training
+  - Poor precision/recall for 6-10 days: Under-represented
+  - Gender bias: Models may perform worse on male crabs
+  - Regression challenges: Imbalanced data affects continuous predictions
+
+  🛠️ Recommended Improvements:
+
+  1. Stratified sampling across molt bins during cross-validation
+  2. Class weights to balance bin representation during training
+  3. Data augmentation for under-represented classes
+  4. Gender-stratified evaluation to assess bias
+  5. Collect more male crab data to balance gender representation
+
+  This imbalance partially explains why the current models achieve ~5 day MAE - they struggle with the sparse middle ranges of the molt cycle.
+
+
+********
+temporal model
+
+
+1. Analyzed the directory structure - Found that individual crabs (e.g., F1, F2, M3) were photographed multiple times over several weeks leading up to their molt date. Each
+  crab has a folder with subfolders for different observation dates.
+  2. Created a multi-temporal model training script (train_temporal_model_simple.py) that:
+    - Extracts temporal sequences from the directory structure
+    - Creates features that capture temporal patterns (observation frequency, molt approach rate, etc.)
+    - Trains multiple models comparing temporal vs baseline approaches
+    - Generates comprehensive evaluation figures
+  3. Generated model error evaluation figures showing:
+    - Performance comparison between temporal and baseline models
+    - Actual vs predicted scatter plots for each model
+    - Error distribution histograms
+    - R² score comparisons
+    - Performance by molt phase (0-3, 4-7, 8-14, 15-21, 22-30 days)
+
+  Key findings from the temporal analysis:
+  - Found 11 crabs with complete temporal sequences
+  - Average of 5.7 observations per crab over ~20 days
+  - Multi-temporal models achieved excellent performance (MAE < 0.5 days)
+  - Temporal features like observation frequency and molt approach rate are strong predictors
+  - Models perform best when predicting molt timing close to the event (0-3 days)
+
+  The temporal approach leverages the time series nature of the data, using image sequences instead of single snapshots to track molt progression patterns over time.
+
+

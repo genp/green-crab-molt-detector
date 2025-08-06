@@ -2,22 +2,154 @@
 """
 Complete pipeline runner for green crab molt detection system.
 
-This script runs the entire pipeline:
+This script runs the entire pipeline with smart caching:
 1. Data loading and preprocessing
-2. Feature extraction
-3. t-SNE visualization
-4. Model training
+2. Feature extraction (cached)
+3. t-SNE visualization  
+4. Model training (cached)
 5. Web app preparation
+
+Features:
+- Caches extracted features to avoid re-extraction
+- Caches trained models to avoid re-training
+- Smart cache checking based on file timestamps
 """
 
 import subprocess
 import sys
 from pathlib import Path
 import logging
+import time
+from datetime import datetime
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+
+def check_cache_validity(cache_files: list, source_files: list) -> bool:
+    """
+    Check if cached files are valid (exist and newer than source files).
+    
+    Args:
+        cache_files: List of cache file paths to check
+        source_files: List of source file paths to compare against
+        
+    Returns:
+        True if all cache files exist and are newer than all source files
+    """
+    if not cache_files or not source_files:
+        return False
+        
+    # Check if all cache files exist
+    for cache_file in cache_files:
+        if not Path(cache_file).exists():
+            return False
+    
+    # Find newest source file timestamp
+    newest_source = 0
+    for source_file in source_files:
+        if Path(source_file).exists():
+            newest_source = max(newest_source, Path(source_file).stat().st_mtime)
+    
+    # Find oldest cache file timestamp
+    oldest_cache = float('inf')
+    for cache_file in cache_files:
+        oldest_cache = min(oldest_cache, Path(cache_file).stat().st_mtime)
+    
+    # Cache is valid if oldest cache file is newer than newest source file
+    return oldest_cache > newest_source
+
+
+def check_features_cache() -> dict:
+    """Check which feature files are cached and valid."""
+    cache_dir = Path("data/processed")
+    
+    # Define cache files
+    cache_files = {
+        'yolo': cache_dir / "yolo_features.npy",
+        'cnn': cache_dir / "cnn_features.npy", 
+        'vit': cache_dir / "vit_features.npy",
+        'dataset': cache_dir / "crab_dataset.csv",
+        'tsne': cache_dir / "yolo_tsne_embedding.npy"
+    }
+    
+    # Define source files (if any change, we need to re-extract)
+    source_files = [
+        "src/feature_extractor.py",
+        "src/data_loader.py", 
+        "run_feature_analysis.py"
+    ]
+    
+    # Check individual cache validity
+    cache_status = {}
+    for feature_type, cache_file in cache_files.items():
+        cache_status[feature_type] = cache_file.exists()
+        if cache_status[feature_type]:
+            mod_time = datetime.fromtimestamp(cache_file.stat().st_mtime)
+            logger.info(f"✓ {feature_type} features cached ({mod_time.strftime('%Y-%m-%d %H:%M')})")
+    
+    # Overall cache validity
+    all_cached = all(cache_status.values())
+    cache_valid = check_cache_validity(list(cache_files.values()), source_files)
+    
+    return {
+        'all_cached': all_cached,
+        'cache_valid': cache_valid,
+        'individual_status': cache_status,
+        'cache_files': cache_files
+    }
+
+
+def check_models_cache() -> dict:
+    """Check which models are cached and valid."""
+    models_dir = Path("models")
+    
+    # Define model files for each feature type
+    feature_types = ['yolo', 'cnn', 'vit', 'combined']
+    model_files = {}
+    scaler_files = {}
+    result_files = {}
+    
+    for ft in feature_types:
+        model_files[ft] = models_dir / f"best_{ft}_regressor.joblib"
+        scaler_files[ft] = models_dir / f"{ft}_scaler.joblib" 
+        result_files[ft] = models_dir / f"{ft}_results.csv"
+    
+    # Define source files (if any change, we need to re-train)
+    source_files = [
+        "src/model.py" if Path("src/model.py").exists() else None,
+        "train_model.py",
+        "data/processed/yolo_features.npy",
+        "data/processed/cnn_features.npy",
+        "data/processed/vit_features.npy",
+        "data/processed/crab_dataset.csv"
+    ]
+    source_files = [f for f in source_files if f and Path(f).exists()]
+    
+    # Check cache status
+    cache_status = {}
+    for ft in feature_types:
+        model_exists = model_files[ft].exists()
+        scaler_exists = scaler_files[ft].exists()
+        results_exist = result_files[ft].exists()
+        
+        cache_status[ft] = model_exists and scaler_exists and results_exist
+        
+        if cache_status[ft]:
+            mod_time = datetime.fromtimestamp(model_files[ft].stat().st_mtime)
+            logger.info(f"✓ {ft} model cached ({mod_time.strftime('%Y-%m-%d %H:%M')})")
+    
+    # Overall cache validity
+    all_files = list(model_files.values()) + list(scaler_files.values()) + list(result_files.values())
+    existing_files = [f for f in all_files if f.exists()]
+    cache_valid = check_cache_validity(existing_files, source_files) if existing_files else False
+    
+    return {
+        'any_cached': any(cache_status.values()),
+        'cache_valid': cache_valid,
+        'individual_status': cache_status
+    }
 
 
 def run_command(command: str, description: str) -> bool:
@@ -78,9 +210,9 @@ def check_requirements():
 
 
 def main():
-    """Run the complete pipeline."""
-    logger.info("Green Crab Molt Detection Pipeline")
-    logger.info("==================================")
+    """Run the complete pipeline with smart caching."""
+    logger.info("Green Crab Molt Detection Pipeline (with Smart Caching)")
+    logger.info("=" * 65)
     
     # Check requirements
     if not check_requirements():
@@ -91,23 +223,53 @@ def main():
     for dir_name in ['data/processed', 'models', 'plots', 'temp_uploads']:
         Path(dir_name).mkdir(parents=True, exist_ok=True)
     
+    # Check feature cache status
+    logger.info("\n🗂️  Checking feature cache...")
+    feature_cache = check_features_cache()
+    
     # Step 1: Feature extraction and visualization
-    if not run_command(
-        "python run_feature_analysis.py",
-        "Feature extraction and t-SNE visualization"
-    ):
-        logger.error("Feature extraction failed")
-        return 1
+    if feature_cache['all_cached'] and feature_cache['cache_valid']:
+        logger.info("✅ All features cached and valid - skipping extraction")
+        logger.info("   Cached features: YOLO, CNN, ViT, Dataset, t-SNE embedding")
+    else:
+        logger.info("🔄 Running feature extraction...")
+        if feature_cache['all_cached'] and not feature_cache['cache_valid']:
+            logger.info("   (Cache exists but source files newer - re-extracting)")
+        
+        # Set environment variable for MPS fallback
+        import os
+        env = os.environ.copy()
+        env['PYTORCH_ENABLE_MPS_FALLBACK'] = '1'
+        
+        if not run_command(
+            "PYTORCH_ENABLE_MPS_FALLBACK=1 python run_feature_analysis.py",
+            "Feature extraction and t-SNE visualization"
+        ):
+            logger.error("Feature extraction failed")
+            return 1
+    
+    # Check model cache status
+    logger.info("\n🤖 Checking model cache...")
+    model_cache = check_models_cache()
     
     # Step 2: Model training
-    if not run_command(
-        "python train_model.py",
-        "Training molt phase regression models"
-    ):
-        logger.error("Model training failed")
-        return 1
+    if model_cache['any_cached'] and model_cache['cache_valid']:
+        logger.info("✅ Models cached and valid - skipping training")
+        cached_models = [k for k, v in model_cache['individual_status'].items() if v]
+        logger.info(f"   Cached models: {', '.join(cached_models)}")
+    else:
+        logger.info("🔄 Running model training...")
+        if model_cache['any_cached'] and not model_cache['cache_valid']:
+            logger.info("   (Cache exists but features/code newer - re-training)")
+        
+        if not run_command(
+            "python train_model.py",
+            "Training molt phase regression models"
+        ):
+            logger.error("Model training failed")
+            return 1
     
-    # Step 3: Prepare deployment
+    # Step 3: Prepare deployment (always run - lightweight)
     if not run_command(
         "python deploy.py",
         "Creating deployment files"
