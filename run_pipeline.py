@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Complete pipeline runner for green crab molt detection system.
 
@@ -55,7 +56,7 @@ def check_requirements():
     issues = []
     
     # Check for YOLO model
-    yolo_path = Path("/Users/genp/BarderryAppliedResearch/FathomNet/qscp/jupyter_notebooks/fathomverse_detector/fathomverse-only-imgs_update_to_FathomNet-NoGameLabels-2024-09-28-model_yolo8_epochs_10_2024-10-22.pt")
+    yolo_path = Path("/Users/gen/BarderryAppliedResearch/FathomNet/qscp/jupyter_notebooks/fathomverse_detector/fathomverse-only-imgs_update_to_FathomNet-NoGameLabels-2024-09-28-model_yolo8_epochs_10_2024-10-22.pt")
     if not yolo_path.exists():
         issues.append(f"YOLO model not found at: {yolo_path}")
         logger.warning("YOLO model not found - will use CNN features instead")

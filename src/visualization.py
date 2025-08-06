@@ -9,6 +9,8 @@ This module provides:
 
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.manifold import TSNE
@@ -68,7 +70,7 @@ class MoltPhaseVisualizer:
         
         # Create t-SNE embedding
         tsne = TSNE(n_components=n_components, perplexity=perplexity, 
-                    random_state=random_state, n_iter=1000)
+                    random_state=random_state, max_iter=1000)
         embedding = tsne.fit_transform(features_scaled)
         
         return embedding

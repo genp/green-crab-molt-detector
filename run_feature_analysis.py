@@ -27,10 +27,10 @@ logger = logging.getLogger(__name__)
 
 def main():
     """Run the complete feature analysis pipeline."""
-    
+
     # Paths
-    base_path = Path("/Users/gen/green_crabs")
-    yolo_model_path = Path("/Users/genp/BarderryAppliedResearch/FathomNet/qscp/jupyter_notebooks/fathomverse_detector/fathomverse-only-imgs_update_to_FathomNet-NoGameLabels-2024-09-28-model_yolo8_epochs_10_2024-10-22.pt")
+    base_path = Path("/Users/gen/green_crabs/")
+    yolo_model_path = Path("/Users/gen/BarderryAppliedResearch/FathomNet/qscp/jupyter_notebooks/fathomverse_detector/fathomverse-only-imgs_update_to_FathomNet-NoGameLabels-2024-09-28-model_yolo8_epochs_10_2024-10-22.pt")
     output_dir = base_path / "data" / "processed"
     output_dir.mkdir(parents=True, exist_ok=True)
     
@@ -67,6 +67,7 @@ def main():
         
     # Extract CNN features as backup/comparison
     logger.info("Extracting CNN features...")
+    cnn_features = None
     try:
         cnn_extractor = GeneralCrustaceanFeatureExtractor('resnet50')
         cnn_features = cnn_extractor.extract_features_batch(image_paths, batch_size=16)
@@ -78,15 +79,32 @@ def main():
         logger.info(f"CNN features shape: {cnn_features.shape}")
     except Exception as e:
         logger.error(f"Failed to extract CNN features: {e}")
-        cnn_features = None
+    
+    # Extract ViT features
+    logger.info("Extracting ViT features...")
+    vit_features = None
+    try:
+        vit_extractor = GeneralCrustaceanFeatureExtractor('vit_base')
+        vit_features = vit_extractor.extract_features_batch(image_paths, batch_size=8)
+        
+        # Save ViT features
+        vit_features_path = output_dir / "vit_features.npy"
+        np.save(vit_features_path, vit_features)
+        logger.info(f"Saved ViT features to {vit_features_path}")
+        logger.info(f"ViT features shape: {vit_features.shape}")
+    except Exception as e:
+        logger.error(f"Failed to extract ViT features: {e}")
         
     # Step 3: Create visualizations
     logger.info("Creating visualizations...")
     
-    # Use whichever features are available
+    # Use whichever features are available (prioritize YOLO, then ViT, then CNN)
     if yolo_features is not None:
         features_to_use = yolo_features
         feature_type = "YOLO"
+    elif vit_features is not None:
+        features_to_use = vit_features
+        feature_type = "ViT"
     elif cnn_features is not None:
         features_to_use = cnn_features
         feature_type = "CNN"
@@ -130,12 +148,26 @@ def main():
         save_path=plots_dir / "temporal_molt_progression.png"
     )
     
-    # Feature comparison plot (if both features available)
-    if yolo_features is not None and cnn_features is not None:
+    # Feature comparison plot (if multiple features available)
+    feature_list = []
+    feature_names = []
+    
+    if yolo_features is not None:
+        feature_list.append(yolo_features)
+        feature_names.append("YOLO")
+    if vit_features is not None:
+        feature_list.append(vit_features)
+        feature_names.append("ViT")
+    if cnn_features is not None:
+        feature_list.append(cnn_features)
+        feature_names.append("CNN")
+    
+    if len(feature_list) >= 2:
         logger.info("Creating feature comparison visualization...")
+        # For now, use first two available feature types for comparison
         create_feature_comparison_plot(
-            yolo_features, cnn_features, df,
-            save_path=plots_dir / "feature_comparison.png"
+            feature_list[0], feature_list[1], df,
+            save_path=plots_dir / f"feature_comparison_{feature_names[0]}_vs_{feature_names[1]}.png"
         )
         
     logger.info("Feature analysis complete!")

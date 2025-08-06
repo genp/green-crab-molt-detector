@@ -132,7 +132,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Marine biologists working on the NH/ME coastline
+- Gabriela Bradt, Ph.D. NH Sea Grant UNH Cooperative Extension
 - [FathomNet](https://fathomnet.org/) for marine species detection models
 - Green crab fishermen providing domain expertise
 

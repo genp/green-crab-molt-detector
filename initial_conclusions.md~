@@ -1,0 +1,54 @@
+Analysis of Results & Commercial Viability
+
+  Best Model Performance:
+
+  - YOLO + Neural Network: MAE = 4.97 ± 1.09 days, RMSE = 6.57 days, R² = 0.41
+  - Combined SVR: MAE = 4.98 ± 1.10 days, RMSE = 6.04 days, R² = 0.50
+
+  Commercial Viability Assessment:
+
+  ❌ Current accuracy insufficient for profitable use
+
+  Reasons:
+  1. Critical timing window: Peeler crabs must be harvested within 2-3 days before molting for optimal value
+  2. Model uncertainty: ±5 day error means predictions could be off by 10+ days total
+  3. Economic risk: Missing the peeler window results in total loss of premium value
+
+  Business Impact:
+  - Peeler premium: ~10x higher value than regular crabs
+  - ±5 day error: Covers the entire optimal harvest window multiple times
+  - False positives: Early harvest = worthless crabs
+  - False negatives: Late harvest = missed opportunity
+
+  Visual Indicators the Model Uses:
+
+  Based on the marine biology literature and model performance:
+
+  YOLO model (marine-specific) captures:
+  1. Carapace coloration: Green → Yellow → Orange → Red progression
+  2. Shell texture changes: Smooth to rough surface patterns
+  3. Body proportions: Subtle shape changes as new shell forms beneath
+  4. Ventral coloration: Critical molt indicators on crab underside
+  5. Edge definition: Shell boundaries become less defined pre-molt
+
+  CNN model (general vision) detects:
+  1. Color gradients: Overall hue shifts across molt cycle
+  2. Texture patterns: Surface roughness and pattern changes
+  3. Contrast variations: Light/dark regional differences
+  4. Morphological features: Overall shape and proportion changes
+
+  Improvement Recommendations:
+
+  To reach commercial viability (target: <2 day MAE):
+  1. More training data: Especially 0-5 day pre-molt samples
+  2. Higher resolution imaging: Better texture/color detection
+  3. Multi-temporal models: Use image sequences vs. single snapshots
+  4. Environmental factors: Temperature, salinity effects on molt timing
+  5. Crab-specific calibration: Individual molt history patterns
+
+  Current use cases:
+  - Research applications ✅
+  - General molt phase estimation ✅
+  - Commercial harvesting ❌ (too inaccurate)
+
+  The model shows promise but needs significant improvement before fishermen can rely on it for profitable peeler crab identification.

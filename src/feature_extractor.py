@@ -43,7 +43,12 @@ class YOLOFeatureExtractor:
         
         # Auto-detect device if not specified
         if device is None:
-            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            if torch.backends.mps.is_available():
+                self.device = torch.device('mps')
+            elif torch.cuda.is_available():
+                self.device = torch.device('cuda')
+            else:
+                self.device = torch.device('cpu')
         else:
             self.device = torch.device(device)
             
@@ -239,17 +244,22 @@ class GeneralCrustaceanFeatureExtractor:
     
     def __init__(self, model_name: str = 'resnet50', device: Optional[str] = None):
         """
-        Initialize the feature extractor with a pre-trained CNN model.
+        Initialize the feature extractor with a pre-trained model.
         
         Args:
-            model_name: Name of the pre-trained model ('resnet50', 'resnet101', etc.)
+            model_name: Name of the pre-trained model ('resnet50', 'resnet101', 'vit_base')
             device: Device to run model on
         """
         self.model_name = model_name
         
         # Auto-detect device if not specified
         if device is None:
-            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            if torch.backends.mps.is_available():
+                self.device = torch.device('mps')
+            elif torch.cuda.is_available():
+                self.device = torch.device('cuda')
+            else:
+                self.device = torch.device('cpu')
         else:
             self.device = torch.device(device)
             
@@ -267,25 +277,59 @@ class GeneralCrustaceanFeatureExtractor:
             # Load pre-trained model
             if self.model_name == 'resnet50':
                 model = models.resnet50(pretrained=True)
+                # Remove the final classification layer
+                model = nn.Sequential(*list(model.children())[:-1])
+                # Define preprocessing
+                preprocess = transforms.Compose([
+                    transforms.Resize(256),
+                    transforms.CenterCrop(224),
+                    transforms.ToTensor(),
+                    transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                       std=[0.229, 0.224, 0.225])
+                ])
             elif self.model_name == 'resnet101':
                 model = models.resnet101(pretrained=True)
+                # Remove the final classification layer
+                model = nn.Sequential(*list(model.children())[:-1])
+                # Define preprocessing
+                preprocess = transforms.Compose([
+                    transforms.Resize(256),
+                    transforms.CenterCrop(224),
+                    transforms.ToTensor(),
+                    transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                       std=[0.229, 0.224, 0.225])
+                ])
+            elif self.model_name == 'vit_base':
+                # Use Vision Transformer
+                try:
+                    model = models.vit_b_16(pretrained=True)
+                    # Remove classifier head, keep feature representation
+                    model.heads = nn.Identity()
+                    # ViT preprocessing
+                    preprocess = transforms.Compose([
+                        transforms.Resize(224),
+                        transforms.CenterCrop(224),
+                        transforms.ToTensor(),
+                        transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                           std=[0.229, 0.224, 0.225])
+                    ])
+                except AttributeError:
+                    # Fallback if ViT not available in this torchvision version
+                    logger.warning("ViT not available in this torchvision version, falling back to ResNet50")
+                    model = models.resnet50(pretrained=True)
+                    model = nn.Sequential(*list(model.children())[:-1])
+                    preprocess = transforms.Compose([
+                        transforms.Resize(256),
+                        transforms.CenterCrop(224),
+                        transforms.ToTensor(),
+                        transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                           std=[0.229, 0.224, 0.225])
+                    ])
             else:
                 raise ValueError(f"Unsupported model: {self.model_name}")
-                
-            # Remove the final classification layer
-            model = nn.Sequential(*list(model.children())[:-1])
             
             model.to(self.device)
             model.eval()
-            
-            # Define preprocessing
-            preprocess = transforms.Compose([
-                transforms.Resize(256),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                                   std=[0.229, 0.224, 0.225])
-            ])
             
             return model, preprocess
             

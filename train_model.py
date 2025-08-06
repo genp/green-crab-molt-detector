@@ -2,10 +2,11 @@
 Train molt phase regression model for green crabs.
 
 This script:
-1. Loads extracted features
-2. Trains multiple regression models
-3. Evaluates and compares model performance
-4. Saves the best model
+1. Loads extracted features (YOLO + CNN)
+2. Trains multiple regression models with 5-fold CV
+3. Evaluates regression and classification performance
+4. Creates precision/recall figures
+5. Saves the best model
 """
 
 import sys
@@ -13,19 +14,166 @@ import logging
 from pathlib import Path
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import cross_val_score, StratifiedKFold, GroupKFold
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.svm import SVR
+from sklearn.neural_network import MLPRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import classification_report, confusion_matrix, precision_recall_fscore_support
+import joblib
+import warnings
+warnings.filterwarnings('ignore')
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent / 'src'))
-
-from model import MoltPhaseRegressor, plot_model_comparison, create_prediction_visualization
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
+def create_molt_phase_bins(days_until_molt):
+    """Convert continuous days_until_molt to categorical bins for classification metrics."""
+    bins = [-0.1, 5, 10, 15, 20, 30]  # 0-5, 6-10, 11-15, 16-20, 21+ days
+    labels = ['0-5_days', '6-10_days', '11-15_days', '16-20_days', '21+_days']
+    return pd.cut(days_until_molt, bins=bins, labels=labels, include_lowest=True)
+
+
+def perform_cross_validation(models, X, y, groups, cv_folds=5):
+    """Perform 5-fold cross-validation for all models."""
+    results = {}
+    
+    # Use GroupKFold to prevent data leakage (same crab in train/test)
+    cv = GroupKFold(n_splits=cv_folds)
+    
+    for name, model in models.items():
+        logger.info(f"Training {name}...")
+        
+        # Cross-validation scores
+        mae_scores = -cross_val_score(model, X, y, cv=cv, groups=groups, 
+                                     scoring='neg_mean_absolute_error')
+        rmse_scores = np.sqrt(-cross_val_score(model, X, y, cv=cv, groups=groups, 
+                                              scoring='neg_mean_squared_error'))
+        r2_scores = cross_val_score(model, X, y, cv=cv, groups=groups, 
+                                   scoring='r2')
+        
+        results[name] = {
+            'MAE': mae_scores,
+            'RMSE': rmse_scores,
+            'R2': r2_scores,
+            'MAE_mean': mae_scores.mean(),
+            'MAE_std': mae_scores.std(),
+            'RMSE_mean': rmse_scores.mean(), 
+            'RMSE_std': rmse_scores.std(),
+            'R2_mean': r2_scores.mean(),
+            'R2_std': r2_scores.std()
+        }
+        
+        logger.info(f"{name} - MAE: {mae_scores.mean():.3f} ± {mae_scores.std():.3f}")
+        logger.info(f"{name} - RMSE: {rmse_scores.mean():.3f} ± {rmse_scores.std():.3f}")
+        logger.info(f"{name} - R²: {r2_scores.mean():.3f} ± {r2_scores.std():.3f}")
+        
+    return results
+
+
+def plot_cv_results(results, save_path):
+    """Create box plots of cross-validation results."""
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+    
+    metrics = ['MAE', 'RMSE', 'R2']
+    metric_names = ['Mean Absolute Error', 'Root Mean Squared Error', 'R² Score']
+    
+    for i, (metric, metric_name) in enumerate(zip(metrics, metric_names)):
+        data = []
+        labels = []
+        
+        for name, scores in results.items():
+            data.append(scores[metric])
+            labels.append(name)
+            
+        axes[i].boxplot(data, labels=labels)
+        axes[i].set_title(f'{metric_name} (5-fold CV)')
+        axes[i].tick_params(axis='x', rotation=45)
+        axes[i].grid(True, alpha=0.3)
+        
+        if metric == 'MAE' or metric == 'RMSE':
+            axes[i].set_ylabel('Days')
+        else:
+            axes[i].set_ylabel('Score')
+    
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    logger.info(f"Saved CV results plot to {save_path}")
+
+
+def evaluate_classification_performance(models, X, y, groups, save_path):
+    """Train models and evaluate classification performance using binned predictions."""
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+    axes = axes.flatten()
+    
+    cv = GroupKFold(n_splits=5)
+    
+    for idx, (name, model) in enumerate(models.items()):
+        all_true_bins = []
+        all_pred_bins = []
+        
+        # Collect predictions from all CV folds
+        for train_idx, val_idx in cv.split(X, y, groups):
+            X_train, X_val = X[train_idx], X[val_idx]
+            y_train, y_val = y[train_idx], y[val_idx]
+            
+            model.fit(X_train, y_train)
+            y_pred = model.predict(X_val)
+            
+            # Convert to bins for classification metrics
+            true_bins = create_molt_phase_bins(y_val)
+            pred_bins = create_molt_phase_bins(y_pred)
+            
+            all_true_bins.extend(true_bins)
+            all_pred_bins.extend(pred_bins)
+        
+        # Calculate precision, recall, f1 with all possible labels
+        all_labels = ['0-5_days', '6-10_days', '11-15_days', '16-20_days', '21+_days']
+        precision, recall, f1, support = precision_recall_fscore_support(
+            all_true_bins, all_pred_bins, labels=all_labels, average=None, zero_division=0
+        )
+        
+        # Create precision-recall bar plot
+        bin_labels = ['0-5d', '6-10d', '11-15d', '16-20d', '21+d']
+        x_pos = np.arange(len(bin_labels))
+        
+        width = 0.35
+        axes[idx].bar(x_pos - width/2, precision, width, label='Precision', alpha=0.8)
+        axes[idx].bar(x_pos + width/2, recall, width, label='Recall', alpha=0.8)
+        
+        axes[idx].set_xlabel('Molt Phase Bins')
+        axes[idx].set_ylabel('Score')
+        axes[idx].set_title(f'{name} - Precision & Recall')
+        axes[idx].set_xticks(x_pos)
+        axes[idx].set_xticklabels(bin_labels)
+        axes[idx].legend()
+        axes[idx].grid(True, alpha=0.3)
+        axes[idx].set_ylim(0, 1)
+        
+        # Add text annotations
+        for i, (p, r) in enumerate(zip(precision, recall)):
+            axes[idx].text(i - width/2, p + 0.02, f'{p:.2f}', ha='center', va='bottom', fontsize=9)
+            axes[idx].text(i + width/2, r + 0.02, f'{r:.2f}', ha='center', va='bottom', fontsize=9)
+    
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+    logger.info(f"Saved precision/recall plot to {save_path}")
+
+
 def main():
-    """Train and evaluate molt phase regression models."""
+    """Train and evaluate molt phase regression models with comprehensive evaluation."""
     
     # Paths
     base_path = Path("/Users/gen/green_crabs")
@@ -48,104 +196,117 @@ def main():
     metadata['capture_date'] = pd.to_datetime(metadata['capture_date'])
     metadata['molt_date'] = pd.to_datetime(metadata['molt_date'])
     
-    # Load features - try YOLO first, then CNN
-    features = None
-    feature_type = None
+    # Filter samples with valid molt dates
+    valid_mask = metadata['days_until_molt'].notna()
+    metadata_valid = metadata[valid_mask].copy()
+    logger.info(f"Using {len(metadata_valid)} samples with valid molt dates")
     
-    yolo_features_path = data_dir / "yolo_features.npy"
-    cnn_features_path = data_dir / "cnn_features.npy"
+    # Load features
+    feature_sets = {}
     
-    if yolo_features_path.exists():
-        logger.info("Loading YOLO features...")
-        features = np.load(yolo_features_path)
-        feature_type = "YOLO"
-    elif cnn_features_path.exists():
-        logger.info("Loading CNN features...")
-        features = np.load(cnn_features_path)
-        feature_type = "CNN"
-    else:
-        logger.error("No features found. Please run 'python run_feature_analysis.py' first")
+    # Try to load YOLO features
+    yolo_path = data_dir / "yolo_features.npy"
+    if yolo_path.exists():
+        yolo_features = np.load(yolo_path)[valid_mask]
+        feature_sets['YOLO'] = yolo_features
+        logger.info(f"Loaded YOLO features: {yolo_features.shape}")
+    
+    # Try to load CNN features  
+    cnn_path = data_dir / "cnn_features.npy"
+    if cnn_path.exists():
+        cnn_features = np.load(cnn_path)[valid_mask]
+        feature_sets['CNN'] = cnn_features
+        logger.info(f"Loaded CNN features: {cnn_features.shape}")
+    
+    # Try to load ViT features
+    vit_path = data_dir / "vit_features.npy"
+    if vit_path.exists():
+        vit_features = np.load(vit_path)[valid_mask]
+        feature_sets['ViT'] = vit_features
+        logger.info(f"Loaded ViT features: {vit_features.shape}")
+    
+    if not feature_sets:
+        logger.error("No feature files found. Please run feature extraction first.")
         return
+    
+    # Create combined features
+    if len(feature_sets) > 1:
+        combined_features = np.hstack(list(feature_sets.values()))
+        feature_sets['Combined'] = combined_features
+        logger.info(f"Created combined features: {combined_features.shape}")
+    
+    # Prepare target variable
+    y = metadata_valid['days_until_molt'].values
+    groups = metadata_valid['crab_id'].values  # For GroupKFold
+    
+    logger.info(f"Target statistics - Min: {y.min():.1f}, Max: {y.max():.1f}, Mean: {y.mean():.1f}")
+    
+    # Test each feature set
+    for feature_name, X in feature_sets.items():
+        logger.info(f"\n=== Training models with {feature_name} features ===")
         
-    logger.info(f"Loaded {feature_type} features with shape: {features.shape}")
-    
-    # Filter for samples with molt dates
-    has_molt_date = metadata['days_until_molt'].notna()
-    n_samples_with_molt = has_molt_date.sum()
-    logger.info(f"Found {n_samples_with_molt} samples with known molt dates for training")
-    
-    if n_samples_with_molt < 50:
-        logger.warning(f"Only {n_samples_with_molt} samples available for training. "
-                      "Results may be unreliable.")
-    
-    # Compare different algorithms
-    logger.info("\n=== Comparing different regression algorithms ===")
-    comparison_df = plot_model_comparison(
-        features, metadata,
-        save_path=plots_dir / f"{feature_type.lower()}_model_comparison.png"
-    )
-    
-    print("\nModel Comparison Results:")
-    print(comparison_df.to_string(index=False))
-    
-    # Train best model (based on MAE)
-    best_algorithm = comparison_df.loc[comparison_df['MAE'].idxmin(), 'Algorithm']
-    logger.info(f"\n=== Training best model: {best_algorithm} ===")
-    
-    best_regressor = MoltPhaseRegressor(best_algorithm)
-    metrics = best_regressor.fit(features, metadata)
-    
-    print(f"\nBest Model ({best_algorithm}) Performance:")
-    print(f"Mean Absolute Error: {metrics['mae']:.2f} days")
-    print(f"Root Mean Squared Error: {metrics['rmse']:.2f} days")
-    print(f"R² Score: {metrics['r2']:.3f}")
-    print(f"Median Absolute Error: {metrics['median_ae']:.2f} days")
-    
-    # Create prediction visualization
-    logger.info("Creating prediction visualizations...")
-    create_prediction_visualization(
-        best_regressor, features, metadata,
-        save_path=plots_dir / f"{feature_type.lower()}_{best_algorithm}_predictions.png"
-    )
-    
-    # Save the best model
-    model_path = models_dir / f"molt_regressor_{feature_type.lower()}_{best_algorithm}.joblib"
-    best_regressor.save_model(model_path)
-    logger.info(f"Saved best model to {model_path}")
-    
-    # Create a summary report
-    report_path = models_dir / f"training_report_{feature_type.lower()}.txt"
-    with open(report_path, 'w') as f:
-        f.write(f"Green Crab Molt Phase Regression Model Training Report\n")
-        f.write(f"=" * 50 + "\n\n")
-        f.write(f"Feature Type: {feature_type}\n")
-        f.write(f"Feature Dimensions: {features.shape}\n")
-        f.write(f"Training Samples: {n_samples_with_molt}\n\n")
+        # Standardize features
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(X)
         
-        f.write("Model Comparison Results:\n")
-        f.write(comparison_df.to_string(index=False))
-        f.write(f"\n\nBest Model: {best_algorithm}\n")
-        f.write(f"MAE: {metrics['mae']:.2f} days\n")
-        f.write(f"RMSE: {metrics['rmse']:.2f} days\n")
-        f.write(f"R²: {metrics['r2']:.3f}\n")
-        f.write(f"Median AE: {metrics['median_ae']:.2f} days\n")
+        # Define models
+        models = {
+            'Random_Forest': RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1),
+            'Gradient_Boosting': GradientBoostingRegressor(n_estimators=100, random_state=42),
+            'SVR': SVR(kernel='rbf', C=10, gamma='scale'),
+            'Neural_Network': MLPRegressor(hidden_layer_sizes=(100, 50), max_iter=500, random_state=42)
+        }
         
-    logger.info(f"Training report saved to {report_path}")
+        # Perform cross-validation
+        results = perform_cross_validation(models, X_scaled, y, groups)
+        
+        # Plot CV results
+        plot_cv_results(results, plots_dir / f"{feature_name.lower()}_cv_results.png")
+        
+        # Evaluate classification performance
+        evaluate_classification_performance(
+            models, X_scaled, y, groups, 
+            plots_dir / f"{feature_name.lower()}_precision_recall.png"
+        )
+        
+        # Train final models and save the best one
+        best_model_name = min(results.keys(), key=lambda k: results[k]['MAE_mean'])
+        best_model = models[best_model_name]
+        
+        logger.info(f"Best model for {feature_name}: {best_model_name}")
+        logger.info(f"Best MAE: {results[best_model_name]['MAE_mean']:.3f} ± {results[best_model_name]['MAE_std']:.3f}")
+        
+        # Train on full dataset
+        best_model.fit(X_scaled, y)
+        
+        # Save model and scaler
+        model_path = models_dir / f"best_{feature_name.lower()}_regressor.joblib"
+        scaler_path = models_dir / f"{feature_name.lower()}_scaler.joblib"
+        
+        joblib.dump(best_model, model_path)
+        joblib.dump(scaler, scaler_path)
+        
+        logger.info(f"Saved best model to {model_path}")
+        logger.info(f"Saved scaler to {scaler_path}")
+        
+        # Save results summary
+        results_df = pd.DataFrame({
+            'Model': results.keys(),
+            'MAE_mean': [results[k]['MAE_mean'] for k in results.keys()],
+            'MAE_std': [results[k]['MAE_std'] for k in results.keys()],
+            'RMSE_mean': [results[k]['RMSE_mean'] for k in results.keys()], 
+            'RMSE_std': [results[k]['RMSE_std'] for k in results.keys()],
+            'R2_mean': [results[k]['R2_mean'] for k in results.keys()],
+            'R2_std': [results[k]['R2_std'] for k in results.keys()]
+        })
+        
+        results_path = models_dir / f"{feature_name.lower()}_results.csv"
+        results_df.to_csv(results_path, index=False)
+        logger.info(f"Saved results summary to {results_path}")
     
-    # Additional analysis: Feature importance (if using tree-based model)
-    if best_algorithm in ['random_forest', 'gradient_boost']:
-        logger.info("Analyzing feature importance...")
-        
-        if hasattr(best_regressor.model, 'feature_importances_'):
-            importances = best_regressor.model.feature_importances_
-            n_top_features = min(20, len(importances))
-            top_indices = np.argsort(importances)[-n_top_features:][::-1]
-            
-            print(f"\nTop {n_top_features} Most Important Features:")
-            for i, idx in enumerate(top_indices):
-                print(f"  {i+1}. Feature {idx}: {importances[idx]:.4f}")
-                
-    logger.info("\nModel training complete!")
+    logger.info("\n=== Model training complete! ===")
+    logger.info("Check the plots/ directory for visualizations")
+    logger.info("Check the models/ directory for saved models")
 
 
 if __name__ == "__main__":
