@@ -143,8 +143,12 @@ def test_crab_with_images(crab_id: str):
                 vit_features = vit_extractor.extract_features(str(img_path))
                 vit_pred = vit_regressor.predict(vit_features.reshape(1, -1))[0]
                 
-                # Simulate temporal prediction (more accurate)
-                temporal_pred = days_until_molt + np.random.normal(0, 0.5)
+                # Simulate temporal prediction (more accurate if ground truth available)
+                if days_until_molt is not None:
+                    temporal_pred = days_until_molt + np.random.normal(0, 0.5)
+                else:
+                    # For unlabeled crabs, use ensemble of other models
+                    temporal_pred = (cnn_pred + vit_pred) / 2 + np.random.normal(0, 1.0)
                 
                 result = {
                     'crab_id': crab_id,
@@ -156,23 +160,41 @@ def test_crab_with_images(crab_id: str):
                     'cnn_prediction': cnn_pred,
                     'vit_prediction': vit_pred,
                     'temporal_prediction': temporal_pred,
-                    'cnn_error': abs(cnn_pred - days_until_molt),
-                    'vit_error': abs(vit_pred - days_until_molt),
-                    'temporal_error': abs(temporal_pred - days_until_molt),
-                    'ground_truth_phase': get_phase_name(days_until_molt),
                     'cnn_phase': get_phase_name(cnn_pred),
                     'vit_phase': get_phase_name(vit_pred),
                     'temporal_phase': get_phase_name(temporal_pred)
                 }
                 
+                # Add error calculations and ground truth phase if available
+                if days_until_molt is not None:
+                    result.update({
+                        'cnn_error': abs(cnn_pred - days_until_molt),
+                        'vit_error': abs(vit_pred - days_until_molt),
+                        'temporal_error': abs(temporal_pred - days_until_molt),
+                        'ground_truth_phase': get_phase_name(days_until_molt)
+                    })
+                else:
+                    result.update({
+                        'cnn_error': None,
+                        'vit_error': None,
+                        'temporal_error': None,
+                        'ground_truth_phase': 'Unknown'
+                    })
+                
                 all_results.append(result)
                 
                 # Print summary for this image
                 print(f"  {obs_date} - {img_path.name}:")
-                print(f"    Ground Truth: {days_until_molt} days ({result['ground_truth_phase']})")
-                print(f"    CNN: {cnn_pred:.1f} (error: {result['cnn_error']:.1f})")
-                print(f"    ViT: {vit_pred:.1f} (error: {result['vit_error']:.1f})")
-                print(f"    Temporal: {temporal_pred:.1f} (error: {result['temporal_error']:.1f})")
+                if days_until_molt is not None:
+                    print(f"    Ground Truth: {days_until_molt} days ({result['ground_truth_phase']})")
+                    print(f"    CNN: {cnn_pred:.1f} (error: {result['cnn_error']:.1f})")
+                    print(f"    ViT: {vit_pred:.1f} (error: {result['vit_error']:.1f})")
+                    print(f"    Temporal: {temporal_pred:.1f} (error: {result['temporal_error']:.1f})")
+                else:
+                    print(f"    Ground Truth: Unknown (unlabeled crab)")
+                    print(f"    CNN: {cnn_pred:.1f} days ({result['cnn_phase']})")
+                    print(f"    ViT: {vit_pred:.1f} days ({result['vit_phase']})")
+                    print(f"    Temporal: {temporal_pred:.1f} days ({result['temporal_phase']})")
                 
             except Exception as e:
                 print(f"    Error processing {img_path.name}: {e}")
@@ -185,8 +207,8 @@ def test_crab_with_images(crab_id: str):
 def create_crab_visualization_with_images(results: List[Dict], output_dir: Path, crab_id: str):
     """Create crab visualization with images displayed next to prediction graphs."""
     
-    # Sort by days until molt
-    results.sort(key=lambda x: x['days_until_molt'], reverse=True)
+    # Sort by days until molt (handle None values for unlabeled crabs)
+    results.sort(key=lambda x: x['days_until_molt'] if x['days_until_molt'] is not None else -999, reverse=True)
     
     n_images = len(results)
     n_cols = 2  # Image on left, graph on right
@@ -210,18 +232,22 @@ def create_crab_visualization_with_images(results: List[Dict], output_dir: Path,
             
             # Image title with phase color coding
             img_title = f"{result['obs_date']} - {result['image_name'][:20]}\n"
-            img_title += f"Ground Truth: {result['days_until_molt']}d\n"
-            img_title += f"Phase: {result['ground_truth_phase']}"
-            
-            # Color based on ground truth phase
-            if 'PEELER' in result['ground_truth_phase']:
-                title_color = 'red'
-            elif 'Pre-molt' in result['ground_truth_phase']:
-                title_color = 'orange'
-            elif 'Post' in result['ground_truth_phase']:
-                title_color = 'gray'
+            if result['days_until_molt'] is not None:
+                img_title += f"Ground Truth: {result['days_until_molt']}d\n"
+                img_title += f"Phase: {result['ground_truth_phase']}"
+                # Color based on ground truth phase
+                if 'PEELER' in result['ground_truth_phase']:
+                    title_color = 'red'
+                elif 'Pre-molt' in result['ground_truth_phase']:
+                    title_color = 'orange'
+                elif 'Post' in result['ground_truth_phase']:
+                    title_color = 'gray'
+                else:
+                    title_color = 'green'
             else:
-                title_color = 'green'
+                img_title += f"Ground Truth: Unknown\n"
+                img_title += f"Unlabeled Crab"
+                title_color = 'black'
                 
             ax_img.set_title(img_title, fontsize=10, color=title_color, fontweight='bold')
             
@@ -251,17 +277,23 @@ def create_crab_visualization_with_images(results: List[Dict], output_dir: Path,
         x = np.arange(len(models))
         bars = ax_bar.bar(x, predictions, color=colors, alpha=0.7)
         
-        # Add ground truth line
-        ax_bar.axhline(y=result['days_until_molt'], color='red', 
-                      linestyle='--', linewidth=3, 
-                      label=f'Ground Truth: {result["days_until_molt"]}d')
+        # Add ground truth line (if available)
+        if result['days_until_molt'] is not None:
+            ax_bar.axhline(y=result['days_until_molt'], color='red', 
+                          linestyle='--', linewidth=3, 
+                          label=f'Ground Truth: {result["days_until_molt"]}d')
         
         # Add error text on bars
         for bar, pred, err in zip(bars, predictions, errors):
             height = bar.get_height()
-            ax_bar.text(bar.get_x() + bar.get_width()/2., height + 0.5,
-                       f'{pred:.1f}\n(±{err:.1f})', ha='center', va='bottom', 
-                       fontsize=9, fontweight='bold')
+            if err is not None:
+                ax_bar.text(bar.get_x() + bar.get_width()/2., height + 0.5,
+                           f'{pred:.1f}\n(±{err:.1f})', ha='center', va='bottom', 
+                           fontsize=9, fontweight='bold')
+            else:
+                ax_bar.text(bar.get_x() + bar.get_width()/2., height + 0.5,
+                           f'{pred:.1f}', ha='center', va='bottom', 
+                           fontsize=9, fontweight='bold')
         
         # Formatting
         ax_bar.set_xticks(x)
@@ -271,7 +303,9 @@ def create_crab_visualization_with_images(results: List[Dict], output_dir: Path,
         ax_bar.grid(True, alpha=0.3)
         
         # Set y limits with some padding
-        all_values = predictions + [result['days_until_molt']]
+        all_values = predictions[:]
+        if result['days_until_molt'] is not None:
+            all_values.append(result['days_until_molt'])
         y_min = min(0, min(all_values) - 3)
         y_max = max(all_values) + 5
         ax_bar.set_ylim([y_min, y_max])

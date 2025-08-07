@@ -728,3 +728,35 @@ Summary
 
 ⏺ The temporal features transform the problem from "what does this crab look like?" to "how is this crab changing over time?" - a much more powerful signal for predicting molt
   timing.
+
+
+ ✅ Setup Complete
+
+  Key Changes Made:
+  1. Modified app_heroku.py - Added S3 model downloading functionality that downloads models from S3 to /tmp/models/ at runtime
+  2. Updated requirements.txt - Added boto3==1.35.82 for S3 access
+  3. Created upload_models_to_s3.py - Script to upload model files to your S3 bucket
+  4. Added HEROKU_DEPLOYMENT.md - Comprehensive deployment guide
+
+  How it works:
+  - On startup, the app checks for S3_BUCKET_NAME environment variable
+  - If found, downloads models from S3 to Heroku's /tmp directory
+  - Falls back to local models if S3 not configured
+  - Models persist for the dyno lifetime (until restart)
+
+  🚀 Next Steps for Deployment
+
+  1. Create S3 bucket and upload models:
+  aws s3 mb s3://your-green-crab-models-bucket
+  python upload_models_to_s3.py your-green-crab-models-bucket
+  2. Deploy to Heroku:
+  heroku create your-app-name
+  heroku config:set S3_BUCKET_NAME=your-green-crab-models-bucket
+  heroku config:set AWS_ACCESS_KEY_ID=your-access-key
+  heroku config:set AWS_SECRET_ACCESS_KEY=your-secret-key
+  git push heroku main
+  3. Test the deployment:
+  heroku open
+  curl https://your-app-name.herokuapp.com/health
+
+  The app is now ready for Heroku deployment with S3 model storage!
