@@ -194,7 +194,7 @@
     </div>
 
     <!-- Loading Modal -->
-    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal fade" id="loadingModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body text-center p-4">
@@ -289,23 +289,8 @@
             const formData = new FormData();
             formData.append('file', selectedFile);
             
-            // Create fresh modal instance
-            const loadingModalElement = document.getElementById('loadingModal');
-            
-            // Dispose of any existing modal instance
-            const existingModal = bootstrap.Modal.getInstance(loadingModalElement);
-            if (existingModal) {
-                existingModal.dispose();
-            }
-            
-            // Create new modal instance
-            loadingModal = new bootstrap.Modal(loadingModalElement, {
-                backdrop: 'static',
-                keyboard: false
-            });
-            
-            // Show loading modal
-            loadingModal.show();
+            // Show loading modal using a simple approach
+            showLoadingModal();
             
             try {
                 const response = await fetch('/predict', {
@@ -315,44 +300,86 @@
                 
                 const data = await response.json();
                 
+                // Always hide modal first
+                hideLoadingModal();
+                
                 if (data.success) {
-                    // Hide modal before displaying results
-                    hideLoadingModal();
-                    displayResults(data);
+                    // Small delay to ensure modal is fully hidden
+                    setTimeout(() => {
+                        displayResults(data);
+                    }, 100);
                 } else {
-                    hideLoadingModal();
-                    alert(data.error || 'Prediction failed');
+                    setTimeout(() => {
+                        alert(data.error || 'Prediction failed');
+                    }, 100);
                 }
             } catch (error) {
                 hideLoadingModal();
-                alert('Error: ' + error.message);
+                setTimeout(() => {
+                    alert('Error: ' + error.message);
+                }, 100);
             }
         }
         
-        function hideLoadingModal() {
-            if (loadingModal) {
-                // Hide the modal
-                loadingModal.hide();
-                
-                // Clean up after modal animation completes
-                setTimeout(() => {
-                    // Remove all backdrops
-                    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
-                        backdrop.remove();
-                    });
-                    
-                    // Reset body styles
-                    document.body.classList.remove('modal-open');
-                    document.body.style.overflow = '';
-                    document.body.style.paddingRight = '';
-                    
-                    // Dispose of the modal instance
-                    if (loadingModal) {
-                        loadingModal.dispose();
-                        loadingModal = null;
-                    }
-                }, 500);
+        function showLoadingModal() {
+            // Get modal element
+            const modalEl = document.getElementById('loadingModal');
+            
+            // Clean up any existing instance
+            const existingModal = bootstrap.Modal.getInstance(modalEl);
+            if (existingModal) {
+                existingModal.dispose();
             }
+            
+            // Remove any lingering backdrops
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            
+            // Reset body classes
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            
+            // Create and show new modal
+            loadingModal = new bootstrap.Modal(modalEl);
+            loadingModal.show();
+        }
+        
+        function hideLoadingModal() {
+            // Force close everything modal-related
+            const modalEl = document.getElementById('loadingModal');
+            
+            // Hide via Bootstrap if instance exists
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+                modal.hide();
+                // Give it time to animate then force cleanup
+                setTimeout(() => {
+                    modal.dispose();
+                }, 300);
+            }
+            
+            // Force remove modal backdrop and classes after a delay
+            setTimeout(() => {
+                // Remove all backdrops
+                document.querySelectorAll('.modal-backdrop').forEach(el => {
+                    el.parentNode.removeChild(el);
+                });
+                
+                // Remove modal-open class from body
+                document.body.classList.remove('modal-open');
+                
+                // Reset body styles
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+                
+                // Ensure modal is hidden
+                modalEl.classList.remove('show');
+                modalEl.style.display = 'none';
+                modalEl.setAttribute('aria-hidden', 'true');
+                
+                // Clear global reference
+                loadingModal = null;
+            }, 400);
         }
         
         function displayResults(data) {
