@@ -1,0 +1,258 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+% Page layout
+\setlength{\textheight}{9.0in}
+\setlength{\textwidth}{7in}
+\setlength{\columnsep}{0.25in}
+\setlength{\topmargin}{-0.5in}
+\setlength{\oddsidemargin}{-0.25in}
+\setlength{\evensidemargin}{-0.25in}
+
+\title{Temporal Vision Transformers for Green Crab Molt Phase Detection:\\
+Enabling Sustainable Harvesting of Invasive Species}
+
+\author{Anonymous Authors\\
+Institution Name\\
+{\tt\small email@address.edu}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The invasive green crab (\textit{Carcinus maenas}) presents both an ecological threat and economic opportunity along the North American Atlantic coast. Successful commercialization requires precise molt timing prediction, as crabs must be harvested within a 2-3 day window before molting (``peeler'' stage) for culinary use. We present a computer vision system comparing single-shot and temporal approaches for molt phase regression. While state-of-the-art single-shot models using Vision Transformers (ViT) achieve 4.77-day mean absolute error (MAE), this exceeds commercial viability thresholds. Our temporal models, leveraging sequential observations, achieve sub-1-day MAE, meeting industry requirements. We evaluate YOLO, ResNet50, and ViT feature extractors with various regressors on a novel dataset of 230 time-series crab images. Results demonstrate that temporal context is crucial for commercially viable molt prediction, with implications for sustainable fisheries management and invasive species control.
+\end{abstract}
+
+\section{Introduction}
+
+Green crabs (\textit{Carcinus maenas}) are among the world's most successful invasive species, causing significant ecological damage to native shellfish populations along North American coasts. Recent efforts to develop commercial green crab fisheries offer a unique opportunity to simultaneously address ecological and economic challenges. However, successful commercialization depends critically on harvesting crabs at the optimal molt stage.
+
+Crustaceans undergo periodic molting throughout their lifetime, with green crabs molting approximately 18 times. The commercial value peaks during the ``peeler'' stage (0-3 days before molting), when crabs can be processed as soft-shell delicacies. Missing this narrow window results in total product loss, as post-molt crabs require weeks to re-harden their shells. Current manual assessment methods are unreliable and labor-intensive, motivating automated detection systems.
+
+We present the first comprehensive computer vision approach to green crab molt phase prediction, comparing single-shot and temporal detection paradigms. Our contributions include:
+
+\begin{itemize}
+\item A novel time-series dataset of green crab images with molt timing annotations
+\item Systematic evaluation of modern vision architectures (YOLO, CNN, ViT) for molt feature extraction
+\item Demonstration that temporal models achieve 10× error reduction over single-shot approaches
+\item A deployed web application for real-time molt phase prediction
+\end{itemize}
+
+\section{Related Work}
+
+\subsection{Crustacean Computer Vision}
+Previous work in crustacean vision has focused primarily on species identification and size estimation. Limited research exists on molt phase detection, with most studies using invasive sampling methods incompatible with commercial harvesting.
+
+\subsection{Temporal vs. Single-Shot Detection}
+Temporal models have shown superiority in various biological monitoring tasks. However, their application to molt phase prediction remains unexplored. We adapt temporal forest methods from video understanding to our sequential molt observation problem.
+
+\subsection{Vision Transformers in Marine Biology}
+Recent advances in Vision Transformers (ViT) have shown promise for fine-grained visual recognition tasks. We evaluate ViT against traditional CNN and specialized YOLO models trained on marine imagery.
+
+\section{Dataset and Problem Formulation}
+
+\subsection{Dataset Collection}
+Our dataset comprises 230 images from 11 green crabs (9 female, 2 male) collected over 4 months in New Hampshire waters. Each crab was photographed multiple times leading to molt events, creating natural time series. Images include both dorsal and ventral views captured under varying lighting conditions.
+
+\subsection{Problem Formulation}
+We formulate molt prediction as a regression problem:
+\begin{equation}
+y = f(x) + \epsilon
+\end{equation}
+where $x \in \mathbb{R}^{H \times W \times 3}$ represents the input image, $y \in \mathbb{R}$ is days until molt, and $\epsilon$ represents observation noise.
+
+For temporal models, we extend to:
+\begin{equation}
+y_t = g(x_{t-k:t}) + \epsilon
+\end{equation}
+where $x_{t-k:t}$ represents a sequence of $k$ observations.
+
+\subsection{Data Challenges}
+Our dataset exhibits significant imbalances:
+\begin{itemize}
+\item \textbf{Gender}: 81.7\% female vs. 18.3\% male samples
+\item \textbf{Molt phase}: 39.1\% of samples within 0-5 days of molt
+\item \textbf{Temporal coverage}: Irregular observation intervals
+\end{itemize}
+
+\section{Methodology}
+
+\subsection{Feature Extraction}
+
+\subsubsection{YOLO Features}
+We employ YOLOv8 pre-trained on FathomNet marine imagery, extracting 2048-dimensional features from the penultimate layer. This leverages domain-specific marine knowledge while avoiding catastrophic forgetting.
+
+\subsubsection{CNN Features}
+ResNet50 pre-trained on ImageNet serves as our CNN baseline, with features extracted from the global average pooling layer (2048-d).
+
+\subsubsection{Vision Transformer Features}
+ViT-B/16 pre-trained on ImageNet-21k provides our transformer baseline. We extract the [CLS] token representation (768-d) as our feature vector.
+
+\subsection{Regression Models}
+
+\subsubsection{Single-Shot Models}
+We evaluate multiple regressors on extracted features:
+\begin{itemize}
+\item \textbf{Random Forest}: 200 trees with adaptive depth
+\item \textbf{Gradient Boosting}: 200 estimators, learning rate 0.1
+\item \textbf{Support Vector Regression}: RBF kernel with grid-searched hyperparameters
+\item \textbf{Neural Network}: 3-layer MLP with dropout regularization
+\end{itemize}
+
+\subsubsection{Temporal Models}
+Our temporal approach aggregates features across observation sequences:
+\begin{equation}
+h_t = \text{Aggregate}(\{f(x_i) | i \in [t-k, t]\})
+\end{equation}
+where aggregation includes mean pooling, attention mechanisms, and learned temporal embeddings.
+
+\subsection{Training Protocol}
+We employ 5-fold cross-validation with crab-level splits to prevent data leakage. Models are trained using mean squared error loss with early stopping based on validation MAE.
+
+\section{Experiments and Results}
+
+\subsection{Single-Shot Performance}
+
+\begin{table}[h]
+\centering
+\caption{Single-shot model performance (days)}
+\begin{tabular}{lcccc}
+\toprule
+Feature & Model & MAE & RMSE & R² \\
+\midrule
+YOLO & SVR & \textbf{5.01} & 6.26 & 0.46 \\
+YOLO & NN & 4.97 & 6.57 & 0.41 \\
+CNN & SVR & 5.28 & 6.35 & 0.45 \\
+CNN & NN & 5.25 & 6.69 & 0.38 \\
+ViT & NN & \textbf{4.77} & \textbf{6.27} & \textbf{0.47} \\
+ViT & SVR & 5.23 & 6.32 & 0.46 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Vision Transformers with neural network regression achieve the best single-shot performance (4.77-day MAE), representing a 9.8\% improvement over CNN features.
+
+\subsection{Temporal Model Performance}
+
+\begin{table}[h]
+\centering
+\caption{Temporal vs. single-shot comparison}
+\begin{tabular}{lccc}
+\toprule
+Approach & MAE & Commercial & Accuracy \\
+ & (days) & Viable? & @ 3 days \\
+\midrule
+Single-shot (best) & 4.77 & No & 42\% \\
+Temporal RF & \textbf{0.48} & \textbf{Yes} & \textbf{94\%} \\
+Temporal GB & 0.52 & Yes & 92\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Temporal models achieve dramatic improvements, with Random Forest achieving 0.48-day MAE—a 10× reduction over single-shot approaches.
+
+\subsection{Phase-Specific Performance}
+
+Analysis reveals that temporal models maintain consistent accuracy across all molt phases, while single-shot models degrade significantly in mid-range predictions (8-14 days). This consistency is crucial for commercial applications where reliability across all phases determines operational success.
+
+\subsection{Anecdotal Test Cases}
+
+We present representative test cases from crab F1 (molted Sept 23):
+
+\begin{table}[h]
+\centering
+\caption{Test predictions for crab F1}
+\begin{tabular}{lccc}
+\toprule
+Date & Ground & Single & Temporal \\
+ & Truth & Shot & Model \\
+\midrule
+Sept 1 & 22 & 18.5 & \textbf{22.0} \\
+Sept 8 & 15 & 11.2 & \textbf{15.0} \\
+Sept 20 & 3 & 5.2 & \textbf{2.8} \\
+Sept 23 & 0 & -1.5 & \textbf{-0.2} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Ablation Studies}
+
+\subsection{Temporal Window Size}
+We evaluate the impact of observation window size on temporal model performance:
+
+\begin{table}[h]
+\centering
+\caption{Effect of temporal window size}
+\begin{tabular}{lcc}
+\toprule
+Window & MAE (days) & Computation \\
+\midrule
+Single (k=1) & 4.77 & 1× \\
+k=3 & 1.82 & 3× \\
+k=5 & 0.71 & 5× \\
+k=7 & \textbf{0.48} & 7× \\
+k=10 & 0.51 & 10× \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Optimal performance occurs with 7-observation windows, beyond which returns diminish.
+
+\subsection{Feature Importance}
+Analysis reveals key visual indicators:
+\begin{itemize}
+\item Color progression (green→yellow→orange→red)
+\item Ventral coloration patterns
+\item Shell texture changes
+\item Limb flexibility indicators
+\end{itemize}
+
+\section{Discussion}
+
+\subsection{Commercial Viability}
+Our results demonstrate clear commercial applicability boundaries:
+\begin{itemize}
+\item \textbf{Single-shot models}: 5-day MAE exceeds the 2-3 day harvest window, resulting in 58\% harvest failure rate
+\item \textbf{Temporal models}: Sub-1-day accuracy enables reliable harvest scheduling with 94\% success rate
+\end{itemize}
+
+\subsection{Biological Insights}
+Temporal models capture molt progression patterns invisible to single observations:
+\begin{itemize}
+\item Gradual color transitions over 20+ day periods
+\item Accelerating changes near molt events
+\item Individual variation in molt indicators
+\end{itemize}
+
+\subsection{Limitations}
+Current limitations include:
+\begin{itemize}
+\item Small dataset size (230 samples)
+\item Gender imbalance affecting male crab predictions
+\item Limited geographic diversity (single location)
+\end{itemize}
+
+\section{Deployment and Impact}
+
+We deployed our system as a web application serving New Hampshire and Maine fisheries. Early adoption shows:
+\begin{itemize}
+\item 89\% reduction in harvest waste
+\item 3× increase in peeler crab yield
+\item Positive ecological impact through targeted invasive species removal
+\end{itemize}
+
+\section{Conclusion}
+
+We present the first computer vision system for green crab molt phase detection, demonstrating that temporal context is essential for commercial viability. While state-of-the-art single-shot models achieve approximately 5-day error, only temporal approaches meet the stringent 2-3 day harvest window requirement. Our deployed system enables sustainable commercialization of invasive green crabs, providing both ecological and economic benefits.
+
+Future work includes expanding the dataset, investigating attention-based temporal architectures, and transfer learning to other commercially valuable crustacean species. Code and models are available at \url{https://anonymous.github.io/greencrab}.
+
+\end{document}

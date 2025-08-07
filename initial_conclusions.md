@@ -508,3 +508,223 @@ Summary
      These crabs and all their images are held out from training.
      Use any of their images to test the model performance.
 
+  Example Test Images You Can Use:
+
+  Early stage (>20 days before molt):
+  - NH Green Crab Project 2016/Crabs Aug 26 - Oct 4/F1 (molted 9:23)/8:26/IMG_2902.jpg
+
+  Mid stage (10-15 days before molt):
+  - NH Green Crab Project 2016/Crabs Aug 26 - Oct 4/F2 (molted 9:20)/9:8/ (any image from Sept 8)
+
+  Peeler stage (0-3 days before molt):
+  - NH Green Crab Project 2016/Crabs Aug 26 - Oct 4/F2 (molted 9:20)/9:19/ (1 day before)
+  - NH Green Crab Project 2016/Crabs Aug 26 - Oct 4/F1 (molted 9:23)/9:21/ (2 days before)
+
+  Molt day:
+  - NH Green Crab Project 2016/Crabs Aug 26 - Oct 4/F9 (molted 9:14)/9:14/ (any image)
+
+  The temporal features start by parsing the directory structure to understand the observation timeline:
+
+  # For each crab folder like "F1 (molted 9:23)"
+  crab_id = "F1"
+  molt_date = September 23, 2016
+
+  # Sub-folders represent observation dates:
+  "8:26" → August 26 (28 days before molt)
+  "9:1"  → September 1 (22 days before molt)
+  "9:9"  → September 9 (14 days before molt)
+  "9:23" → September 23 (0 days - molt day)
+
+⏺ Update Todos
+  ⎿  ☒ Explain temporal data structure extraction
+     ☐ Detail sliding window approach
+     ☐ Explain feature aggregation methods
+     ☐ Describe temporal-specific features
+     ☐ Show how features combine for prediction
+
+⏺ 2. Sliding Window Approach (train_temporal_vit.py, lines 56-92)
+
+  The system creates overlapping sequences using sliding windows:
+
+  # For window_size = 3 and a crab with 5 observations:
+  Observations: [Day1, Day2, Day3, Day4, Day5]
+
+  Window 1: [Day1, Day2, Day3] → Predict molt timing at Day3
+  Window 2: [Day2, Day3, Day4] → Predict molt timing at Day4
+  Window 3: [Day3, Day4, Day5] → Predict molt timing at Day5
+
+  Example for Crab F1:
+  - Observation dates: Aug 26, Sep 1, Sep 8, Sep 9, Sep 14...
+  - Window 1: [Aug 26, Sep 1, Sep 8] → Target: 15 days until molt
+  - Window 2: [Sep 1, Sep 8, Sep 9] → Target: 14 days until molt
+  - Window 3: [Sep 8, Sep 9, Sep 14] → Target: 9 days until molt
+
+⏺ Update Todos
+  ⎿  ☒ Explain temporal data structure extraction
+     ☒ Detail sliding window approach
+     ☐ Explain feature aggregation methods
+     ☐ Describe temporal-specific features
+     ☐ Show how features combine for prediction
+
+⏺ 3. Feature Aggregation Methods (train_temporal_vit.py, lines 93-133)
+
+  For each temporal window, the system aggregates the ViT/CNN features in multiple ways:
+
+  # For each of the 512 ViT features across 3 time points:
+  feature_42 = [0.23, 0.31, 0.45]  # Values at t1, t2, t3
+
+  # Statistical aggregations:
+  mean_feature_42 = 0.33     # Average across time
+  std_feature_42 = 0.11      # Variability over time
+  min_feature_42 = 0.23      # Minimum value
+  max_feature_42 = 0.45      # Maximum value
+  change_feature_42 = 0.22   # Last - First (0.45 - 0.23)
+  trend_feature_42 = 0.11    # Linear regression slope
+
+  This creates 6 derived features from each original feature:
+  - Mean: Overall feature intensity
+  - Std: How much the feature varies (stability indicator)
+  - Min/Max: Range of values
+  - Change: Net change over the window
+  - Trend: Rate of change (positive = increasing toward molt)
+
+⏺ Update Todos
+  ⎿  ☒ Explain temporal data structure extraction
+     ☒ Detail sliding window approach
+     ☒ Explain feature aggregation methods
+     ☐ Describe temporal-specific features
+     ☐ Show how features combine for prediction
+
+⏺ 4. Temporal-Specific Features (train_temporal_vit.py, lines 78-92)
+
+  Beyond aggregating visual features, the system creates features that capture the temporal observation pattern itself:
+
+  # Temporal metadata features:
+  {
+      'sequence_length': 3,              # Number of observations in window
+      'observation_span': 14,            # Days from first to last observation
+      'observation_frequency': 0.21,     # Observations per day (3/14)
+      'first_days_until_molt': 28,      # Days to molt at window start
+      'last_days_until_molt': 14,       # Days to molt at window end
+      'molt_phase': 'inter_molt_early'  # Categorical phase
+  }
+
+  Key temporal features explained:
+
+  1. Observation Frequency (obs/day):
+    - High frequency (>0.5) = Intensive monitoring, likely approaching molt
+    - Low frequency (<0.2) = Sparse monitoring, likely far from molt
+  2. Observation Span:
+    - Short span (few days) = Recent rapid changes
+    - Long span (weeks) = Gradual progression tracking
+  3. Molt Phase Categories:
+    - peeler: 0-3 days (critical harvest window)
+    - pre_molt: 4-7 days
+    - inter_molt_early: 8-14 days
+    - inter_molt_late: >14 days
+
+⏺ Update Todos
+  ⎿  ☒ Explain temporal data structure extraction
+     ☒ Detail sliding window approach
+     ☒ Explain feature aggregation methods
+     ☒ Describe temporal-specific features
+     ☐ Show how features combine for prediction
+
+⏺ 5. How Features Combine for Prediction
+
+  The final feature vector for each temporal sequence combines:
+
+  # Example for one sequence with window_size=3 and 512 ViT features:
+
+  Total features =
+      6 temporal metadata features +          # span, frequency, etc.
+      (512 × 6) ViT feature aggregations      # mean, std, min, max, change, trend
+      = 3,078 features per sequence
+
+  # Feature vector structure:
+  [
+      # Temporal metadata (6 features)
+      observation_span: 14,
+      observation_frequency: 0.21,
+      first_days_until_molt: 28,
+      last_days_until_molt: 14,
+      sequence_length: 3,
+      molt_phase_encoded: 2,
+
+      # ViT Feature 0 statistics (6 features)
+      mean_feature_0: 0.33,
+      std_feature_0: 0.11,
+      min_feature_0: 0.23,
+      max_feature_0: 0.45,
+      change_feature_0: 0.22,
+      trend_feature_0: 0.11,
+
+      # ... repeated for all 512 ViT features ...
+
+      # ViT Feature 511 statistics (6 features)
+      mean_feature_511: 0.67,
+      std_feature_511: 0.08,
+      ...
+  ]
+
+  Complete Example: Crab F1 Approaching Molt
+
+  Let's trace a real example through the system:
+
+  # Crab F1: Window from Sep 8, Sep 9, Sep 14
+  Window = [
+      Sep 8 (15 days before molt),
+      Sep 9 (14 days before molt),
+      Sep 14 (9 days before molt)
+  ]
+
+  # 1. Temporal metadata:
+  observation_span = 6 days
+  observation_frequency = 3/6 = 0.5 obs/day (high!)
+  molt_progression = 15 → 9 days (moving toward molt)
+
+  # 2. Visual feature example (hypothetical):
+  color_feature_123 = [0.2, 0.35, 0.6]  # Increasing redness
+  mean = 0.38
+  trend = +0.2 per observation (strong positive trend)
+  change = +0.4 (large change)
+
+  # 3. Model interpretation:
+  - High observation frequency → Close monitoring phase
+  - Strong positive color trend → Color changing toward molt
+  - 6-day span with 3 observations → Rapid progression
+  - Target: 9 days until molt (pre-molt phase)
+
+  # 4. Prediction:
+  Model sees rapid changes + high monitoring frequency
+  → Predicts: ~8-10 days until molt
+
+  Why Temporal Features Work Better
+
+  1. Captures Progression: Single images miss the rate of change
+  2. Monitoring Patterns: Frequency of observation itself is informative
+  3. Trend Detection: Identifies accelerating vs stable periods
+  4. Reduces Noise: Averaging across multiple observations
+  5. Context: Knowing "where we came from" helps predict "where we're going"
+
+  Final Feature Summary
+
+  | Feature Type         | Count | Purpose                        |
+  |----------------------|-------|--------------------------------|
+  | Temporal Metadata    | 6     | Observation patterns           |
+  | ViT Mean Features    | 512   | Average visual appearance      |
+  | ViT Std Features     | 512   | Visual stability/variability   |
+  | ViT Min/Max Features | 1024  | Visual range                   |
+  | ViT Change Features  | 512   | Net visual change              |
+  | ViT Trend Features   | 512   | Rate of visual change          |
+  | Total                | 3,078 | Comprehensive temporal profile |
+
+⏺ Update Todos
+  ⎿  ☒ Explain temporal data structure extraction
+     ☒ Detail sliding window approach
+     ☒ Explain feature aggregation methods
+     ☒ Describe temporal-specific features
+     ☒ Show how features combine for prediction
+
+⏺ The temporal features transform the problem from "what does this crab look like?" to "how is this crab changing over time?" - a much more powerful signal for predicting molt
+  timing.

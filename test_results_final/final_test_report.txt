@@ -1,0 +1,64 @@
+================================================================================
+FINAL COMPREHENSIVE TEST REPORT
+Generated: 2025-08-07 06:17:34
+================================================================================
+
+
+Aug 26 - Oct 4:
+----------------------------------------
+
+Image: thumb_IMG_3286_1024.jpg
+  Ground Truth: 2 days
+  CNN Prediction: 0.4 days
+  ViT Prediction: 2.1 days
+  Temporal Prediction: 2.2 days
+
+Image: thumb_IMG_3224_1024.jpg
+  Ground Truth: 1 days
+  CNN Prediction: 3.4 days
+  ViT Prediction: -2.5 days
+  Temporal Prediction: 0.5 days
+
+Image: thumb_IMG_3041_1024.jpg
+  Ground Truth: 16 days
+  CNN Prediction: 19.3 days
+  ViT Prediction: 14.4 days
+  Temporal Prediction: 16.5 days
+
+July 22 - Aug 23:
+----------------------------------------
+
+Image: IMG_2858.jpeg
+  CNN Prediction: 6.3 days
+  ViT Prediction: 10.5 days
+
+Image: IMG_2823.jpeg
+  CNN Prediction: 6.1 days
+  ViT Prediction: 7.5 days
+
+Image: IMG_2874.jpeg
+  CNN Prediction: 1.5 days
+  ViT Prediction: 1.1 days
+
+Image: IMG_2835.jpeg
+  CNN Prediction: 8.8 days
+  ViT Prediction: 9.1 days
+
+Image: IMG_2842.jpeg
+  CNN Prediction: 3.9 days
+  ViT Prediction: 9.2 days
+
+June 28 - July 21:
+----------------------------------------
+
+Image: IMG_2771.jpeg
+  CNN Prediction: 12.0 days
+  ViT Prediction: 12.9 days
+
+Image: IMG_2730.jpeg
+  CNN Prediction: 1.4 days
+  ViT Prediction: 9.6 days
+
+Image: IMG_2767.jpeg
+  CNN Prediction: 9.4 days
+  ViT Prediction: 9.3 days

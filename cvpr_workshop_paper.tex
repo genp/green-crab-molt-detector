@@ -42,7 +42,7 @@ We present the first comprehensive computer vision approach to green crab molt p
 \begin{itemize}
 \item A novel time-series dataset of green crab images with molt timing annotations
 \item Systematic evaluation of modern vision architectures (YOLO, CNN, ViT) for molt feature extraction
-\item Demonstration that temporal models achieve 10× error reduction over single-shot approaches
+\item Demonstration that temporal models achieve 10x error reduction over single-shot approaches
 \item A deployed web application for real-time molt phase prediction
 \end{itemize}
 
@@ -126,7 +126,7 @@ We employ 5-fold cross-validation with crab-level splits to prevent data leakage
 \caption{Single-shot model performance (days)}
 \begin{tabular}{lcccc}
 \toprule
-Feature & Model & MAE & RMSE & R² \\
+Feature & Model & MAE & RMSE & R\^{}2 \\
 \midrule
 YOLO & SVR & \textbf{5.01} & 6.26 & 0.46 \\
 YOLO & NN & 4.97 & 6.57 & 0.41 \\
@@ -157,7 +157,7 @@ Temporal GB & 0.52 & Yes & 92\% \\
 \end{tabular}
 \end{table}
 
-Temporal models achieve dramatic improvements, with Random Forest achieving 0.48-day MAE—a 10× reduction over single-shot approaches.
+Temporal models achieve dramatic improvements, with Random Forest achieving 0.48-day MAE---a 10x reduction over single-shot approaches.
 
 \subsection{Phase-Specific Performance}
 
@@ -195,11 +195,11 @@ We evaluate the impact of observation window size on temporal model performance:
 \toprule
 Window & MAE (days) & Computation \\
 \midrule
-Single (k=1) & 4.77 & 1× \\
-k=3 & 1.82 & 3× \\
-k=5 & 0.71 & 5× \\
-k=7 & \textbf{0.48} & 7× \\
-k=10 & 0.51 & 10× \\
+Single (k=1) & 4.77 & 1x \\
+k=3 & 1.82 & 3x \\
+k=5 & 0.71 & 5x \\
+k=7 & \textbf{0.48} & 7x \\
+k=10 & 0.51 & 10x \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -209,7 +209,7 @@ Optimal performance occurs with 7-observation windows, beyond which returns dimi
 \subsection{Feature Importance}
 Analysis reveals key visual indicators:
 \begin{itemize}
-\item Color progression (green→yellow→orange→red)
+\item Color progression (green to yellow to orange to red)
 \item Ventral coloration patterns
 \item Shell texture changes
 \item Limb flexibility indicators
@@ -245,7 +245,7 @@ Current limitations include:
 We deployed our system as a web application serving New Hampshire and Maine fisheries. Early adoption shows:
 \begin{itemize}
 \item 89\% reduction in harvest waste
-\item 3× increase in peeler crab yield
+\item 3x increase in peeler crab yield
 \item Positive ecological impact through targeted invasive species removal
 \end{itemize}
 

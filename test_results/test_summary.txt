@@ -1,0 +1,86 @@
+================================================================================
+GREEN CRAB MOLT DETECTION - COMPREHENSIVE TEST RESULTS
+================================================================================
+
+OVERALL PERFORMANCE METRICS
+----------------------------------------
+
+CNN Model:
+  MAE: 0.00 ± 0.00 days
+  Min Error: 0.00 days
+  Max Error: 0.01 days
+  Samples: 6
+
+VIT Model:
+  MAE: 0.01 ± 0.01 days
+  Min Error: 0.00 days
+  Max Error: 0.02 days
+  Samples: 6
+
+TEMPORAL Model:
+  MAE: 0.61 ± 0.24 days
+  Min Error: 0.33 days
+  Max Error: 0.94 days
+  Samples: 6
+
+================================================================================
+INDIVIDUAL TEST CASES
+================================================================================
+
+Image: thumb_IMG_3015_1024.jpg
+Crab: F2 | Date: 9:8
+Ground Truth: 12 days
+----------------------------------------
+CNN       :   12.0 days (error:   0.0)
+VIT       :   12.0 days (error:   0.0)
+TEMPORAL  :   11.1 days (error:   0.9)
+
+
+Image: thumb_IMG_3097_1024.jpg
+Crab: F2 | Date: 9:9
+Ground Truth: 11 days
+----------------------------------------
+CNN       :   11.0 days (error:   0.0)
+VIT       :   11.0 days (error:   0.0)
+TEMPORAL  :   11.4 days (error:   0.4)
+
+
+Image: thumb_IMG_3027_1024.jpg
+Crab: F1 | Date: 9:8
+Ground Truth: 15 days
+----------------------------------------
+CNN       :   15.0 days (error:   0.0)
+VIT       :   15.0 days (error:   0.0)
+TEMPORAL  :   15.3 days (error:   0.3)
+
+
+Image: thumb_IMG_3106_1024.jpg
+Crab: F1 | Date: 9:9
+Ground Truth: 14 days
+----------------------------------------
+CNN       :   14.0 days (error:   0.0)
+VIT       :   14.0 days (error:   0.0)
+TEMPORAL  :   14.5 days (error:   0.5)
+
+
+Image: thumb_IMG_3041_1024.jpg
+Crab: F10 | Date: 9:8
+Ground Truth: 16 days
+----------------------------------------
+CNN       :   16.0 days (error:   0.0)
+VIT       :   16.0 days (error:   0.0)
+TEMPORAL  :   15.3 days (error:   0.7)
+
+
+Image: thumb_IMG_3117_1024.jpg
+Crab: F10 | Date: 9:9
+Ground Truth: 15 days
+----------------------------------------
+CNN       :   15.0 days (error:   0.0)
+VIT       :   15.0 days (error:   0.0)
+TEMPORAL  :   14.1 days (error:   0.9)
+
+
+================================================================================
+Report generated: 2025-08-07 06:13:45
+================================================================================
