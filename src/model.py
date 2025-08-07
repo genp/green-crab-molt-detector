@@ -367,9 +367,23 @@ class MoltPhaseRegressor:
         """Load a trained model."""
         model_data = joblib.load(path)
         
-        self.algorithm = model_data['algorithm']
-        self.scaler = model_data['scaler']
-        self.is_fitted = model_data['is_fitted']
+        # Handle both dictionary format and direct model format
+        if isinstance(model_data, dict):
+            self.algorithm = model_data['algorithm']
+            self.scaler = model_data.get('scaler', StandardScaler())
+            self.is_fitted = model_data.get('is_fitted', True)
+            self.model = model_data.get('model')
+        else:
+            # Direct model object (legacy format)
+            self.model = model_data
+            # Try to load scaler if it exists
+            scaler_path = path.parent / f"{path.stem.replace('regressor', 'scaler')}.joblib"
+            if scaler_path.exists():
+                self.scaler = joblib.load(scaler_path)
+            else:
+                self.scaler = StandardScaler()
+            self.is_fitted = True
+            return  # Exit early for legacy format
         
         if self.algorithm == 'neural_net':
             # Load PyTorch model

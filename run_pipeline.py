@@ -116,6 +116,12 @@ def check_models_cache() -> dict:
         scaler_files[ft] = models_dir / f"{ft}_scaler.joblib" 
         result_files[ft] = models_dir / f"{ft}_results.csv"
     
+    # Check for temporal model
+    temporal_model = models_dir / "best_temporal_model.pkl"
+    if temporal_model.exists():
+        model_files['temporal'] = temporal_model
+        feature_types.append('temporal')
+    
     # Define source files (if any change, we need to re-train)
     source_files = [
         "src/model.py" if Path("src/model.py").exists() else None,
@@ -268,6 +274,18 @@ def main():
         ):
             logger.error("Model training failed")
             return 1
+        
+        # Also train temporal model if dataset exists
+        if Path('data/processed/crab_dataset.csv').exists():
+            logger.info("\n🔄 Training temporal models with sequential features...")
+            if not run_command(
+                "python train_temporal_vit.py",
+                "Training temporal models with ViT features"
+            ):
+                logger.warning("⚠ Temporal model training failed, continuing with standard models")
+                # Don't fail the pipeline if temporal model fails
+        else:
+            logger.info("⚠ Dataset not found for temporal model training")
     
     # Step 3: Prepare deployment (always run - lightweight)
     if not run_command(

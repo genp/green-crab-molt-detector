@@ -12,6 +12,16 @@ import sys
 from pathlib import Path
 from datetime import datetime
 import logging
+
+# Patch for torch/transformers compatibility issue
+import torch
+if not hasattr(torch, 'uint64'):
+    torch.uint64 = torch.int64  # Workaround for compatibility
+if not hasattr(torch, 'uint32'):
+    torch.uint32 = torch.int32  # Workaround for compatibility
+if not hasattr(torch, 'uint16'):
+    torch.uint16 = torch.int16  # Workaround for compatibility
+
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 import numpy as np
@@ -84,7 +94,20 @@ def load_models():
         model_path = sorted(model_files)[-1]  # Get most recent
         logger.info(f"Loading regression model from {model_path}")
         
-        algorithm = model_path.stem.split('_')[-1]
+        # Extract algorithm name (handles both _ and - separators)
+        if '-' in model_path.stem:
+            algorithm = model_path.stem.split('-')[-1]
+        else:
+            algorithm = model_path.stem.split('_')[-1]
+        
+        # Map common abbreviations
+        algorithm_map = {
+            'rf': 'random_forest',
+            'gb': 'gradient_boost',
+            'forest': 'random_forest'
+        }
+        algorithm = algorithm_map.get(algorithm, algorithm)
+        
         regressor = MoltPhaseRegressor(algorithm)
         regressor.load_model(model_path)
     else:
@@ -237,4 +260,4 @@ if __name__ == '__main__':
     
     # Run app
     logger.info("Starting Flask application...")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)
