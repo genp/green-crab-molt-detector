@@ -1,1 +1,1 @@
-web: gunicorn app:app --workers 4 --threads 2 --worker-class sync --timeout 120
+web: gunicorn app_heroku:app --workers 4 --threads 2 --worker-class sync --timeout 120
