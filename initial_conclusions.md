@@ -760,3 +760,22 @@ Summary
   curl https://your-app-name.herokuapp.com/health
 
   The app is now ready for Heroku deployment with S3 model storage!
+
+⏺ Based on my analysis of the codebase, here are the training and test set assignments:
+
+  Training Set (14 crabs):
+  - F3, F4, F5, F6, F7, F8, F10, F11
+  - M1, M2, M3, M4, M5, M6
+
+  Test Set (4 crabs):
+  - F1, F2, F9, M7
+
+  How I know this:
+  1. Consistent splitting logic: The code uses train_test_split(crab_ids, test_size=0.2, random_state=42) across multiple files (get_test_crabs.py:20, src/model.py:268,
+  train_temporal_model.py:246, etc.)
+  2. Fixed random seed: random_state=42 ensures reproducible splits across all training scripts
+  3. Crab-level splitting: The split is done at the crab ID level (not individual images), preventing data leakage where images from the same crab appear in both training and
+  test sets
+  4. Verification: Running get_test_crabs.py confirms the exact test set crabs and shows sample images for local testing
+
+  This approach ensures proper evaluation since the model is tested on completely unseen crabs, not just unseen images from training crabs.

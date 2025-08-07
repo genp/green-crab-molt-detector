@@ -61,12 +61,25 @@ green_crabs/
 
 ### Web Interface
 The system provides an intuitive interface for molt phase prediction:
-- Upload crab images via drag-and-drop
-- Get instant molt phase predictions
-- Receive harvest recommendations
 
-### t-SNE Visualization
-*t-SNE clustering shows clear separation between molt phases*
+![App Interface](static/app%20screenshot.png)
+*Clean, mobile-friendly interface with drag-and-drop image upload*
+
+### Prediction Results
+
+#### Peeler Crab (Optimal Harvest Time)
+![Peeler Result](static/peeler_result.png)
+*Example result showing a crab ready for harvest (0-3 days until molt)*
+
+#### Inter-molt Crab (Not Ready)  
+![Inter-molt Result](static/inter-molt%20result.png)
+*Example result showing a crab not ready for harvest (>10 days until molt)*
+
+### Key Interface Features
+- Upload crab images via drag-and-drop or file selection
+- Get instant molt phase predictions with confidence scores
+- Receive clear harvest recommendations with color-coded alerts
+- Mobile-responsive design works on phones and tablets
 
 ## 🧬 The Science
 
