@@ -1,7 +1,7 @@
 """
 Flask web application for green crab molt phase detection - Heroku version.
 
-This simplified version uses basic CNN features without PyTorch/transformers.
+This version downloads models from S3 at runtime to /tmp directory.
 """
 
 import os
@@ -19,6 +19,8 @@ from io import BytesIO
 from typing import Dict
 import joblib
 from sklearn.preprocessing import StandardScaler
+import boto3
+from botocore.exceptions import NoCredentialsError, ClientError
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -98,31 +100,96 @@ def extract_basic_features(image: Image.Image) -> np.ndarray:
     return features
 
 
+def download_from_s3(bucket_name: str, key: str, local_path: str) -> bool:
+    """Download a file from S3 to local path."""
+    try:
+        s3_client = boto3.client('s3')
+        s3_client.download_file(bucket_name, key, local_path)
+        logger.info(f"Downloaded {key} to {local_path}")
+        return True
+    except NoCredentialsError:
+        logger.error("AWS credentials not found")
+        return False
+    except ClientError as e:
+        logger.error(f"Failed to download {key}: {e}")
+        return False
+    except Exception as e:
+        logger.error(f"Unexpected error downloading {key}: {e}")
+        return False
+
+
+def ensure_models_downloaded():
+    """Download model files from S3 if they don't exist locally."""
+    bucket_name = os.environ.get('S3_BUCKET_NAME')
+    if not bucket_name:
+        logger.warning("S3_BUCKET_NAME not set, using local models if available")
+        return True
+    
+    # Create /tmp/models directory
+    tmp_models_dir = Path("/tmp/models")
+    tmp_models_dir.mkdir(exist_ok=True)
+    
+    # Models to download
+    model_files = [
+        "molt_regressor_cnn_random_forest.joblib",
+        "cnn_scaler.joblib",
+        "best_cnn_regressor.joblib",
+        "molt_scaler_cnn.joblib",
+        "random_forest_model.joblib"
+    ]
+    
+    success_count = 0
+    for model_file in model_files:
+        local_path = tmp_models_dir / model_file
+        if not local_path.exists():
+            s3_key = f"models/{model_file}"
+            if download_from_s3(bucket_name, s3_key, str(local_path)):
+                success_count += 1
+        else:
+            logger.info(f"Model {model_file} already exists locally")
+            success_count += 1
+    
+    return success_count > 0
+
+
 def load_models():
     """Load the regression model and scaler."""
     global regressor, scaler
     
-    models_dir = Path("models")
+    # First try to download models from S3
+    if not ensure_models_downloaded():
+        logger.warning("Failed to download models from S3, trying local models")
+    
+    # Look for models in both /tmp/models and local models directory
+    search_dirs = [Path("/tmp/models"), Path("models")]
     
     # Try to load CNN-based model first
-    model_paths = [
-        models_dir / "molt_regressor_cnn_random_forest.joblib",
-        models_dir / "best_cnn_regressor.joblib",
-        models_dir / "random_forest_model.joblib"
+    model_names = [
+        "molt_regressor_cnn_random_forest.joblib",
+        "best_cnn_regressor.joblib", 
+        "random_forest_model.joblib"
     ]
     
-    scaler_paths = [
-        models_dir / "cnn_scaler.joblib",
-        models_dir / "molt_scaler_cnn.joblib"
+    scaler_names = [
+        "cnn_scaler.joblib",
+        "molt_scaler_cnn.joblib"
     ]
     
     # Load model
     regressor = None
-    for model_path in model_paths:
-        if model_path.exists():
-            logger.info(f"Loading model from {model_path}")
-            regressor = joblib.load(model_path)
+    for search_dir in search_dirs:
+        if regressor is not None:
             break
+        for model_name in model_names:
+            model_path = search_dir / model_name
+            if model_path.exists():
+                logger.info(f"Loading model from {model_path}")
+                try:
+                    regressor = joblib.load(model_path)
+                    break
+                except Exception as e:
+                    logger.error(f"Failed to load model from {model_path}: {e}")
+                    continue
     
     if regressor is None:
         logger.error("No suitable model found")
@@ -130,11 +197,19 @@ def load_models():
     
     # Load scaler
     scaler = None
-    for scaler_path in scaler_paths:
-        if scaler_path.exists():
-            logger.info(f"Loading scaler from {scaler_path}")
-            scaler = joblib.load(scaler_path)
+    for search_dir in search_dirs:
+        if scaler is not None:
             break
+        for scaler_name in scaler_names:
+            scaler_path = search_dir / scaler_name
+            if scaler_path.exists():
+                logger.info(f"Loading scaler from {scaler_path}")
+                try:
+                    scaler = joblib.load(scaler_path)
+                    break
+                except Exception as e:
+                    logger.error(f"Failed to load scaler from {scaler_path}: {e}")
+                    continue
     
     if scaler is None:
         logger.warning("No scaler found, using default StandardScaler")
