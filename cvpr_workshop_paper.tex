@@ -33,7 +33,7 @@ The invasive green crab (\textit{Carcinus maenas}) presents both an ecological t
 
 \section{Introduction}
 
-Green crabs (\textit{Carcinus maenas}) are among the world's most successful invasive species, causing significant ecological damage to native shellfish populations along North American coasts~\cite{invasive2020}. Recent efforts to develop commercial green crab fisheries offer a unique opportunity to simultaneously address ecological and economic challenges. However, successful commercialization depends critically on harvesting crabs at the optimal molt stage.
+Green crabs (\textit{Carcinus maenas}) are among the world's most successful invasive species, causing significant ecological damage to native shellfish populations along North American coasts. Recent efforts to develop commercial green crab fisheries offer a unique opportunity to simultaneously address ecological and economic challenges. However, successful commercialization depends critically on harvesting crabs at the optimal molt stage.
 
 Crustaceans undergo periodic molting throughout their lifetime, with green crabs molting approximately 18 times. The commercial value peaks during the ``peeler'' stage (0-3 days before molting), when crabs can be processed as soft-shell delicacies. Missing this narrow window results in total product loss, as post-molt crabs require weeks to re-harden their shells. Current manual assessment methods are unreliable and labor-intensive, motivating automated detection systems.
 
@@ -49,13 +49,13 @@ We present the first comprehensive computer vision approach to green crab molt p
 \section{Related Work}
 
 \subsection{Crustacean Computer Vision}
-Previous work in crustacean vision has focused primarily on species identification~\cite{species2019} and size estimation~\cite{size2020}. Limited research exists on molt phase detection, with most studies using invasive sampling methods incompatible with commercial harvesting~\cite{molt2018}.
+Previous work in crustacean vision has focused primarily on species identification and size estimation. Limited research exists on molt phase detection, with most studies using invasive sampling methods incompatible with commercial harvesting.
 
 \subsection{Temporal vs. Single-Shot Detection}
-Temporal models have shown superiority in various biological monitoring tasks~\cite{temporal2021}. However, their application to molt phase prediction remains unexplored. We adapt temporal forest methods from video understanding~\cite{video2022} to our sequential molt observation problem.
+Temporal models have shown superiority in various biological monitoring tasks. However, their application to molt phase prediction remains unexplored. We adapt temporal forest methods from video understanding to our sequential molt observation problem.
 
 \subsection{Vision Transformers in Marine Biology}
-Recent advances in Vision Transformers (ViT)~\cite{vit2021} have shown promise for fine-grained visual recognition tasks. We evaluate ViT against traditional CNN and specialized YOLO models trained on marine imagery.
+Recent advances in Vision Transformers (ViT) have shown promise for fine-grained visual recognition tasks. We evaluate ViT against traditional CNN and specialized YOLO models trained on marine imagery.
 
 \section{Dataset and Problem Formulation}
 
@@ -161,11 +161,7 @@ Temporal models achieve dramatic improvements, with Random Forest achieving 0.48
 
 \subsection{Phase-Specific Performance}
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.45\textwidth]{phase_performance.png}
-\caption{Model performance by molt phase. Temporal models maintain accuracy across all phases while single-shot models degrade significantly in mid-range predictions.}
-\end{figure}
+Analysis reveals that temporal models maintain consistent accuracy across all molt phases, while single-shot models degrade significantly in mid-range predictions (8-14 days). This consistency is crucial for commercial applications where reliability across all phases determines operational success.
 
 \subsection{Anecdotal Test Cases}
 
@@ -258,10 +254,5 @@ We deployed our system as a web application serving New Hampshire and Maine fish
 We present the first computer vision system for green crab molt phase detection, demonstrating that temporal context is essential for commercial viability. While state-of-the-art single-shot models achieve ~5-day error, only temporal approaches meet the stringent 2-3 day harvest window requirement. Our deployed system enables sustainable commercialization of invasive green crabs, providing both ecological and economic benefits.
 
 Future work includes expanding the dataset, investigating attention-based temporal architectures, and transfer learning to other commercially valuable crustacean species. Code and models are available at \url{https://anonymous.github.io/greencrab}.
-
-{\small
-\bibliographystyle{ieee_fullname}
-\bibliography{references}
-}
 
 \end{document}
