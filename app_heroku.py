@@ -18,7 +18,6 @@ import base64
 from io import BytesIO
 from typing import Dict
 import joblib
-import cv2
 from sklearn.preprocessing import StandardScaler
 
 # Configure logging
@@ -46,26 +45,39 @@ def allowed_file(filename: str) -> bool:
 
 
 def extract_basic_features(image: Image.Image) -> np.ndarray:
-    """Extract basic image features without deep learning models."""
-    # Convert to numpy array
-    img_array = np.array(image)
-    if len(img_array.shape) == 3:
-        img_array = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
-    
+    """Extract basic image features using only PIL/numpy."""
     # Resize to standard size
-    img_resized = cv2.resize(img_array, (224, 224))
+    image_resized = image.resize((224, 224))
     
-    # Basic color statistics
-    mean_color = np.mean(img_resized, axis=(0, 1))
-    std_color = np.std(img_resized, axis=(0, 1))
+    # Convert to numpy array
+    img_array = np.array(image_resized)
     
-    # Convert to HSV for better color analysis
-    hsv = cv2.cvtColor(img_resized, cv2.COLOR_BGR2HSV)
-    mean_hsv = np.mean(hsv, axis=(0, 1))
-    std_hsv = np.std(hsv, axis=(0, 1))
+    # Ensure RGB format
+    if len(img_array.shape) == 3 and img_array.shape[2] == 3:
+        # RGB color statistics
+        mean_color = np.mean(img_array, axis=(0, 1))
+        std_color = np.std(img_array, axis=(0, 1))
+        min_color = np.min(img_array, axis=(0, 1))
+        max_color = np.max(img_array, axis=(0, 1))
+    else:
+        # Grayscale - convert to RGB-like features
+        if len(img_array.shape) == 2:
+            img_array = np.stack([img_array, img_array, img_array], axis=2)
+        mean_color = np.mean(img_array, axis=(0, 1))
+        std_color = np.std(img_array, axis=(0, 1))
+        min_color = np.min(img_array, axis=(0, 1))
+        max_color = np.max(img_array, axis=(0, 1))
     
-    # Basic texture features (simple statistical measures)
-    gray = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
+    # Simple HSV-like conversion (approximate)
+    r, g, b = mean_color[0], mean_color[1], mean_color[2]
+    hsv_like = np.array([
+        (r + g + b) / 3,  # Approximate brightness
+        abs(r - g) + abs(g - b) + abs(r - b),  # Approximate saturation
+        max(r, g, b) - min(r, g, b)  # Approximate hue range
+    ])
+    
+    # Basic texture features (grayscale statistics)
+    gray = np.mean(img_array, axis=2)
     texture_features = [
         np.mean(gray),
         np.std(gray),
@@ -75,10 +87,11 @@ def extract_basic_features(image: Image.Image) -> np.ndarray:
     
     # Combine all features
     features = np.concatenate([
-        mean_color.flatten(),
-        std_color.flatten(),
-        mean_hsv.flatten(),
-        std_hsv.flatten(),
+        mean_color,
+        std_color,
+        min_color,
+        max_color,
+        hsv_like,
         texture_features
     ])
     
@@ -127,7 +140,7 @@ def load_models():
         logger.warning("No scaler found, using default StandardScaler")
         scaler = StandardScaler()
         # Fit with dummy data - this is not ideal but allows the app to run
-        dummy_features = np.random.rand(10, 16)  # 16 basic features
+        dummy_features = np.random.rand(10, 19)  # 19 basic features (3+3+3+3+3+4)
         scaler.fit(dummy_features)
     
     logger.info("Models loaded successfully")
