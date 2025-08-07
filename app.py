@@ -68,51 +68,49 @@ def load_models():
     base_path = Path("/Users/gen/green_crabs")
     models_dir = base_path / "models"
     
-    # Try to load YOLO feature extractor first
-    yolo_model_path = Path("/Users/genp/BarderryAppliedResearch/FathomNet/qscp/jupyter_notebooks/fathomverse_detector/fathomverse-only-imgs_update_to_FathomNet-NoGameLabels-2024-09-28-model_yolo8_epochs_10_2024-10-22.pt")
+    # Load VIT feature extractor
+    logger.info("Loading VIT feature extractor...")
+    feature_extractor = GeneralCrustaceanFeatureExtractor('vit_base')
+    feature_type = "vit"
     
-    if yolo_model_path.exists():
-        try:
-            logger.info("Loading YOLO feature extractor...")
-            feature_extractor = YOLOFeatureExtractor(yolo_model_path)
-            feature_type = "yolo"
-        except Exception as e:
-            logger.error(f"Failed to load YOLO model: {e}")
-            feature_extractor = None
+    # Load temporal model with VIT features
+    # First check for VIT-specific temporal model
+    vit_temporal_path = models_dir / "molt_regressor_vit_temporal.joblib"
+    vit_random_forest_path = models_dir / "molt_regressor_vit_random_forest.joblib"
+    temporal_model_path = models_dir / "temporal" / "Random_Forest_Temporal.pkl"
     
-    # Fall back to CNN if YOLO not available
-    if feature_extractor is None:
-        logger.info("Loading CNN feature extractor...")
-        feature_extractor = GeneralCrustaceanFeatureExtractor('resnet50')
-        feature_type = "cnn"
-    
-    # Load regression model
-    # Look for the most recent model file
-    model_files = list(models_dir.glob(f"molt_regressor_{feature_type}_*.joblib"))
-    
-    if model_files:
-        model_path = sorted(model_files)[-1]  # Get most recent
-        logger.info(f"Loading regression model from {model_path}")
-        
-        # Extract algorithm name (handles both _ and - separators)
-        if '-' in model_path.stem:
-            algorithm = model_path.stem.split('-')[-1]
-        else:
-            algorithm = model_path.stem.split('_')[-1]
-        
-        # Map common abbreviations
-        algorithm_map = {
-            'rf': 'random_forest',
-            'gb': 'gradient_boost',
-            'forest': 'random_forest'
-        }
-        algorithm = algorithm_map.get(algorithm, algorithm)
-        
-        regressor = MoltPhaseRegressor(algorithm)
-        regressor.load_model(model_path)
+    if vit_temporal_path.exists():
+        model_path = vit_temporal_path
+        logger.info(f"Loading VIT temporal model from {model_path}")
+    elif vit_random_forest_path.exists():
+        model_path = vit_random_forest_path
+        logger.info(f"Loading VIT random forest model from {model_path}")
+    elif temporal_model_path.exists():
+        # Use the temporal model but we need to ensure it has VIT scaler
+        model_path = temporal_model_path
+        logger.info(f"Loading temporal model from {model_path}")
     else:
-        logger.error(f"No regression model found for {feature_type} features")
-        logger.error("Please run 'python train_model.py' first")
+        logger.error("No VIT or temporal model found")
+        logger.error("Available models should be in models/molt_regressor_vit_*.joblib or models/temporal/")
+        return
+    
+    # Load the model
+    try:
+        regressor = MoltPhaseRegressor('random_forest')
+        regressor.load_model(model_path)
+        
+        # If using temporal model, ensure we have the VIT scaler
+        if 'temporal' in str(model_path).lower() and not hasattr(regressor.scaler, 'mean_'):
+            vit_scaler_path = models_dir / "vit_scaler.joblib"
+            if vit_scaler_path.exists():
+                import joblib
+                regressor.scaler = joblib.load(vit_scaler_path)
+                logger.info("Loaded VIT scaler for temporal model")
+        
+        logger.info(f"Successfully loaded model with VIT features")
+    except Exception as e:
+        logger.error(f"Failed to load model: {e}")
+        regressor = None
 
 
 def get_molt_phase_category(days_until_molt: float) -> Dict[str, any]:

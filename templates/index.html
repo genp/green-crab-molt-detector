@@ -217,6 +217,12 @@
         const previewImg = document.getElementById('previewImg');
         const resultCard = document.getElementById('resultCard');
         
+        // Store the selected file globally
+        let selectedFile = null;
+        
+        // Store modal instance globally
+        let loadingModal = null;
+        
         // Drag and drop
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -254,6 +260,9 @@
                 return;
             }
             
+            // Store the file globally
+            selectedFile = file;
+            
             const reader = new FileReader();
             reader.onload = (e) => {
                 previewImg.src = e.target.result;
@@ -264,6 +273,7 @@
         }
         
         function resetUpload() {
+            selectedFile = null;
             fileInput.value = '';
             uploadArea.style.display = 'block';
             imagePreview.style.display = 'none';
@@ -271,17 +281,30 @@
         }
         
         async function predictMoltPhase() {
-            const file = fileInput.files[0];
-            if (!file) {
+            if (!selectedFile) {
                 alert('Please select an image first');
                 return;
             }
             
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', selectedFile);
+            
+            // Create fresh modal instance
+            const loadingModalElement = document.getElementById('loadingModal');
+            
+            // Dispose of any existing modal instance
+            const existingModal = bootstrap.Modal.getInstance(loadingModalElement);
+            if (existingModal) {
+                existingModal.dispose();
+            }
+            
+            // Create new modal instance
+            loadingModal = new bootstrap.Modal(loadingModalElement, {
+                backdrop: 'static',
+                keyboard: false
+            });
             
             // Show loading modal
-            const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
             loadingModal.show();
             
             try {
@@ -293,14 +316,42 @@
                 const data = await response.json();
                 
                 if (data.success) {
+                    // Hide modal before displaying results
+                    hideLoadingModal();
                     displayResults(data);
                 } else {
+                    hideLoadingModal();
                     alert(data.error || 'Prediction failed');
                 }
             } catch (error) {
+                hideLoadingModal();
                 alert('Error: ' + error.message);
-            } finally {
+            }
+        }
+        
+        function hideLoadingModal() {
+            if (loadingModal) {
+                // Hide the modal
                 loadingModal.hide();
+                
+                // Clean up after modal animation completes
+                setTimeout(() => {
+                    // Remove all backdrops
+                    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+                        backdrop.remove();
+                    });
+                    
+                    // Reset body styles
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                    
+                    // Dispose of the modal instance
+                    if (loadingModal) {
+                        loadingModal.dispose();
+                        loadingModal = null;
+                    }
+                }, 500);
             }
         }
         
