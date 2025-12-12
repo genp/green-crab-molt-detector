@@ -1,0 +1,22 @@
+{
+  "Random Forest (Temporal-ViT)": {
+    "train_mae": 1.0337944895328612,
+    "test_mae": 4.908659266415845,
+    "cv_mae": 5.293231847502196,
+    "train_rmse": 1.3873101239785466,
+    "test_rmse": 5.607162810751624,
+    "train_r2": 0.9546804806580722,
+    "test_r2": 0.37293923475088775,
+    "phase_metrics": {}
+  },
+  "Gradient Boosting (Temporal-ViT)": {
+    "train_mae": 0.00023418898194441144,
+    "test_mae": 5.185704651749704,
+    "cv_mae": 6.446879796260954,
+    "train_rmse": 0.00028466968423618234,
+    "test_rmse": 6.219544663550082,
+    "train_r2": 0.9999999980918144,
+    "test_r2": 0.2284919234549937,
+    "phase_metrics": {}
+  }
+}

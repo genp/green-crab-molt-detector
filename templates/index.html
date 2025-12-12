@@ -56,6 +56,14 @@
             padding: 2rem 0;
             background-color: #e9ecef;
         }
+        .stream-card video {
+            width: 100%;
+            border-radius: 8px;
+            background: #000;
+        }
+        .stream-status {
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 <body>
@@ -104,6 +112,37 @@
                                 <button class="btn btn-secondary" onclick="resetUpload()">
                                     <i class="bi bi-x-circle"></i> Cancel
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Stream Section -->
+                <div class="card shadow-sm mt-4 stream-card">
+                    <div class="card-body">
+                        <h3 class="card-title mb-3">Live Camera Stream</h3>
+                        <p class="text-muted">Use your phone or laptop camera to stream frames for continuous predictions.</p>
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-7">
+                                <video id="cameraPreview" autoplay playsinline muted></video>
+                                <canvas id="captureCanvas" style="display:none;"></canvas>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-success" id="startStreamBtn">
+                                        <i class="bi bi-play-circle"></i> Start Camera
+                                    </button>
+                                    <button class="btn btn-outline-secondary" id="stopStreamBtn" disabled>
+                                        <i class="bi bi-stop-circle"></i> Stop Camera
+                                    </button>
+                                </div>
+                                <div class="mt-3 stream-status" id="streamStatus">
+                                    <span class="badge bg-secondary">Idle</span>
+                                    <span class="ms-2 text-muted">No camera active</span>
+                                </div>
+                                <div class="mt-3">
+                                    <small class="text-muted">Frames sent every 0.8s. Ensure good lighting and keep the crab centered.</small>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -216,12 +255,20 @@
         const imagePreview = document.getElementById('imagePreview');
         const previewImg = document.getElementById('previewImg');
         const resultCard = document.getElementById('resultCard');
+        const cameraPreview = document.getElementById('cameraPreview');
+        const captureCanvas = document.getElementById('captureCanvas');
+        const startStreamBtn = document.getElementById('startStreamBtn');
+        const stopStreamBtn = document.getElementById('stopStreamBtn');
+        const streamStatus = document.getElementById('streamStatus');
         
         // Store the selected file globally
         let selectedFile = null;
         
         // Store modal instance globally
         let loadingModal = null;
+        let mediaStream = null;
+        let streamInterval = null;
+        let sendingFrame = false;
         
         // Drag and drop
         uploadArea.addEventListener('dragover', (e) => {
@@ -414,6 +461,72 @@
             resultCard.style.display = 'block';
             resultCard.scrollIntoView({ behavior: 'smooth' });
         }
+
+        // Streaming helpers
+        async function startCameraStream() {
+            if (mediaStream) return;
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+                cameraPreview.srcObject = mediaStream;
+                await cameraPreview.play();
+                startStreamBtn.disabled = true;
+                stopStreamBtn.disabled = false;
+                streamStatus.innerHTML = '<span class="badge bg-success">Streaming</span><span class="ms-2 text-muted">Sending frames...</span>';
+
+                streamInterval = setInterval(captureAndSendFrame, 800);
+            } catch (err) {
+                alert('Unable to access camera: ' + err.message);
+            }
+        }
+
+        function stopCameraStream() {
+            if (streamInterval) {
+                clearInterval(streamInterval);
+                streamInterval = null;
+            }
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(t => t.stop());
+                mediaStream = null;
+            }
+            sendingFrame = false;
+            startStreamBtn.disabled = false;
+            stopStreamBtn.disabled = true;
+            streamStatus.innerHTML = '<span class="badge bg-secondary">Idle</span><span class="ms-2 text-muted">No camera active</span>';
+        }
+
+        async function captureAndSendFrame() {
+            if (!mediaStream || sendingFrame) return;
+            if (cameraPreview.videoWidth === 0 || cameraPreview.videoHeight === 0) return;
+
+            sendingFrame = true;
+            const ctx = captureCanvas.getContext('2d');
+            captureCanvas.width = cameraPreview.videoWidth;
+            captureCanvas.height = cameraPreview.videoHeight;
+            ctx.drawImage(cameraPreview, 0, 0, captureCanvas.width, captureCanvas.height);
+
+            captureCanvas.toBlob(async (blob) => {
+                if (!blob) {
+                    sendingFrame = false;
+                    return;
+                }
+                const formData = new FormData();
+                formData.append('file', blob, 'frame.jpg');
+                try {
+                    const res = await fetch('/predict_stream', { method: 'POST', body: formData });
+                    const data = await res.json();
+                    if (data.success) {
+                        displayResults(data);
+                    }
+                } catch (err) {
+                    console.warn('Stream frame failed', err);
+                } finally {
+                    sendingFrame = false;
+                }
+            }, 'image/jpeg', 0.8);
+        }
+
+        startStreamBtn.addEventListener('click', startCameraStream);
+        stopStreamBtn.addEventListener('click', stopCameraStream);
     </script>
 </body>
 </html>

@@ -36,7 +36,7 @@ def main():
     
     # Step 1: Load dataset
     logger.info("Loading dataset...")
-    loader = GreenCrabDataLoader(base_path)
+    loader = GreenCrabDataLoader(base_path / "data" / "raw")
     df = loader.load_dataset()
     
     # Save dataset metadata

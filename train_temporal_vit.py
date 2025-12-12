@@ -21,7 +21,6 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-import xgboost as xgb
 
 # Visualization
 import matplotlib
@@ -38,7 +37,11 @@ sns.set_palette("husl")
 class TemporalFeatureExtractor:
     """Extract temporal features from crab observation sequences."""
     
-    def __init__(self, dataset_path: str = "data/processed/crab_dataset.csv"):
+    def __init__(self, dataset_path: str = None):
+        if dataset_path is None:
+            # Prefer 2016 ViT-featured dataset if present
+            default = Path("data/processed/crab_dataset_2016_vit.csv")
+            dataset_path = default if default.exists() else "data/processed/crab_dataset_merged.csv"
         self.dataset_path = Path(dataset_path)
         self.df = None
         self.temporal_features = []
@@ -146,6 +149,9 @@ class AdvancedTemporalModels:
         
     def prepare_data(self, test_size: float = 0.2) -> Tuple:
         """Prepare data for training."""
+        # Drop sequences with missing targets
+        self.sequences_df = self.sequences_df[self.sequences_df['target_days_until_molt'].notna()].copy()
+
         # Identify feature columns
         exclude_cols = ['crab_id', 'sex', 'sequence_length', 'target_days_until_molt', 
                        'molt_phase', 'first_days_until_molt', 'last_days_until_molt']
@@ -154,12 +160,14 @@ class AdvancedTemporalModels:
         print(f"\nUsing {len(self.feature_cols)} temporal features")
         
         # Prepare features and target
-        X = self.sequences_df[self.feature_cols].values
+        X = self.sequences_df[self.feature_cols].fillna(0).values
         y = self.sequences_df['target_days_until_molt'].values
         
         # Split by crab to avoid leakage
         crab_ids = self.sequences_df['crab_id'].unique()
         train_crabs, test_crabs = train_test_split(crab_ids, test_size=test_size, random_state=42)
+        self.train_crabs = train_crabs
+        self.test_crabs = test_crabs
         
         train_mask = self.sequences_df['crab_id'].isin(train_crabs)
         test_mask = self.sequences_df['crab_id'].isin(test_crabs)
@@ -198,16 +206,6 @@ class AdvancedTemporalModels:
                 max_depth=7,
                 min_samples_split=5,
                 random_state=42
-            ),
-            'XGBoost (Temporal-ViT)': xgb.XGBRegressor(
-                n_estimators=200,
-                learning_rate=0.05,
-                max_depth=7,
-                min_child_weight=3,
-                subsample=0.8,
-                colsample_bytree=0.8,
-                random_state=42,
-                n_jobs=-1
             )
         }
         
@@ -238,18 +236,6 @@ class AdvancedTemporalModels:
             
             # Calculate phase-specific metrics
             phase_metrics = {}
-            if 'molt_phase' in self.sequences_df.columns:
-                test_phases = self.sequences_df[self.sequences_df['crab_id'].isin(
-                    self.sequences_df[self.sequences_df.index.isin(np.where(~self.sequences_df['crab_id'].isin(
-                        self.sequences_df[self.sequences_df.index.isin(np.where(self.sequences_df['crab_id'].isin(
-                            train_crabs))[0])]['crab_id'].unique()))[0])]['crab_id'].unique()
-                )]['molt_phase'].values[:len(test_pred)]
-                
-                for phase in ['peeler', 'pre_molt', 'inter_molt_early', 'inter_molt_late']:
-                    phase_mask = test_phases == phase if len(test_phases) == len(test_pred) else []
-                    if len(phase_mask) > 0 and phase_mask.sum() > 0:
-                        phase_mae = mean_absolute_error(y_test[phase_mask], test_pred[phase_mask])
-                        phase_metrics[phase] = phase_mae
             
             # Store results
             self.models[name] = model
@@ -384,14 +370,6 @@ class AdvancedTemporalModels:
         ax6.legend(fontsize=8)
         ax6.grid(True, alpha=0.3)
         ax6.axvline(x=0, color='red', linestyle='--', alpha=0.7, label='Zero error')
-        
-        # Add normal distribution overlay for best model
-        best_errors = self.results[self.best_model]['y_test'] - self.results[self.best_model]['test_pred']
-        mu, std = best_errors.mean(), best_errors.std()
-        x_norm = np.linspace(best_errors.min(), best_errors.max(), 100)
-        ax6.plot(x_norm, len(best_errors) * (1/np.sqrt(2*np.pi*std**2)) * 
-                np.exp(-0.5*((x_norm-mu)/std)**2) * (bins[1]-bins[0]), 
-                'r-', lw=2, alpha=0.7, label=f'Normal fit (μ={mu:.1f}, σ={std:.1f})')
         
         # 7. Performance by Days Until Molt
         ax7 = fig.add_subplot(gs[2, 1])
