@@ -1,0 +1,69 @@
+Changes made
+
+  - Created new Python 3.12 virtualenv .venv and installed pandas/tqdm plus FastAPI stack (fastapi, uvicorn[standard], python-multipart).
+  - Added tools/build_manifest.py to scan data/raw, extract crab_id/sex/capture_date/molt_date/days_until_molt/outcome/session_id/image_path, and
+    write data/processed/manifest.csv + manifest_summary.json.
+  - Switched to FastAPI by adding app_fastapi.py with /predict, /predict_stream, and /health, thumbnails with overlay text, and optional YOLO bbox
+    support when YOLO_MODEL_PATH is set. Added CORS and concurrency guard.
+  - Updated requirements.txt to include FastAPI/uvicorn and multipart support.
+
+  Quick results
+
+  - Manifest built: data/processed/manifest.csv (2767 rows); label coverage: 316 images with days_until_molt. Sex parsing is sparse (M/F=144/220; many
+    None) because many crate names lack explicit sex—can refine if needed.
+  - Summary file: data/processed/manifest_summary.json.
+  - FastAPI app compiles (python -m py_compile app_fastapi.py).
+
+  How to run FastAPI locally
+
+  1. . .venv/bin/activate
+  2. Optional: set YOLO_MODEL_PATH=/path/to/yolo.pt for bboxes (otherwise bboxes returns empty).
+  3. uvicorn app_fastapi:app --host 0.0.0.0 --port 5001
+     Endpoints: /predict (single image), /predict_stream (frame uploads, same response structure, includes thumbnail and bboxes), /health.
+
+  Notes on streaming/bboxes
+
+  - thumbnail is a 320px JPEG with phase + days overlay; bboxes are drawn when a YOLO detector is configured. Without a detector, bbox list is empty
+    but the endpoint still responds.
+  - Concurrency capped via MAX_CONCURRENT_INFERENCES env (default 2). Frame queue/backpressure is per-request; front-end polling/WS still to be wired.
+
+  Next steps I can take
+
+  1. Refine manifest sex/date inference (e.g., crate-level sex mapping) to boost label coverage, then use it for splits.
+  2. Hook up front-end camera streaming (MediaStream + fetch/WebSocket) to /predict_stream and display the returned thumbnail/bboxes.
+  3. Retrain ViT regressor and the temporal model on the new manifest; measure CPU fps. If ViT is too slow (>~400–500 ms/frame), retrain a YOLO-based
+     regressor as fallback.
+  4. Run the new app locally with the refreshed models and review latency/fps with you before packaging for AWS.
+
+  If you want, I’ll proceed with step 1 (better manifest sex inference) and step 2 (front-end streaming) next, then kick off the ViT + temporal
+  retrain.
+
+
+• Updated functionality and tooling
+
+  - New venv: .venv on Python 3.12 with pandas/tqdm + FastAPI/uvicorn stack installed.
+  - Manifest builder refined: tools/build_manifest.py now infers sex hints from all ancestor folders and falls back to date-like IDs. Rebuilt
+    manifest: data/processed/manifest.csv (2767 rows) and manifest_summary.json (357 crab IDs; sex M=199, F=220, many None; 316 labeled with
+    days_until_molt).
+  - FastAPI app added: app_fastapi.py with /predict, /predict_stream, /health, and /ui (serves templates/index.html). Optional YOLO bbox overlay when
+    YOLO_MODEL_PATH is set. Static mount added if static/ exists.
+  - Front-end updated (templates/index.html):
+      - Keeps upload flow.
+      - Adds Live Camera Stream section (start/stop camera, status).
+      - JS captures frames every ~0.8s via MediaStream → /predict_stream; shows returned thumbnail with overlaid text/bboxes.
+      - Results panel reused for both upload and streaming.
+
+  How to run UI/API locally
+
+  1. . .venv/bin/activate
+  2. Optional for bboxes: export YOLO_MODEL_PATH=/full/path/to/yolo.pt
+  3. uvicorn app_fastapi:app --host 0.0.0.0 --port 5001
+  4. Open http://localhost:5001/ui for the UI (upload + live camera). API remains at /predict and /predict_stream.
+
+  Notes/next steps
+
+  - Manifest label coverage remains 316 images; many sex fields are still None because some folders lack explicit tags—can further refine if needed.
+  - Need to retrain ViT regressor + temporal model on the new manifest; measure CPU fps. If ViT too slow (>~400–500 ms/frame) for streaming, add YOLO-
+    based regressor as fallback.
+  - We should run the updated app locally with refreshed models to verify latency/fps and bbox overlays before AWS packaging. Let me know when to kick
+    off the retrain and local validation.

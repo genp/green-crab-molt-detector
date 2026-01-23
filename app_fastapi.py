@@ -34,7 +34,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent / "src"))
@@ -63,7 +63,25 @@ app.add_middleware(
 BASE_PATH = Path(__file__).parent
 MODELS_DIR = BASE_PATH / "models"
 UPLOAD_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".bmp"}
-YOLO_MODEL_PATH = Path(os.getenv("YOLO_MODEL_PATH", "")) if os.getenv("YOLO_MODEL_PATH") else None
+DEFAULT_YOLO_MODEL_PATH = MODELS_DIR / "fathomnet_mvp_yolov8_1280_20240914.pt"
+DEFAULT_LIGHT_YOLO_MODEL_PATH = (
+    MODELS_DIR / "yolov8n.pt" if (MODELS_DIR / "yolov8n.pt").exists() else BASE_PATH / "yolov8n.pt"
+)
+INFERENCE_MODE = os.getenv("INFERENCE_MODE", "cpu").lower()
+DETECTION_ENABLED = os.getenv("DETECTION_ENABLED", "true").lower() == "true"
+YOLO_MODEL_PATH = (
+    Path(os.getenv("YOLO_MODEL_PATH"))
+    if os.getenv("YOLO_MODEL_PATH")
+    else (
+        DEFAULT_YOLO_MODEL_PATH
+        if INFERENCE_MODE == "cpu" and DEFAULT_YOLO_MODEL_PATH.exists()
+        else (
+            DEFAULT_LIGHT_YOLO_MODEL_PATH
+            if INFERENCE_MODE == "cpu" and DEFAULT_LIGHT_YOLO_MODEL_PATH.exists()
+            else (DEFAULT_YOLO_MODEL_PATH if DEFAULT_YOLO_MODEL_PATH.exists() else None)
+        )
+    )
+)
 TEMPLATE_PATH = BASE_PATH / "templates" / "index.html"
 
 # Optional static mount (for any future assets)
@@ -86,18 +104,36 @@ def load_models():
     """Load feature extractor, regressor, and optional YOLO detector."""
     global feature_extractor, regressor, feature_type, yolo_detector
 
-    logger.info("Loading VIT feature extractor...")
-    feature_extractor = GeneralCrustaceanFeatureExtractor("vit_base")
-    feature_type = "vit"
+    feature_model = os.getenv("FEATURE_MODEL", "vit_base")
+    logger.info("Loading feature extractor: %s", feature_model)
+    feature_extractor = GeneralCrustaceanFeatureExtractor(feature_model)
+    feature_type = feature_model
 
+    model_path_env = os.getenv("MODEL_PATH")
     vit_temporal_path = MODELS_DIR / "molt_regressor_vit_temporal.joblib"
     vit_random_forest_path = MODELS_DIR / "molt_regressor_vit_random_forest.joblib"
+    best_vit_regressor_path = MODELS_DIR / "best_vit_regressor.joblib"
     temporal_model_path = MODELS_DIR / "temporal" / "Random_Forest_Temporal.pkl"
 
-    if vit_temporal_path.exists():
+    if model_path_env:
+        model_path = Path(model_path_env)
+    elif INFERENCE_MODE == "cpu":
+        if best_vit_regressor_path.exists():
+            model_path = best_vit_regressor_path
+        elif vit_random_forest_path.exists():
+            model_path = vit_random_forest_path
+        elif vit_temporal_path.exists():
+            model_path = vit_temporal_path
+        elif temporal_model_path.exists():
+            model_path = temporal_model_path
+        else:
+            raise FileNotFoundError("No compatible VIT model found in models/")
+    elif vit_temporal_path.exists():
         model_path = vit_temporal_path
     elif vit_random_forest_path.exists():
         model_path = vit_random_forest_path
+    elif best_vit_regressor_path.exists():
+        model_path = best_vit_regressor_path
     elif temporal_model_path.exists():
         model_path = temporal_model_path
     else:
@@ -107,15 +143,15 @@ def load_models():
     regressor = MoltPhaseRegressor("random_forest")
     regressor.load_model(model_path)
 
-    if "temporal" in str(model_path).lower() and not hasattr(regressor.scaler, "mean_"):
+    if not hasattr(regressor.scaler, "mean_"):
         vit_scaler_path = MODELS_DIR / "vit_scaler.joblib"
         if vit_scaler_path.exists():
             import joblib
 
             regressor.scaler = joblib.load(vit_scaler_path)
-            logger.info("Loaded VIT scaler for temporal model")
+            logger.info("Loaded VIT scaler for %s", model_path.name)
 
-    if YOLO and YOLO_MODEL_PATH and YOLO_MODEL_PATH.exists():
+    if DETECTION_ENABLED and YOLO and YOLO_MODEL_PATH and YOLO_MODEL_PATH.exists():
         try:
             yolo_detector = YOLO(str(YOLO_MODEL_PATH))
             logger.info("Loaded YOLO detector for bboxes from %s", YOLO_MODEL_PATH)
@@ -248,7 +284,8 @@ async def predict_image(file: UploadFile) -> Dict[str, object]:
 
     raw_bytes = await file.read()
     try:
-        image = Image.open(BytesIO(raw_bytes)).convert("RGB")
+        image = Image.open(BytesIO(raw_bytes))
+        image = ImageOps.exif_transpose(image).convert("RGB")
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Could not read image: {exc}") from exc
 

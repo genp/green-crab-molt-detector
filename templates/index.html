@@ -97,7 +97,7 @@
                             <h4 class="mt-3">Drop image here or click to browse</h4>
                             <p class="text-muted">Supports JPG, PNG, GIF up to 16MB</p>
                             <input type="file" id="fileInput" accept="image/*" style="display: none;">
-                            <button class="btn btn-primary mt-3" onclick="document.getElementById('fileInput').click()">
+                            <button class="btn btn-primary mt-3" type="button" id="chooseFileBtn">
                                 <i class="bi bi-folder2-open"></i> Choose File
                             </button>
                         </div>
@@ -135,13 +135,29 @@
                                     <button class="btn btn-outline-secondary" id="stopStreamBtn" disabled>
                                         <i class="bi bi-stop-circle"></i> Stop Camera
                                     </button>
+                                    <button class="btn btn-outline-primary" id="burstStreamBtn">
+                                        <i class="bi bi-lightning-charge"></i> Start 20s Burst
+                                    </button>
+                                </div>
+                                <div class="mt-3">
+                                    <label for="frameInterval" class="form-label small text-muted">Frame interval</label>
+                                    <input type="range" class="form-range" min="500" max="2000" step="100" id="frameInterval" value="800">
+                                    <div class="small text-muted">Every <span id="frameIntervalValue">0.8</span>s</div>
+                                </div>
+                                <div class="mt-2">
+                                    <label for="burstDuration" class="form-label small text-muted">Burst duration</label>
+                                    <select class="form-select form-select-sm" id="burstDuration">
+                                        <option value="10">10 seconds</option>
+                                        <option value="20" selected>20 seconds</option>
+                                        <option value="30">30 seconds</option>
+                                    </select>
                                 </div>
                                 <div class="mt-3 stream-status" id="streamStatus">
                                     <span class="badge bg-secondary">Idle</span>
                                     <span class="ms-2 text-muted">No camera active</span>
                                 </div>
                                 <div class="mt-3">
-                                    <small class="text-muted">Frames sent every 0.8s. Ensure good lighting and keep the crab centered.</small>
+                                    <small class="text-muted">Use burst mode for quick checks to reduce cost.</small>
                                 </div>
                             </div>
                         </div>
@@ -260,6 +276,10 @@
         const startStreamBtn = document.getElementById('startStreamBtn');
         const stopStreamBtn = document.getElementById('stopStreamBtn');
         const streamStatus = document.getElementById('streamStatus');
+        const burstStreamBtn = document.getElementById('burstStreamBtn');
+        const frameInterval = document.getElementById('frameInterval');
+        const frameIntervalValue = document.getElementById('frameIntervalValue');
+        const burstDuration = document.getElementById('burstDuration');
         
         // Store the selected file globally
         let selectedFile = null;
@@ -268,7 +288,9 @@
         let loadingModal = null;
         let mediaStream = null;
         let streamInterval = null;
+        let streamTimeout = null;
         let sendingFrame = false;
+        let streamIntervalMs = 800;
         
         // Drag and drop
         uploadArea.addEventListener('dragover', (e) => {
@@ -291,7 +313,15 @@
         });
         
         // Click to upload
-        uploadArea.addEventListener('click', () => {
+        uploadArea.addEventListener('click', (e) => {
+            if (e.target.closest('#chooseFileBtn')) {
+                return;
+            }
+            fileInput.click();
+        });
+
+        document.getElementById('chooseFileBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
             fileInput.click();
         });
         
@@ -327,6 +357,32 @@
             resultCard.style.display = 'none';
         }
         
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function submitPrediction(formData, attempt = 1) {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                if (attempt < 2) {
+                    await delay(600);
+                    return submitPrediction(formData, attempt + 1);
+                }
+                throw new Error('Prediction failed');
+            }
+
+            const data = await response.json();
+            if (!data.success && attempt < 2) {
+                await delay(600);
+                return submitPrediction(formData, attempt + 1);
+            }
+            return data;
+        }
+
         async function predictMoltPhase() {
             if (!selectedFile) {
                 alert('Please select an image first');
@@ -340,12 +396,7 @@
             showLoadingModal();
             
             try {
-                const response = await fetch('/predict', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const data = await response.json();
+                const data = await submitPrediction(formData);
                 
                 // Always hide modal first
                 hideLoadingModal();
@@ -363,7 +414,7 @@
             } catch (error) {
                 hideLoadingModal();
                 setTimeout(() => {
-                    alert('Error: ' + error.message);
+                    alert('Error: ' + error.message + '. Please try again.');
                 }, 100);
             }
         }
@@ -462,6 +513,15 @@
             resultCard.scrollIntoView({ behavior: 'smooth' });
         }
 
+        function updateFrameInterval() {
+            streamIntervalMs = Number(frameInterval.value);
+            frameIntervalValue.textContent = (streamIntervalMs / 1000).toFixed(1);
+            if (streamInterval) {
+                clearInterval(streamInterval);
+                streamInterval = setInterval(captureAndSendFrame, streamIntervalMs);
+            }
+        }
+
         // Streaming helpers
         async function startCameraStream() {
             if (mediaStream) return;
@@ -471,9 +531,10 @@
                 await cameraPreview.play();
                 startStreamBtn.disabled = true;
                 stopStreamBtn.disabled = false;
+                burstStreamBtn.disabled = true;
                 streamStatus.innerHTML = '<span class="badge bg-success">Streaming</span><span class="ms-2 text-muted">Sending frames...</span>';
 
-                streamInterval = setInterval(captureAndSendFrame, 800);
+                streamInterval = setInterval(captureAndSendFrame, streamIntervalMs);
             } catch (err) {
                 alert('Unable to access camera: ' + err.message);
             }
@@ -484,6 +545,10 @@
                 clearInterval(streamInterval);
                 streamInterval = null;
             }
+            if (streamTimeout) {
+                clearTimeout(streamTimeout);
+                streamTimeout = null;
+            }
             if (mediaStream) {
                 mediaStream.getTracks().forEach(t => t.stop());
                 mediaStream = null;
@@ -491,7 +556,22 @@
             sendingFrame = false;
             startStreamBtn.disabled = false;
             stopStreamBtn.disabled = true;
+            burstStreamBtn.disabled = false;
             streamStatus.innerHTML = '<span class="badge bg-secondary">Idle</span><span class="ms-2 text-muted">No camera active</span>';
+        }
+
+        async function startBurstStream() {
+            const durationSeconds = Number(burstDuration.value);
+            if (!mediaStream) {
+                await startCameraStream();
+            }
+            if (streamTimeout) {
+                clearTimeout(streamTimeout);
+            }
+            streamStatus.innerHTML = `<span class="badge bg-info">Burst</span><span class="ms-2 text-muted">Running ${durationSeconds}s burst...</span>`;
+            streamTimeout = setTimeout(() => {
+                stopCameraStream();
+            }, durationSeconds * 1000);
         }
 
         async function captureAndSendFrame() {
@@ -527,6 +607,9 @@
 
         startStreamBtn.addEventListener('click', startCameraStream);
         stopStreamBtn.addEventListener('click', stopCameraStream);
+        burstStreamBtn.addEventListener('click', startBurstStream);
+        frameInterval.addEventListener('input', updateFrameInterval);
+        updateFrameInterval();
     </script>
 </body>
 </html>

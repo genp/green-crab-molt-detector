@@ -1,0 +1,11 @@
+{
+  "window_size": 7,
+  "sequences": 112,
+  "feature_dim": 5376,
+  "temporal_metrics": {
+    "mae": 6.414660678210678,
+    "r2": -0.2497674531208105,
+    "n_train": 79,
+    "n_test": 33
+  }
+}

@@ -7,6 +7,7 @@ This module:
 - Provides utilities for batch feature extraction
 """
 
+import os
 import torch
 import torch.nn as nn
 from pathlib import Path
@@ -41,8 +42,11 @@ class YOLOFeatureExtractor:
         """
         self.model_path = Path(model_path)
         
-        # Auto-detect device if not specified
-        if device is None:
+        # Auto-detect device if not specified (DEVICE env overrides)
+        device_env = os.getenv("DEVICE")
+        if device_env:
+            self.device = torch.device(device_env)
+        elif device is None:
             if torch.backends.mps.is_available():
                 self.device = torch.device('mps')
             elif torch.cuda.is_available():
@@ -252,8 +256,11 @@ class GeneralCrustaceanFeatureExtractor:
         """
         self.model_name = model_name
         
-        # Auto-detect device if not specified
-        if device is None:
+        # Auto-detect device if not specified (DEVICE env overrides)
+        device_env = os.getenv("DEVICE")
+        if device_env:
+            self.device = torch.device(device_env)
+        elif device is None:
             if torch.backends.mps.is_available():
                 self.device = torch.device('mps')
             elif torch.cuda.is_available():
