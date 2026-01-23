@@ -15,6 +15,7 @@ import base64
 import logging
 import os
 import sys
+import threading
 from io import BytesIO
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -94,13 +95,15 @@ regressor: Optional[MoltPhaseRegressor] = None
 feature_type: Optional[str] = None
 yolo_detector = None
 inference_semaphore = asyncio.Semaphore(int(os.getenv("MAX_CONCURRENT_INFERENCES", "2")))
+models_ready = threading.Event()
+model_load_lock = threading.Lock()
 
 
 def allowed_file(filename: str) -> bool:
     return Path(filename).suffix.lower() in UPLOAD_EXTENSIONS
 
 
-def load_models():
+def load_models(load_detector: bool = True):
     """Load feature extractor, regressor, and optional YOLO detector."""
     global feature_extractor, regressor, feature_type, yolo_detector
 
@@ -151,12 +154,34 @@ def load_models():
             regressor.scaler = joblib.load(vit_scaler_path)
             logger.info("Loaded VIT scaler for %s", model_path.name)
 
-    if DETECTION_ENABLED and YOLO and YOLO_MODEL_PATH and YOLO_MODEL_PATH.exists():
+    if load_detector and DETECTION_ENABLED and YOLO and YOLO_MODEL_PATH and YOLO_MODEL_PATH.exists():
         try:
             yolo_detector = YOLO(str(YOLO_MODEL_PATH))
             logger.info("Loaded YOLO detector for bboxes from %s", YOLO_MODEL_PATH)
         except Exception as exc:  # pragma: no cover - optional
             logger.warning("Failed to load YOLO detector: %s", exc)
+
+    models_ready.set()
+
+
+def load_models_async():
+    """Load models in a background thread to avoid blocking startup."""
+    with model_load_lock:
+        if models_ready.is_set():
+            return
+        try:
+            load_models(load_detector=False)
+        except Exception as exc:  # pragma: no cover - startup best-effort
+            logger.error("Async model load failed: %s", exc)
+            return
+
+    if DETECTION_ENABLED and YOLO and YOLO_MODEL_PATH and YOLO_MODEL_PATH.exists():
+        try:
+            yolo_detector_local = YOLO(str(YOLO_MODEL_PATH))
+            globals()["yolo_detector"] = yolo_detector_local
+            logger.info("Loaded YOLO detector in background: %s", YOLO_MODEL_PATH)
+        except Exception as exc:  # pragma: no cover - optional
+            logger.warning("Failed to load YOLO detector in background: %s", exc)
 
 
 def get_molt_phase_category(days_until_molt: float) -> Dict[str, object]:
@@ -277,7 +302,7 @@ def encode_thumbnail(image: Image.Image, label: str, bboxes: List[Dict[str, floa
 
 async def predict_image(file: UploadFile) -> Dict[str, object]:
     if feature_extractor is None or regressor is None:
-        raise HTTPException(status_code=500, detail="Model not loaded")
+        raise HTTPException(status_code=503, detail="Model loading, please retry shortly.")
 
     if not allowed_file(file.filename):
         raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image.")
@@ -314,6 +339,11 @@ async def predict_image(file: UploadFile) -> Dict[str, object]:
 
 @app.on_event("startup")
 def startup_event():
+    async_load = os.getenv("MODEL_LOAD_ASYNC", "true").lower() == "true"
+    if async_load:
+        threading.Thread(target=load_models_async, daemon=True).start()
+        logger.info("Model loading started in background.")
+        return
     load_models()
     if feature_extractor is None or regressor is None:
         logger.error("Failed to load models on startup")
@@ -329,6 +359,7 @@ def health():
         "regressor": regressor is not None and regressor.is_fitted if regressor else False,
         "feature_type": feature_type,
         "yolo_detector": yolo_detector is not None,
+        "models_ready": models_ready.is_set(),
     }
 
 
