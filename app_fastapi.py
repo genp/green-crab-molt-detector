@@ -301,8 +301,12 @@ def encode_thumbnail(image: Image.Image, label: str, bboxes: List[Dict[str, floa
 
 
 async def predict_image(file: UploadFile) -> Dict[str, object]:
-    if feature_extractor is None or regressor is None:
-        raise HTTPException(status_code=503, detail="Model loading, please retry shortly.")
+    if not models_ready.is_set():
+        deadline = asyncio.get_running_loop().time() + float(os.getenv("MODEL_READY_TIMEOUT", "20"))
+        while not models_ready.is_set() and asyncio.get_running_loop().time() < deadline:
+            await asyncio.sleep(0.2)
+        if not models_ready.is_set():
+            raise HTTPException(status_code=503, detail="Model loading, please retry shortly.")
 
     if not allowed_file(file.filename):
         raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image.")
