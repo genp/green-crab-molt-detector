@@ -67,6 +67,10 @@
     </style>
 </head>
 <body>
+    <div class="alert alert-warning text-center mb-0" role="alert">
+        <strong>Live Demo</strong> — For quick tests only. Lighting and camera angle affect results.
+        <button class="btn btn-sm btn-outline-dark ms-2" type="button" id="resetDemoBtn">Reset Demo</button>
+    </div>
     <!-- Hero Section -->
     <div class="hero-section">
         <div class="container">
@@ -610,6 +614,11 @@
         burstStreamBtn.addEventListener('click', startBurstStream);
         frameInterval.addEventListener('input', updateFrameInterval);
         updateFrameInterval();
+        document.getElementById('resetDemoBtn').addEventListener('click', () => {
+            stopCameraStream();
+            resetUpload();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
     </script>
 </body>
 </html>
