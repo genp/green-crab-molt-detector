@@ -195,6 +195,11 @@
                                 
                                 <div class="text-muted">
                                     <small>Analysis powered by <span id="modelType"></span> model</small>
+                                    <div class="small text-muted" id="detectionMeta"></div>
+                                    <details class="small text-muted mt-2">
+                                        <summary>Detection debug</summary>
+                                        <pre class="small mb-0" id="detectionDebug"></pre>
+                                    </details>
                                 </div>
                             </div>
                         </div>
@@ -486,9 +491,16 @@
         
         function displayResults(data) {
             // Update result elements
-            document.getElementById('resultThumbnail').src = data.thumbnail;
+            const thumbnailEl = document.getElementById('resultThumbnail');
+            if (data.thumbnail) {
+                thumbnailEl.src = data.thumbnail;
+                thumbnailEl.style.display = 'block';
+            } else {
+                thumbnailEl.removeAttribute('src');
+                thumbnailEl.style.display = 'none';
+            }
             document.getElementById('daysUntilMolt').textContent = 
-                data.days_until_molt.toFixed(1) + ' days';
+                data.days_until_molt !== undefined ? data.days_until_molt.toFixed(1) + ' days' : 'N/A';
             
             // Phase badge
             const phaseBadge = document.getElementById('phaseBadge');
@@ -497,12 +509,12 @@
             
             // Confidence badge
             document.getElementById('confidenceBadge').textContent = 
-                `${data.confidence} Confidence`;
+                data.confidence ? `${data.confidence} Confidence` : 'Low Confidence';
             
             // Recommendation
             const recommendationAlert = document.getElementById('recommendationAlert');
             recommendationAlert.className = `alert alert-${data.color}`;
-            document.getElementById('recommendationText').textContent = data.recommendation;
+            document.getElementById('recommendationText').textContent = data.recommendation || 'No recommendation available.';
             
             // Add harvest alert animation if ready
             if (data.harvest_ready) {
@@ -511,6 +523,16 @@
             
             // Model type
             document.getElementById('modelType').textContent = data.feature_type;
+            const detectionMeta = document.getElementById('detectionMeta');
+            const bboxCount = data.bbox_count ?? 0;
+            const cropUsed = data.crop_used ? 'yes' : 'no';
+            detectionMeta.textContent = `Detections: ${bboxCount} | Crop used: ${cropUsed}`;
+            const detectionDebug = document.getElementById('detectionDebug');
+            if (data.detection_debug) {
+                detectionDebug.textContent = JSON.stringify(data.detection_debug, null, 2);
+            } else {
+                detectionDebug.textContent = 'No debug data.';
+            }
             
             // Show results
             resultCard.style.display = 'block';

@@ -70,6 +70,12 @@ DEFAULT_LIGHT_YOLO_MODEL_PATH = (
 )
 INFERENCE_MODE = os.getenv("INFERENCE_MODE", "cpu").lower()
 DETECTION_ENABLED = os.getenv("DETECTION_ENABLED", "true").lower() == "true"
+DETECTION_CROP_ENABLED = os.getenv("DETECTION_CROP_ENABLED", "true").lower() == "true"
+YOLO_CONF_MIN = float(os.getenv("YOLO_CONF_MIN", "0.4"))
+YOLO_MIN_AREA_PCT = float(os.getenv("YOLO_MIN_AREA_PCT", "0.01"))
+YOLO_MAX_AREA_PCT = float(os.getenv("YOLO_MAX_AREA_PCT", "0.8"))
+YOLO_MIN_ASPECT = float(os.getenv("YOLO_MIN_ASPECT", "0.5"))
+YOLO_MAX_ASPECT = float(os.getenv("YOLO_MAX_ASPECT", "2.0"))
 YOLO_MODEL_PATH = (
     Path(os.getenv("YOLO_MODEL_PATH"))
     if os.getenv("YOLO_MODEL_PATH")
@@ -250,12 +256,73 @@ def run_detection(image: Image.Image) -> List[Dict[str, float]]:
         return []
 
 
-def encode_thumbnail(image: Image.Image, label: str, bboxes: List[Dict[str, float]]) -> str:
+def filter_bboxes(image: Image.Image, bboxes: List[Dict[str, float]]) -> List[Dict[str, float]]:
+    """Filter bboxes by confidence, area percent, and aspect ratio."""
+    if not bboxes:
+        return []
+    width, height = image.size
+    image_area = max(width * height, 1)
+    filtered: List[Dict[str, float]] = []
+    for box in bboxes:
+        xmin = max(0.0, float(box["xmin"]))
+        ymin = max(0.0, float(box["ymin"]))
+        xmax = min(float(width), float(box["xmax"]))
+        ymax = min(float(height), float(box["ymax"]))
+        w = max(0.0, xmax - xmin)
+        h = max(0.0, ymax - ymin)
+        if w == 0 or h == 0:
+            continue
+        conf = float(box.get("confidence") or 0.0)
+        area_pct = (w * h) / image_area
+        aspect = w / h
+        if conf < YOLO_CONF_MIN:
+            continue
+        if area_pct < YOLO_MIN_AREA_PCT or area_pct > YOLO_MAX_AREA_PCT:
+            continue
+        if aspect < YOLO_MIN_ASPECT or aspect > YOLO_MAX_ASPECT:
+            continue
+        filtered.append(box)
+    return filtered
+
+
+def select_primary_bbox(bboxes: List[Dict[str, float]]) -> Optional[Dict[str, float]]:
+    """Pick the highest-confidence bbox."""
+    if not bboxes:
+        return None
+    return max(bboxes, key=lambda box: box.get("confidence") or 0)
+
+
+def crop_to_bbox(image: Image.Image, bbox: Dict[str, float]) -> Image.Image:
+    """Crop the image to the bbox, clamped to image bounds."""
+    width, height = image.size
+    xmin = max(0, int(bbox["xmin"]))
+    ymin = max(0, int(bbox["ymin"]))
+    xmax = min(width, int(bbox["xmax"]))
+    ymax = min(height, int(bbox["ymax"]))
+    if xmax <= xmin or ymax <= ymin:
+        return image
+    return image.crop((xmin, ymin, xmax, ymax))
+
+
+def encode_thumbnail(
+    image: Image.Image,
+    label: str,
+    bboxes: List[Dict[str, float]],
+    bbox_color: str,
+) -> str:
     """Create a small JPEG thumbnail with overlay text and optional bbox outlines."""
     thumb = image.copy().convert("RGB")
     orig_w, orig_h = thumb.size
     thumb.thumbnail((320, 320))
     draw = ImageDraw.Draw(thumb)
+    color_map = {
+        "danger": (220, 53, 69),
+        "warning": (255, 193, 7),
+        "info": (13, 202, 240),
+        "success": (25, 135, 84),
+        "primary": (13, 110, 253),
+    }
+    bbox_rgb = color_map.get(bbox_color, (13, 110, 253))
 
     # Scale bboxes to thumbnail dimensions
     scale_x = thumb.size[0] / orig_w
@@ -269,7 +336,7 @@ def encode_thumbnail(image: Image.Image, label: str, bboxes: List[Dict[str, floa
                     box["xmax"] * scale_x,
                     box["ymax"] * scale_y,
                 ],
-                outline="red",
+                outline=bbox_rgb,
                 width=2,
             )
         except Exception:
@@ -318,14 +385,47 @@ async def predict_image(file: UploadFile) -> Dict[str, object]:
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Could not read image: {exc}") from exc
 
-    np_image = np.array(image)
+    raw_bboxes = run_detection(image) if DETECTION_ENABLED else []
+    bboxes = filter_bboxes(image, raw_bboxes) if DETECTION_ENABLED else []
+    if DETECTION_ENABLED and not bboxes:
+        return {
+            "success": False,
+            "error": "No crabs detected in the image.",
+            "phase": "No detection",
+            "color": "secondary",
+            "recommendation": "Try a closer shot with better lighting and a clear view of the crab.",
+            "harvest_ready": False,
+            "confidence": "Low",
+            "thumbnail": None,
+            "feature_type": feature_type.upper() if feature_type else None,
+            "bbox_count": 0,
+            "crop_used": False,
+            "primary_bbox": None,
+            "bboxes": [],
+            "detection_debug": {
+                "enabled": DETECTION_ENABLED,
+                "raw_count": len(raw_bboxes),
+                "filtered_count": 0,
+                "filters": {
+                    "conf_min": YOLO_CONF_MIN,
+                    "min_area_pct": YOLO_MIN_AREA_PCT,
+                    "max_area_pct": YOLO_MAX_AREA_PCT,
+                    "min_aspect": YOLO_MIN_ASPECT,
+                    "max_aspect": YOLO_MAX_ASPECT,
+                },
+                "raw_bboxes": raw_bboxes[:3],
+            },
+        }
+    primary_bbox = select_primary_bbox(bboxes) if DETECTION_CROP_ENABLED else None
+    roi_image = crop_to_bbox(image, primary_bbox) if primary_bbox else image
+
+    np_image = np.array(roi_image)
     features = feature_extractor.extract_features(np_image).reshape(1, -1)
     days_until_molt = float(regressor.predict(features)[0])
     phase_info = get_molt_phase_category(days_until_molt)
 
-    bboxes = run_detection(image)
     label_text = f"{phase_info['phase']} ({days_until_molt:.1f}d)"
-    thumbnail = encode_thumbnail(image, label_text, bboxes)
+    thumbnail = encode_thumbnail(image, label_text, bboxes, phase_info["color"])
 
     return {
         "success": True,
@@ -337,7 +437,24 @@ async def predict_image(file: UploadFile) -> Dict[str, object]:
         "confidence": "High" if abs(days_until_molt) < 20 else "Medium",
         "thumbnail": thumbnail,
         "feature_type": feature_type.upper() if feature_type else None,
+        "bbox_count": len(bboxes),
+        "crop_used": primary_bbox is not None,
+        "primary_bbox": primary_bbox,
         "bboxes": bboxes,
+        "detection_debug": {
+            "enabled": DETECTION_ENABLED,
+            "raw_count": len(raw_bboxes),
+            "filtered_count": len(bboxes),
+            "filters": {
+                "conf_min": YOLO_CONF_MIN,
+                "min_area_pct": YOLO_MIN_AREA_PCT,
+                "max_area_pct": YOLO_MAX_AREA_PCT,
+                "min_aspect": YOLO_MIN_ASPECT,
+                "max_aspect": YOLO_MAX_ASPECT,
+            },
+            "raw_bboxes": raw_bboxes[:3],
+            "filtered_bboxes": bboxes[:3],
+        },
     }
 
 
