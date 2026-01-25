@@ -620,9 +620,7 @@
                 try {
                     const res = await fetch('/predict_stream', { method: 'POST', body: formData });
                     const data = await res.json();
-                    if (data.success) {
-                        displayResults(data);
-                    }
+                    displayResults(data);
                 } catch (err) {
                     console.warn('Stream frame failed', err);
                 } finally {

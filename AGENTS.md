@@ -52,3 +52,16 @@ Green crab molt phase prediction from images to support harvest timing (peeler s
 ## Notes for future agents
 - If choosing a model for real-time use, temporal models are most accurate but require sequences; ViT or YOLO regressors are likely faster per frame.
 - Validate latency before selecting the “fastest acceptable” model for live video.
+
+## Future updates TODO (created 2026-01-25)
+- 2026-02-01: Inventory label sources in `data/sam3_orientation/`, `data/raw/`, and any `.docx` label files; document how labels map to species and molt timing.
+- 2026-02-03: Build a species labeling spreadsheet (green crab, rock crab, other crab, non-crab) and define strict label guidelines for interns.
+- 2026-02-05: Implement a dataset builder that reads folder labels and parses `.docx` label text into `data/processed/species_manifest.csv` with train/val/test splits.
+- 2026-02-07: Train a lightweight species classifier on crab crops (MobileNet/ResNet18) and export weights to `models/`.
+- 2026-02-10: Train a custom YOLO detector with classes `{green_crab, rock_crab, other_crab}` using field negatives; measure precision/recall and false positives.
+- 2026-02-12: Add class-aware filtering in the detector (only `green_crab` for molt regression); gate regressions on species confidence >= threshold.
+- 2026-02-14: Calibrate detection thresholds (`YOLO_CONF_MIN`, area/aspect filters) using a held-out field-negative set to minimize false positives.
+- 2026-02-16: Re-run single-shot molt regression evaluation with crab-level splits; reconcile metrics across reports and update `TEST_RESULTS_SUMMARY.md`.
+- 2026-02-18: Add a small “field QA” eval pack (50-100 phone images) and track FP/FN counts in a simple CSV for regression testing.
+- 2026-02-20: Update/replace the crab detector with explicit dorsal + ventral view coverage (train or fine-tune on both viewpoints).
+- 2026-02-22: Deploy a dedicated detection service on Cloud Run alongside the regression pipeline (separate service/container and health checks).

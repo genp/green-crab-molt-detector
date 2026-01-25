@@ -71,7 +71,7 @@ DEFAULT_LIGHT_YOLO_MODEL_PATH = (
 INFERENCE_MODE = os.getenv("INFERENCE_MODE", "cpu").lower()
 DETECTION_ENABLED = os.getenv("DETECTION_ENABLED", "true").lower() == "true"
 DETECTION_CROP_ENABLED = os.getenv("DETECTION_CROP_ENABLED", "true").lower() == "true"
-YOLO_CONF_MIN = float(os.getenv("YOLO_CONF_MIN", "0.4"))
+YOLO_CONF_MIN = float(os.getenv("YOLO_CONF_MIN", "0.2"))
 YOLO_MIN_AREA_PCT = float(os.getenv("YOLO_MIN_AREA_PCT", "0.01"))
 YOLO_MAX_AREA_PCT = float(os.getenv("YOLO_MAX_AREA_PCT", "0.8"))
 YOLO_MIN_ASPECT = float(os.getenv("YOLO_MIN_ASPECT", "0.5"))
@@ -100,6 +100,7 @@ feature_extractor: Optional[GeneralCrustaceanFeatureExtractor] = None
 regressor: Optional[MoltPhaseRegressor] = None
 feature_type: Optional[str] = None
 yolo_detector = None
+yolo_class_names: Optional[Dict[int, str]] = None
 inference_semaphore = asyncio.Semaphore(int(os.getenv("MAX_CONCURRENT_INFERENCES", "2")))
 models_ready = threading.Event()
 model_load_lock = threading.Lock()
@@ -111,7 +112,7 @@ def allowed_file(filename: str) -> bool:
 
 def load_models(load_detector: bool = True):
     """Load feature extractor, regressor, and optional YOLO detector."""
-    global feature_extractor, regressor, feature_type, yolo_detector
+    global feature_extractor, regressor, feature_type, yolo_detector, yolo_class_names
 
     feature_model = os.getenv("FEATURE_MODEL", "vit_base")
     logger.info("Loading feature extractor: %s", feature_model)
@@ -163,6 +164,8 @@ def load_models(load_detector: bool = True):
     if load_detector and DETECTION_ENABLED and YOLO and YOLO_MODEL_PATH and YOLO_MODEL_PATH.exists():
         try:
             yolo_detector = YOLO(str(YOLO_MODEL_PATH))
+            if hasattr(yolo_detector, "model") and hasattr(yolo_detector.model, "names"):
+                yolo_class_names = yolo_detector.model.names
             logger.info("Loaded YOLO detector for bboxes from %s", YOLO_MODEL_PATH)
         except Exception as exc:  # pragma: no cover - optional
             logger.warning("Failed to load YOLO detector: %s", exc)
@@ -185,6 +188,8 @@ def load_models_async():
         try:
             yolo_detector_local = YOLO(str(YOLO_MODEL_PATH))
             globals()["yolo_detector"] = yolo_detector_local
+            if hasattr(yolo_detector_local, "model") and hasattr(yolo_detector_local.model, "names"):
+                globals()["yolo_class_names"] = yolo_detector_local.model.names
             logger.info("Loaded YOLO detector in background: %s", YOLO_MODEL_PATH)
         except Exception as exc:  # pragma: no cover - optional
             logger.warning("Failed to load YOLO detector in background: %s", exc)
@@ -240,6 +245,9 @@ def run_detection(image: Image.Image) -> List[Dict[str, float]]:
                 xyxy = box.xyxy[0].tolist()
                 conf = float(box.conf[0]) if box.conf is not None else None
                 cls = int(box.cls[0]) if box.cls is not None else None
+                class_name = None
+                if yolo_class_names and cls in yolo_class_names:
+                    class_name = yolo_class_names[cls]
                 boxes_out.append(
                     {
                         "xmin": xyxy[0],
@@ -248,6 +256,7 @@ def run_detection(image: Image.Image) -> List[Dict[str, float]]:
                         "ymax": xyxy[3],
                         "confidence": conf,
                         "class": cls,
+                        "class_name": class_name,
                     }
                 )
         return boxes_out
@@ -264,6 +273,9 @@ def filter_bboxes(image: Image.Image, bboxes: List[Dict[str, float]]) -> List[Di
     image_area = max(width * height, 1)
     filtered: List[Dict[str, float]] = []
     for box in bboxes:
+        class_name = box.get("class_name")
+        if class_name and class_name != "Crab":
+            continue
         xmin = max(0.0, float(box["xmin"]))
         ymin = max(0.0, float(box["ymin"]))
         xmax = min(float(width), float(box["xmax"]))
@@ -406,6 +418,7 @@ async def predict_image(file: UploadFile) -> Dict[str, object]:
                 "enabled": DETECTION_ENABLED,
                 "raw_count": len(raw_bboxes),
                 "filtered_count": 0,
+                "class_filter": "Crab",
                 "filters": {
                     "conf_min": YOLO_CONF_MIN,
                     "min_area_pct": YOLO_MIN_AREA_PCT,
@@ -445,6 +458,7 @@ async def predict_image(file: UploadFile) -> Dict[str, object]:
             "enabled": DETECTION_ENABLED,
             "raw_count": len(raw_bboxes),
             "filtered_count": len(bboxes),
+            "class_filter": "Crab",
             "filters": {
                 "conf_min": YOLO_CONF_MIN,
                 "min_area_pct": YOLO_MIN_AREA_PCT,
