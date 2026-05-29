@@ -524,13 +524,23 @@ async def predict_stream(file: UploadFile = File(...)):
             raise HTTPException(status_code=500, detail=f"Streaming prediction failed: {exc}") from exc
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def root():
-    return {"message": "Green Crab Molt Detector API (FastAPI)", "endpoints": ["/predict", "/predict_stream", "/health"]}
+    """Serve the web UI at the root domain."""
+    if not TEMPLATE_PATH.exists():
+        raise HTTPException(status_code=404, detail="UI not found")
+    return HTMLResponse(TEMPLATE_PATH.read_text(encoding="utf-8"))
 
 
 @app.get("/ui", response_class=HTMLResponse)
 def ui():
+    """Alias for root - serves the same web UI."""
     if not TEMPLATE_PATH.exists():
         raise HTTPException(status_code=404, detail="UI not found")
     return HTMLResponse(TEMPLATE_PATH.read_text(encoding="utf-8"))
+
+
+@app.get("/api")
+def api_info():
+    """API information endpoint."""
+    return {"message": "Green Crab Molt Detector API (FastAPI)", "endpoints": ["/predict", "/predict_stream", "/health"]}
