@@ -7,6 +7,8 @@ This system uses computer vision and machine learning to predict when green crab
 
 ### 1. Install Dependencies
 ```bash
+python3.12 -m venv ~/.venv/green_crabs_local
+source ~/.venv/green_crabs_local/bin/activate
 pip install -r requirements.txt
 ```
 
@@ -24,10 +26,10 @@ This will:
 
 ### 3. Start Web Application
 ```bash
-python app.py
+python -m uvicorn app_fastapi:app --host 127.0.0.1 --port 8080
 ```
 
-Then open http://localhost:5000 in your browser.
+Then open http://127.0.0.1:8080/ui in your browser.
 
 ## Manual Steps
 
@@ -49,7 +51,7 @@ python train_model.py
 
 ### Step 3: Web App
 ```bash
-python app.py
+python -m uvicorn app_fastapi:app --host 127.0.0.1 --port 8080
 ```
 - Starts the web interface
 - Upload crab photos to get molt predictions
@@ -109,7 +111,7 @@ The system will fall back to CNN features (ResNet50).
 
 ### Web app not starting
 - Check models are trained: `ls models/`
-- Verify port 5000 is available
+- Verify port 8080 is available
 - Check error logs for missing dependencies
 
 ## For Developers

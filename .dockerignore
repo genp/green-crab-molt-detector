@@ -79,6 +79,30 @@ docs/
 *.gz
 *.pdf
 
+# Exclude unused model files
+models/*.npy
+models/*_features.npy
+models/best_cnn_regressor.joblib
+models/best_yolo_regressor.joblib
+models/clipguided_regressor.joblib
+models/detect_ventral_regressor.joblib
+models/molt_regressor_yolo_random_forest.joblib
+models/openclip_regressor.joblib
+models/openclip_ventral_regressor.joblib
+models/sam3_ventral_regressor.joblib
+models/sam3_ventral_filtered_regressor.joblib
+models/molt_regressor_vit_temporal_w7.joblib
+models/best_temporal_model_7day.pkl
+
+# Exclude fallback YOLO model from root (we have the main one in models/)
+yolov8n.pt
+
+# Exclude screenshot files from static
+static/Screenshot*.png
+static/*screenshot*.png
+static/inter-molt result.png
+static/peeler_result.png
+
 # Claude Code
 .claude/
 

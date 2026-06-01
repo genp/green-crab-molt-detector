@@ -26,17 +26,21 @@ This project uses computer vision and machine learning to help fishermen identif
 git clone https://github.com/[your-username]/green-crab-molt-detector.git
 cd green-crab-molt-detector
 
+# Create a clean Python 3.12 environment outside the repo tree
+python3.12 -m venv ~/.venv/green_crabs_local
+source ~/.venv/green_crabs_local/bin/activate
+
 # Install dependencies
 pip install -r requirements.txt
 
 # Run complete pipeline (feature extraction + model training)
 python run_pipeline.py
 
-# Start web application
-python app.py
+# Start the FastAPI web application
+python -m uvicorn app_fastapi:app --host 127.0.0.1 --port 8080
 ```
 
-Then open http://localhost:5000 in your browser.
+Then open http://127.0.0.1:8080/ui in your browser.
 
 ## Project Structure
 
@@ -111,7 +115,7 @@ The system achieves molt phase prediction with:
 
 ### Local Development
 ```bash
-python app.py
+python -m uvicorn app_fastapi:app --host 127.0.0.1 --port 8080
 ```
 
 ### Docker
