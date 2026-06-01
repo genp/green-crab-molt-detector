@@ -145,15 +145,15 @@ unknown
 
 ### `app_phase`
 
-The current app estimator returns these labels. Keep these separate from the human `known_molt_phase` field because the app currently splits pre-molt into finer buckets.
+Use the same phase vocabulary as `known_molt_phase`. Current app outputs should be mapped into these shared values, and future estimator versions should also use these values directly.
 
 ```text
-Post-molt
-Peeler (Imminent molt)
-Pre-molt (Near)
-Pre-molt (Early)
-Inter-molt
-No detection
+intermolt
+pre_molt
+peeler_imminent
+molted
+dead
+unknown
 ```
 
 ### `app_confidence` and `human_confidence`
