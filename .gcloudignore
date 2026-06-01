@@ -5,6 +5,7 @@ __pycache__/
 .venv/
 venv/
 green_crabs_mps/
+green_crabs_*/
 data/
 notebooks/
 plots/
