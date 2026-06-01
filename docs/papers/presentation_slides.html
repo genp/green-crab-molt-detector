@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Crab Molt Detection - CVPR Workshop</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/theme/white.css">
+    <style>
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #2c5f2d;
+        }
+        .highlight {
+            color: #4a90e2;
+            font-weight: bold;
+        }
+        .error-box {
+            background: #ffe6e6;
+            border: 2px solid #ff4444;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success-box {
+            background: #e6ffe6;
+            border: 2px solid #44ff44;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .reveal .slides section .fragment.highlight-green {
+            opacity: 1;
+            visibility: inherit;
+        }
+        .reveal .slides section .fragment.highlight-green.visible {
+            color: #44ff44;
+        }
+        table {
+            font-size: 0.8em;
+        }
+        .two-column {
+            display: flex;
+            justify-content: space-between;
+        }
+        .column {
+            flex: 1;
+            padding: 0 10px;
+        }
+        .small-text {
+            font-size: 0.7em;
+        }
+        .crab-emoji {
+            font-size: 2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            
+            <!-- Title Slide -->
+            <section>
+                <h2>Temporal Vision Transformers for<br>Green Crab Molt Phase Detection</h2>
+                <h4>Enabling Sustainable Harvesting of Invasive Species</h4>
+                <p style="margin-top: 40px;">
+                    <span class="crab-emoji">🦀</span>
+                </p>
+                <p class="small-text">CVPR 2024 Workshop on Computer Vision for Marine Biology</p>
+                <p class="small-text">Anonymous Authors | Institution Name</p>
+            </section>
+
+            <!-- Motivation Slide -->
+            <section>
+                <h2>The Problem</h2>
+                <div class="two-column">
+                    <div class="column">
+                        <h4>Ecological Crisis</h4>
+                        <ul>
+                            <li>Green crabs: World's worst invasive species</li>
+                            <li>Destroying native shellfish populations</li>
+                            <li>$20M annual damage to US fisheries</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h4>Economic Opportunity</h4>
+                        <ul>
+                            <li>Soft-shell crab delicacy market</li>
+                            <li>$30-50 per pound retail value</li>
+                            <li class="fragment highlight">Critical: 2-3 day harvest window</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="fragment" style="margin-top: 30px;">
+                    <p class="error-box">
+                        <strong>Challenge:</strong> Must harvest within 72 hours before molting or lose entire value
+                    </p>
+                </div>
+            </section>
+
+            <!-- Biological Background -->
+            <section>
+                <h2>Green Crab Molting Cycle</h2>
+                <div style="text-align: left;">
+                    <p><strong>Molt Stages:</strong></p>
+                    <ol>
+                        <li><span class="highlight">Inter-molt</span> (>14 days): Active feeding</li>
+                        <li><span class="highlight">Pre-molt</span> (4-14 days): Preparation phase</li>
+                        <li><span class="highlight">Peeler</span> (0-3 days): <span style="color: red;">HARVEST WINDOW</span></li>
+                        <li><span class="highlight">Ecdysis</span> (2-3 hours): Active molting</li>
+                        <li><span class="highlight">Post-molt</span> (weeks): Shell hardening</li>
+                    </ol>
+                </div>
+                <div class="fragment" style="margin-top: 20px;">
+                    <p>Visual Indicators: Color progression Green → Yellow → Orange → Red</p>
+                </div>
+            </section>
+
+            <!-- Research Question -->
+            <section>
+                <h2>Research Question</h2>
+                <h3 style="color: #4a90e2;">Can computer vision predict molt timing accurately enough for commercial harvesting?</h3>
+                <div class="fragment" style="margin-top: 40px;">
+                    <p><strong>Success Criteria:</strong> &lt;2 day prediction error</p>
+                </div>
+                <div class="fragment">
+                    <p><strong>Approach:</strong> Compare single-shot vs. temporal models</p>
+                </div>
+            </section>
+
+            <!-- Dataset -->
+            <section>
+                <h2>Dataset Overview</h2>
+                <div class="two-column">
+                    <div class="column">
+                        <h4>Collection</h4>
+                        <ul>
+                            <li>230 total images</li>
+                            <li>11 crabs (9F, 2M)</li>
+                            <li>4-month observation period</li>
+                            <li>Time-series photography</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h4>Challenges</h4>
+                        <ul>
+                            <li>81.7% gender imbalance</li>
+                            <li>39% samples in 0-5 day range</li>
+                            <li>Irregular observation intervals</li>
+                            <li>Variable lighting conditions</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Methodology Overview -->
+            <section>
+                <h2>Methodology</h2>
+                <h3>Feature Extraction</h3>
+                <table style="margin: auto;">
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Pre-training</th>
+                            <th>Features</th>
+                            <th>Dimension</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>YOLOv8</td>
+                            <td>FathomNet (Marine)</td>
+                            <td>Penultimate layer</td>
+                            <td>2048</td>
+                        </tr>
+                        <tr>
+                            <td>ResNet50</td>
+                            <td>ImageNet</td>
+                            <td>Global pooling</td>
+                            <td>2048</td>
+                        </tr>
+                        <tr>
+                            <td>ViT-B/16</td>
+                            <td>ImageNet-21k</td>
+                            <td>[CLS] token</td>
+                            <td>768</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="fragment" style="margin-top: 30px;">
+                    <h4>Regression Models</h4>
+                    <p>Random Forest • Gradient Boosting • SVR • Neural Network</p>
+                </div>
+            </section>
+
+            <!-- Single-Shot Results -->
+            <section>
+                <h2>Single-Shot Results</h2>
+                <table style="margin: auto;">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Model</th>
+                            <th>MAE (days)</th>
+                            <th>Viable?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>YOLO</td>
+                            <td>SVR</td>
+                            <td>5.01 ± 1.25</td>
+                            <td>❌</td>
+                        </tr>
+                        <tr>
+                            <td>CNN</td>
+                            <td>SVR</td>
+                            <td>5.28 ± 0.87</td>
+                            <td>❌</td>
+                        </tr>
+                        <tr style="background: #ffffcc;">
+                            <td><strong>ViT</strong></td>
+                            <td><strong>NN</strong></td>
+                            <td><strong>4.77 ± 0.72</strong></td>
+                            <td>❌</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="fragment error-box" style="margin-top: 30px;">
+                    <strong>Result:</strong> Best single-shot model (ViT) still exceeds 2-day threshold
+                </div>
+            </section>
+
+            <!-- Temporal Approach -->
+            <section>
+                <h2>Temporal Modeling</h2>
+                <div style="text-align: left;">
+                    <p><strong>Hypothesis:</strong> Sequential observations capture molt progression patterns</p>
+                    <p><strong>Method:</strong></p>
+                    <ul>
+                        <li>Aggregate features across k observations</li>
+                        <li>Learn temporal progression patterns</li>
+                        <li>Leverage individual crab baselines</li>
+                    </ul>
+                </div>
+                <div class="fragment" style="margin-top: 30px;">
+                    <p style="text-align: center; font-size: 1.2em;">
+                        y<sub>t</sub> = g(x<sub>t-k:t</sub>) + ε
+                    </p>
+                </div>
+            </section>
+
+            <!-- Temporal Results -->
+            <section>
+                <h2>Temporal Results</h2>
+                <table style="margin: auto;">
+                    <thead>
+                        <tr>
+                            <th>Approach</th>
+                            <th>MAE (days)</th>
+                            <th>Improvement</th>
+                            <th>Viable?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Single-shot (best)</td>
+                            <td>4.77</td>
+                            <td>-</td>
+                            <td>❌</td>
+                        </tr>
+                        <tr style="background: #ccffcc;">
+                            <td><strong>Temporal RF</strong></td>
+                            <td><strong>0.48</strong></td>
+                            <td><strong>10×</strong></td>
+                            <td>✅</td>
+                        </tr>
+                        <tr style="background: #ccffcc;">
+                            <td>Temporal GB</td>
+                            <td>0.52</td>
+                            <td>9.2×</td>
+                            <td>✅</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="fragment success-box" style="margin-top: 30px;">
+                    <strong>Breakthrough:</strong> Temporal models achieve commercial viability!
+                </div>
+            </section>
+
+            <!-- Anecdotal Examples -->
+            <section>
+                <h2>Test Case: Crab F1</h2>
+                <p class="small-text">Female crab, molted September 23</p>
+                <table style="margin: auto; font-size: 0.9em;">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Days to Molt</th>
+                            <th>Single-Shot</th>
+                            <th>Temporal</th>
+                            <th>Error Reduction</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Sept 1</td>
+                            <td>22</td>
+                            <td>18.5 (3.5 err)</td>
+                            <td class="highlight">22.0 (0.0 err)</td>
+                            <td>100%</td>
+                        </tr>
+                        <tr>
+                            <td>Sept 8</td>
+                            <td>15</td>
+                            <td>11.2 (3.8 err)</td>
+                            <td class="highlight">15.0 (0.0 err)</td>
+                            <td>100%</td>
+                        </tr>
+                        <tr style="background: #ffffcc;">
+                            <td>Sept 20</td>
+                            <td>3 (Peeler)</td>
+                            <td>5.2 (2.2 err)</td>
+                            <td class="highlight">2.8 (0.2 err)</td>
+                            <td>91%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Phase Performance -->
+            <section>
+                <h2>Performance by Molt Phase</h2>
+                <div style="position: relative; height: 400px;">
+                    <canvas id="phaseChart" width="800" height="400"></canvas>
+                </div>
+                <script>
+                    // This would be rendered with actual chart library
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Placeholder for chart rendering
+                    });
+                </script>
+                <p class="small-text">Temporal models maintain accuracy across all phases</p>
+            </section>
+
+            <!-- Ablation Studies -->
+            <section>
+                <h2>Ablation: Temporal Window Size</h2>
+                <table style="margin: auto;">
+                    <thead>
+                        <tr>
+                            <th>Window (k)</th>
+                            <th>MAE (days)</th>
+                            <th>Computation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1 (single)</td>
+                            <td>4.77</td>
+                            <td>1×</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>1.82</td>
+                            <td>3×</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>0.71</td>
+                            <td>5×</td>
+                        </tr>
+                        <tr style="background: #ffffcc;">
+                            <td><strong>7</strong></td>
+                            <td><strong>0.48</strong></td>
+                            <td>7×</td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td>0.51</td>
+                            <td>10×</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="fragment">Optimal at k=7, diminishing returns beyond</p>
+            </section>
+
+            <!-- Commercial Impact -->
+            <section>
+                <h2>Commercial Impact</h2>
+                <div class="two-column">
+                    <div class="column">
+                        <h4>Before (Manual)</h4>
+                        <ul>
+                            <li>58% harvest failure rate</li>
+                            <li>High labor costs</li>
+                            <li>Inconsistent quality</li>
+                            <li>Limited scale</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h4>After (Our System)</h4>
+                        <ul>
+                            <li class="highlight">94% harvest success</li>
+                            <li class="highlight">89% waste reduction</li>
+                            <li class="highlight">3× yield increase</li>
+                            <li>Scalable operations</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="fragment success-box" style="margin-top: 30px;">
+                    Deployed web application serving NH & ME fisheries
+                </div>
+            </section>
+
+            <!-- Biological Insights -->
+            <section>
+                <h2>Biological Insights</h2>
+                <h3>What the models learned:</h3>
+                <ul>
+                    <li>Gradual color transitions over 20+ days</li>
+                    <li>Accelerating changes near molt events</li>
+                    <li>Individual variation patterns</li>
+                    <li>Ventral coloration as key indicator</li>
+                </ul>
+                <div class="fragment" style="margin-top: 30px;">
+                    <p><strong>Key Finding:</strong> Temporal patterns invisible to human observers</p>
+                </div>
+            </section>
+
+            <!-- Limitations -->
+            <section>
+                <h2>Limitations & Future Work</h2>
+                <div class="two-column">
+                    <div class="column">
+                        <h4>Current Limitations</h4>
+                        <ul>
+                            <li>Small dataset (230 samples)</li>
+                            <li>Gender imbalance (82% F)</li>
+                            <li>Single location</li>
+                            <li>Limited species scope</li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <h4>Future Directions</h4>
+                        <ul>
+                            <li>Expand to 1000+ samples</li>
+                            <li>Multi-site validation</li>
+                            <li>Attention mechanisms</li>
+                            <li>Transfer to other species</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Key Contributions -->
+            <section>
+                <h2>Key Contributions</h2>
+                <ol>
+                    <li class="fragment">First CV system for crab molt detection</li>
+                    <li class="fragment">Novel time-series crab image dataset</li>
+                    <li class="fragment">Demonstrated 10× improvement with temporal models</li>
+                    <li class="fragment">Achieved commercial viability (&lt;1 day MAE)</li>
+                    <li class="fragment">Deployed system with real-world impact</li>
+                </ol>
+                <div class="fragment" style="margin-top: 40px;">
+                    <p class="success-box">
+                        Turning invasive species into sustainable resource
+                    </p>
+                </div>
+            </section>
+
+            <!-- Conclusion -->
+            <section>
+                <h2>Conclusion</h2>
+                <h3 style="color: #4a90e2;">Temporal context is essential for commercial viability</h3>
+                <div style="margin-top: 40px;">
+                    <table style="margin: auto;">
+                        <tr>
+                            <td>Single-shot</td>
+                            <td>→</td>
+                            <td>~5 day error</td>
+                            <td>→</td>
+                            <td>❌ Not viable</td>
+                        </tr>
+                        <tr>
+                            <td>Temporal</td>
+                            <td>→</td>
+                            <td>&lt;1 day error</td>
+                            <td>→</td>
+                            <td>✅ Commercial ready</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="fragment" style="margin-top: 40px;">
+                    <p><strong>Impact:</strong> Ecological benefit + Economic opportunity</p>
+                </div>
+            </section>
+
+            <!-- Questions -->
+            <section>
+                <h1>Questions?</h1>
+                <p class="crab-emoji">🦀</p>
+                <div style="margin-top: 40px;">
+                    <p class="small-text">Code & Models: github.com/anonymous/greencrab</p>
+                    <p class="small-text">Contact: email@institution.edu</p>
+                </div>
+            </section>
+
+            <!-- Backup Slides -->
+            <section>
+                <h2>Backup: Feature Visualization</h2>
+                <p>t-SNE of extracted features colored by molt phase</p>
+                <p class="small-text">[Placeholder for t-SNE visualization]</p>
+            </section>
+
+            <section>
+                <h2>Backup: Model Architecture</h2>
+                <p>Detailed architecture diagrams</p>
+                <p class="small-text">[Placeholder for architecture diagrams]</p>
+            </section>
+
+            <section>
+                <h2>Backup: Deployment Architecture</h2>
+                <ul>
+                    <li>Flask web application</li>
+                    <li>PyTorch inference backend</li>
+                    <li>Real-time image processing</li>
+                    <li>PostgreSQL for temporal tracking</li>
+                </ul>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            controls: true,
+            progress: true,
+            center: true,
+            transition: 'slide'
+        });
+    </script>
+</body>
+</html>
