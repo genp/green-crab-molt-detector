@@ -26,6 +26,7 @@ venv/
 ENV/
 env/
 .venv
+green_crabs_*/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -58,6 +59,14 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# LaTeX build outputs
+*.aux
+*.out
+*.synctex*
+
+# Editor backups
+*~
 
 # Environment variables
 .env

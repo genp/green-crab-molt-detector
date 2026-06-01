@@ -6,7 +6,7 @@ Green crab molt phase prediction from images to support harvest timing (peeler s
 ## Primary references
 - Project overview and quick start: `README.md`, `QUICKSTART.md`
 - Deployment guides: `DEPLOYMENT.md`, `HEROKU_DEPLOYMENT.md`
-- Research context/results: `cvpr_paper_simple.tex`, `cvpr_workshop_paper.tex`, `PRESENTATION_README.md`, `TEST_RESULTS_SUMMARY.md`
+- Research context/results: `docs/papers/cvpr_paper_simple.tex`, `docs/papers/cvpr_workshop_paper.tex`, `docs/papers/PRESENTATION_README.md`, `docs/reports/TEST_RESULTS_SUMMARY.md`
 - App entry points: `app.py` (Flask), `app_fastapi.py` (FastAPI)
 
 ## Current app + model status (from prior agent notes)
@@ -61,7 +61,7 @@ Green crab molt phase prediction from images to support harvest timing (peeler s
 - 2026-02-10: Train a custom YOLO detector with classes `{green_crab, rock_crab, other_crab}` using field negatives; measure precision/recall and false positives.
 - 2026-02-12: Add class-aware filtering in the detector (only `green_crab` for molt regression); gate regressions on species confidence >= threshold.
 - 2026-02-14: Calibrate detection thresholds (`YOLO_CONF_MIN`, area/aspect filters) using a held-out field-negative set to minimize false positives.
-- 2026-02-16: Re-run single-shot molt regression evaluation with crab-level splits; reconcile metrics across reports and update `TEST_RESULTS_SUMMARY.md`.
+- 2026-02-16: Re-run single-shot molt regression evaluation with crab-level splits; reconcile metrics across reports and update `docs/reports/TEST_RESULTS_SUMMARY.md`.
 - 2026-02-18: Add a small “field QA” eval pack (50-100 phone images) and track FP/FN counts in a simple CSV for regression testing.
 - 2026-02-20: Update/replace the crab detector with explicit dorsal + ventral view coverage (train or fine-tune on both viewpoints).
 - 2026-02-22: Deploy a dedicated detection service on Cloud Run alongside the regression pipeline (separate service/container and health checks).

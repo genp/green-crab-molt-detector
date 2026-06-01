@@ -134,7 +134,10 @@ def extract_features(df: pd.DataFrame, device: str = "cpu") -> Tuple[np.ndarray,
     tokenizer = open_clip.get_tokenizer("ViT-H-14")
     model = model.to(device)
     model.eval()
-    detector = YOLO("yolov8n.pt")
+    detector_path = Path("models/yolov8n.pt")
+    if not detector_path.exists():
+        detector_path = Path("yolov8n.pt")
+    detector = YOLO(str(detector_path))
 
     feats, idxs = [], []
     for idx, row in tqdm(df.iterrows(), total=len(df), desc="CLIP-guided crops"):
