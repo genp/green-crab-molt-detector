@@ -631,6 +631,35 @@ green_crabs/
 └── docs/plans/PHASE1_PLAN.md  # This document
 ```
 
+## Current Implementation Status (2026-06-01)
+
+### Complete or Mostly Complete
+- [x] FastAPI stream endpoint exists: `/predict_stream` returns the enriched prediction payload used by `/predict`.
+- [x] YOLO detection path exists with bbox detection, confidence/area/aspect filtering, primary bbox selection, and crop-to-bbox regression input.
+- [x] Molt phase categorization exists via `get_molt_phase_category()` with phase, color, recommendation, and harvest-ready fields.
+- [x] Prediction responses include detection metadata: bbox counts, primary bbox, all bboxes, image dimensions, crop/fallback flags, and detection debug fields.
+- [x] Live camera stream is the primary UI section, above photo upload.
+- [x] Canvas overlay is layered on the live video stream.
+- [x] Video overlay drawing exists for bbox, molt phase, days-to-molt, and recommendation text.
+- [x] Photo upload is secondary and has inline overlay support via `photoOverlay`.
+- [x] About page exists at `templates/about.html` and is served by `/about-page`.
+- [x] Home page navigation links to the About page.
+
+### Partial
+- [ ] 5 FPS target is configured with `streamIntervalMs = 200`, but actual throughput is backend-latency-bound because the frontend avoids overlapping requests with `sendingFrame`.
+- [ ] Response shape differs from the original draft contract: current fields are `phase`, `color`, `primary_bbox`, and `bboxes`, rather than `phase_label`, `phase_color`, and `bbox`.
+- [ ] Processing feedback exists through stream status and detection info, but the planned explicit `processingIndicator` spinner is not implemented.
+- [ ] Frontend code remains inline in `templates/index.html`; planned `static/js/video_overlay.js`, `session_export.js`, and `utils.js` modules have not been split out.
+
+### Not Yet Complete
+- [ ] Session export is not implemented: no JSZip import, session frame store, export button, or ZIP creation flow.
+- [ ] Temporal smoothing is not implemented: no prediction history buffer or `smooth_prediction()` path.
+- [ ] Performance validation is still needed for frame latency, practical FPS, mobile behavior, and stutter/freezing.
+- [ ] Deployment validation is still needed for Docker/Cloud Run/moltmeter.ai and monitoring.
+- [ ] Detector upgrade is still needed: train/deploy a new detector bootstrapped from reviewed SAM3 bbox outputs.
+- [ ] Qualitatively test the SAM3-bootstrapped detector on `data/raw/Green Crab AI 2026` images, including hands, coolers, dorsal/ventral views, lighting variation, field negatives, and side-ish views.
+- [ ] Multi-crab detection and estimation output is not implemented: current app selects one primary bbox, but field workflow needs per-crab boxes, per-crab days-to-molt estimates, and multi-crab overlay/result output.
+
 ## Testing Plan
 
 ### 1. Video Overlay Testing
@@ -662,6 +691,21 @@ green_crabs/
 - [ ] Measure time to process 100 crabs
 - [ ] Gather user feedback
 
+### 6. Detector Bootstrap Testing
+- [ ] Review a first batch of SAM3 proposals from `data/bootstrap_bboxes/all_raw_sam3_bootstrap_v1`.
+- [ ] Export accepted reviewed boxes to a YOLO dataset with `tools/export_reviewed_bboxes_to_yolo.py`.
+- [ ] Train or fine-tune a green crab detector from the reviewed SAM3-bootstrap labels.
+- [ ] Run qualitative detector review on `data/raw/Green Crab AI 2026` images.
+- [ ] Check failure modes: false positives on hands/gloves/cooler edges, missed crabs, poor ventral/dorsal coverage, side-view misses, and lighting/distance sensitivity.
+- [ ] Deploy the new detector through `YOLO_MODEL_PATH` and verify the app uses crop-based regression when detections are confident.
+
+### 7. Multi-Crab Output Testing
+- [ ] Update backend response to include a `crab_predictions` list: bbox, detection confidence, crop-used flag, days-to-molt, phase, color, and recommendation for each confident crab.
+- [ ] Run molt regression independently on each accepted crab crop instead of only the selected primary bbox.
+- [ ] Render multiple video/photo overlay boxes with stable labels so users can distinguish Crab 1, Crab 2, etc.
+- [ ] Add a compact multi-crab result table for fast field review.
+- [ ] Test with images containing multiple crabs and verify that per-crab labels do not overlap or obscure the video feed.
+
 ## Known Limitations & Future Work
 
 ### Current Limitations
@@ -674,18 +718,26 @@ green_crabs/
 - Male/female sex detection
 - Carapace size estimation
 - Estimated market value
+- Multi-crab detection and per-crab molt estimation output
 - Multi-crab tracking (SORT/DeepSORT)
 - Side-view training data collection
 - Branding refresh
 
 ## Deployment Checklist
 
-- [ ] Update app_fastapi.py with molt phase categorization
-- [ ] Enhance /predict_stream response format
-- [ ] Update templates/index.html with canvas overlay
-- [ ] Create templates/about.html
+- [x] Update app_fastapi.py with molt phase categorization
+- [x] Enhance /predict_stream response format
+- [x] Update templates/index.html with canvas overlay
+- [x] Create templates/about.html
 - [ ] Add session export functionality
-- [ ] Update navigation to include About link
+- [x] Update navigation to include About link
+- [ ] Add temporal smoothing for live predictions
+- [ ] Add explicit processing indicator/spinner for frame inference
+- [ ] Qualitatively test current detector on `data/raw/Green Crab AI 2026`
+- [ ] Train/fine-tune SAM3-bootstrapped detector from reviewed bbox outputs
+- [ ] Deploy SAM3-bootstrapped detector with `YOLO_MODEL_PATH`
+- [ ] Qualitatively test SAM3-bootstrapped detector on `data/raw/Green Crab AI 2026`
+- [ ] Add multi-crab detection and estimation output for all confident crab detections
 - [ ] Test locally: `uvicorn app_fastapi:app --reload`
 - [ ] Build Docker image
 - [ ] Deploy to Cloud Run
