@@ -4,19 +4,17 @@ Use `crab_monitoring_template.csv` as the shared tracking sheet for June crab co
 
 ## File Naming
 
-Use stable crab IDs so the same individual can be tracked over time.
-
 - `condo_id`: `C01`, `C02`, `C03`
 - `image_id`: recommended format:
 
 ```text
-YYYY-MM-DD_CONDO_SLOT_VIEW_DISTANCE_LIGHTING_SEQUENCE
+YYYY-MM-DD_CONDO_VIEW_DISTANCE_LIGHTING_SEQUENCE
 ```
 
 Example:
 
 ```text
-2026-06-01_C01_slot18_ventral_close_sun_01
+2026-06-01_C01_ventral_close_sun_001
 ```
 
 Do not rename original iCloud images if that is inconvenient. If the iCloud filename stays as `IMG_1234.JPG`, put that exact filename in `image_filename` and put the structured ID in `image_id`.
@@ -65,9 +63,7 @@ Use these exact values so the spreadsheet can be parsed later.
 ```text
 ventral
 dorsal
-side_left
-side_right
-oblique
+side
 unknown
 ```
 
@@ -140,14 +136,16 @@ unknown
 
 ```text
 intermolt
-early_premolt
-near_premolt
-peeler_0_3_days
-post_molt
+pre_molt
+peeler_imminent
+molted
+dead
 unknown
 ```
 
 ### `app_phase`
+
+The current app estimator returns these labels. Keep these separate from the human `known_molt_phase` field because the app currently splits pre-molt into finer buckets.
 
 ```text
 Post-molt
@@ -175,7 +173,7 @@ reviewed
 exclude
 ```
 
-Use `exclude` for images that should not be used for model training, such as the wrong crab, no crab, severely blurry photos, duplicate accidental shots, or an image where the crab ID cannot be trusted.
+Use `exclude` for images that should not be used for model training, such as the wrong crab, no crab, severely blurry photos, duplicate accidental shots, or an image where the image context cannot be trusted.
 
 ## Photo Set Per Crab
 
@@ -183,7 +181,7 @@ Ideal photo set for each crab on each monitoring day:
 
 - ventral close
 - dorsal close
-- side left or side right close
+- side close
 - one medium-distance image
 
 If time allows, include both sun and shade examples. If time is limited, prioritize clear close images over large numbers of poor images.
@@ -193,7 +191,7 @@ If time allows, include both sun and shade examples. If time is limited, priorit
 For Monday/Wednesday/Friday monitoring in June:
 
 1. Open the iCloud album for the correct date and condo.
-2. Use a consistent `image_id` pattern for the current condo, slot, view, distance, and lighting.
+2. Use a consistent `image_id` pattern for the current condo, view, distance, lighting, and sequence number.
 3. Take the minimum photo set for that crab.
 4. Add one spreadsheet row per image.
 5. If the crab molts later, update prior rows with `molt_event_date` and `days_until_molt_if_known`.
@@ -201,7 +199,6 @@ For Monday/Wednesday/Friday monitoring in June:
 
 ## Data Quality Rules
 
-- Keep crab IDs stable across all dates.
 - Do not mix multiple crabs in one image unless deliberately testing multi-crab detection.
 - Avoid filling free-text variants in controlled columns. Use the exact values above.
 - Leave unknown values blank or use `unknown`; do not guess.

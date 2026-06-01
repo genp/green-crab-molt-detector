@@ -11,7 +11,7 @@ Goal: test whether the app can support fast field scanning, identify the best ph
 - [ ] Print or open `SPREADSHEET_README.md`.
 - [ ] Create the shared spreadsheet from `crab_monitoring_template.csv`.
 - [ ] Create iCloud albums by date and condo, for example `2026-06-03 Condo C01`.
-- [ ] Prepare stable crab IDs for each condo: `C01-01` through `C01-36`.
+- [ ] Prepare the shared spreadsheet and agree on the image ID naming pattern.
 - [ ] Bring a phone charger or battery pack.
 - [ ] Bring a tripod or phone stand.
 - [ ] Bring a tray or marked scan area.
@@ -56,7 +56,7 @@ Run each workflow separately and record timing, failures, and user comments.
 - [ ] Mixed shadow.
 - [ ] Ventral view.
 - [ ] Dorsal view.
-- [ ] Side-left or side-right view.
+- [ ] Side view.
 - [ ] Moving crab.
 - [ ] Stationary crab.
 - [ ] Crab partly out of frame.
