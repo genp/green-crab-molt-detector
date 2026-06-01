@@ -67,6 +67,20 @@
     </style>
 </head>
 <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-success" href="/">
+                <i class="bi bi-gear"></i> MoltMeter
+            </a>
+            <div class="ms-auto">
+                <a class="btn btn-outline-primary btn-sm" href="/about-page">
+                    <i class="bi bi-info-circle"></i> About
+                </a>
+            </div>
+        </div>
+    </nav>
+
     <div class="alert alert-warning text-center mb-0" role="alert">
         <strong>Live Demo</strong> — For quick tests only. Lighting and camera angle affect results.
         <button class="btn btn-sm btn-outline-dark ms-2" type="button" id="resetDemoBtn">Reset Demo</button>
@@ -78,10 +92,10 @@
                 <div class="col-md-8">
                     <h1 class="display-4 fw-bold">Green Crab Molt Phase Detector</h1>
                     <p class="lead">AI-powered tool for sustainable green crab harvesting in New Hampshire and Maine</p>
-                    <p>Upload a photo of a green crab to predict when it will molt and determine the optimal harvest time.</p>
+                    <p>Stream video or upload a photo of a green crab to predict when it will molt and determine the optimal harvest time.</p>
                 </div>
                 <div class="col-md-4 text-center">
-                    <i class="bi bi-water" style="font-size: 6rem;"></i>
+                    <img src="/static/GreenCrab.png" alt="Green Crab" style="max-width: 200px; height: auto;">
                 </div>
             </div>
         </div>
@@ -91,11 +105,45 @@
     <div class="container">
         <div class="row">
             <div class="col-md-8 mx-auto">
-                <!-- Upload Section -->
-                <div class="card shadow-sm">
+                <!-- Live Stream Section (Primary) -->
+                <div class="card shadow-sm stream-card">
+                    <div class="card-body">
+                        <h3 class="card-title mb-3">Live Camera Stream</h3>
+                        <p class="text-muted">Point your camera at a crab to see real-time molt phase detection.</p>
+
+                        <!-- Camera Controls -->
+                        <div class="mb-3 d-flex gap-2">
+                            <button class="btn btn-success btn-lg" id="startStreamBtn">
+                                <i class="bi bi-camera-video"></i> Start Camera
+                            </button>
+                            <button class="btn btn-danger btn-lg" id="stopStreamBtn" disabled>
+                                <i class="bi bi-stop-circle"></i> Stop Camera
+                            </button>
+                            <div class="ms-auto">
+                                <span class="badge bg-secondary fs-6 py-2" id="streamStatus">Camera Off</span>
+                            </div>
+                        </div>
+
+                        <!-- Video Container -->
+                        <div id="videoContainer" style="position: relative; display: inline-block; width: 100%; background: #000; border-radius: 8px; overflow: hidden;">
+                            <video id="cameraPreview" autoplay playsinline muted style="width: 100%; height: auto; display: block;"></video>
+                            <canvas id="overlayCanvas" style="position: absolute; top: 0; left: 0; pointer-events: none; width: 100%; height: 100%;"></canvas>
+                        </div>
+                        <canvas id="captureCanvas" style="display:none;"></canvas>
+
+                        <!-- Detection Info for Video -->
+                        <div id="videoDetectionInfo" class="mt-3 p-3 bg-light rounded small text-muted" style="display: none;">
+                            <div class="mb-1"><strong>Detection Details:</strong></div>
+                            <div id="videoInfoText"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Section (Secondary) -->
+                <div class="card shadow-sm mt-4">
                     <div class="card-body">
                         <h3 class="card-title mb-4">Upload Crab Image</h3>
-                        
+
                         <div class="upload-area" id="uploadArea">
                             <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #6c757d;"></i>
                             <h4 class="mt-3">Drop image here or click to browse</h4>
@@ -105,109 +153,24 @@
                                 <i class="bi bi-folder2-open"></i> Choose File
                             </button>
                         </div>
-                        
+
                         <div class="mt-3" id="imagePreview" style="display: none;">
-                            <h5>Selected Image:</h5>
-                            <img id="previewImg" class="img-fluid rounded" style="max-height: 300px;">
+                            <div style="position: relative; display: inline-block;">
+                                <img id="previewImg" class="img-fluid rounded" style="max-width: 100%;">
+                                <canvas id="photoOverlay" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+                            </div>
                             <div class="mt-3">
-                                <button class="btn btn-success" id="predictBtn" onclick="predictMoltPhase()">
-                                    <i class="bi bi-cpu"></i> Analyze Molt Phase
+                                <button class="btn btn-primary" onclick="resetUpload()">
+                                    <i class="bi bi-upload"></i> Upload New Image
                                 </button>
-                                <button class="btn btn-secondary" onclick="resetUpload()">
-                                    <i class="bi bi-x-circle"></i> Cancel
-                                </button>
+                                <span class="ms-2 badge bg-info" id="uploadStatus">Analyzing...</span>
                             </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Live Stream Section -->
-                <div class="card shadow-sm mt-4 stream-card">
-                    <div class="card-body">
-                        <h3 class="card-title mb-3">Live Camera Stream</h3>
-                        <p class="text-muted">Use your phone or laptop camera to stream frames for continuous predictions.</p>
-                        <div class="row g-3 align-items-center">
-                            <div class="col-md-7">
-                                <video id="cameraPreview" autoplay playsinline muted></video>
-                                <canvas id="captureCanvas" style="display:none;"></canvas>
+                            <!-- Detection Info for Upload -->
+                            <div id="uploadDetectionInfo" class="mt-3 p-3 bg-light rounded small text-muted" style="display: none;">
+                                <div class="mb-1"><strong>Detection Details:</strong></div>
+                                <div id="uploadInfoText"></div>
                             </div>
-                            <div class="col-md-5">
-                                <div class="d-grid gap-2">
-                                    <button class="btn btn-success" id="startStreamBtn">
-                                        <i class="bi bi-play-circle"></i> Start Camera
-                                    </button>
-                                    <button class="btn btn-outline-secondary" id="stopStreamBtn" disabled>
-                                        <i class="bi bi-stop-circle"></i> Stop Camera
-                                    </button>
-                                    <button class="btn btn-outline-primary" id="burstStreamBtn">
-                                        <i class="bi bi-lightning-charge"></i> Start 20s Burst
-                                    </button>
-                                </div>
-                                <div class="mt-3">
-                                    <label for="frameInterval" class="form-label small text-muted">Frame interval</label>
-                                    <input type="range" class="form-range" min="500" max="2000" step="100" id="frameInterval" value="800">
-                                    <div class="small text-muted">Every <span id="frameIntervalValue">0.8</span>s</div>
-                                </div>
-                                <div class="mt-2">
-                                    <label for="burstDuration" class="form-label small text-muted">Burst duration</label>
-                                    <select class="form-select form-select-sm" id="burstDuration">
-                                        <option value="10">10 seconds</option>
-                                        <option value="20" selected>20 seconds</option>
-                                        <option value="30">30 seconds</option>
-                                    </select>
-                                </div>
-                                <div class="mt-3 stream-status" id="streamStatus">
-                                    <span class="badge bg-secondary">Idle</span>
-                                    <span class="ms-2 text-muted">No camera active</span>
-                                </div>
-                                <div class="mt-3">
-                                    <small class="text-muted">Use burst mode for quick checks to reduce cost.</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Results Section -->
-                <div class="card shadow-sm result-card" id="resultCard">
-                    <div class="card-body">
-                        <h3 class="card-title mb-4">Analysis Results</h3>
-                        
-                        <div class="row">
-                            <div class="col-md-4 text-center">
-                                <img id="resultThumbnail" class="img-fluid rounded mb-3">
-                            </div>
-                            <div class="col-md-8">
-                                <div class="mb-3">
-                                    <span class="badge phase-badge" id="phaseBadge"></span>
-                                    <span class="badge bg-secondary ms-2" id="confidenceBadge"></span>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <h5>Days Until Molt:</h5>
-                                    <h2 class="text-primary" id="daysUntilMolt"></h2>
-                                </div>
-                                
-                                <div class="alert" id="recommendationAlert">
-                                    <h6 class="alert-heading">Recommendation:</h6>
-                                    <p id="recommendationText" class="mb-0"></p>
-                                </div>
-                                
-                                <div class="text-muted">
-                                    <small>Analysis powered by <span id="modelType"></span> model</small>
-                                    <div class="small text-muted" id="detectionMeta"></div>
-                                    <details class="small text-muted mt-2">
-                                        <summary>Detection debug</summary>
-                                        <pre class="small mb-0" id="detectionDebug"></pre>
-                                    </details>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-4">
-                            <button class="btn btn-primary" onclick="resetUpload()">
-                                <i class="bi bi-arrow-repeat"></i> Analyze Another Crab
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -285,10 +248,6 @@
         const startStreamBtn = document.getElementById('startStreamBtn');
         const stopStreamBtn = document.getElementById('stopStreamBtn');
         const streamStatus = document.getElementById('streamStatus');
-        const burstStreamBtn = document.getElementById('burstStreamBtn');
-        const frameInterval = document.getElementById('frameInterval');
-        const frameIntervalValue = document.getElementById('frameIntervalValue');
-        const burstDuration = document.getElementById('burstDuration');
         
         // Store the selected file globally
         let selectedFile = null;
@@ -299,7 +258,7 @@
         let streamInterval = null;
         let streamTimeout = null;
         let sendingFrame = false;
-        let streamIntervalMs = 800;
+        let streamIntervalMs = 200; // 5 FPS for smooth interactive feel
         
         // Drag and drop
         uploadArea.addEventListener('dragover', (e) => {
@@ -345,15 +304,20 @@
                 alert('Please upload an image file');
                 return;
             }
-            
+
             // Store the file globally
             selectedFile = file;
-            
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 previewImg.src = e.target.result;
-                uploadArea.style.display = 'none';
-                imagePreview.style.display = 'block';
+                previewImg.onload = () => {
+                    // Auto-analyze as soon as image loads
+                    uploadArea.style.display = 'none';
+                    imagePreview.style.display = 'block';
+                    document.getElementById('uploadStatus').style.display = 'inline';
+                    predictMoltPhase();
+                };
             };
             reader.readAsDataURL(file);
         }
@@ -397,34 +361,36 @@
                 alert('Please select an image first');
                 return;
             }
-            
+
             const formData = new FormData();
             formData.append('file', selectedFile);
-            
-            // Show loading modal using a simple approach
-            showLoadingModal();
-            
+
+            document.getElementById('uploadStatus').textContent = 'Analyzing...';
+            document.getElementById('uploadStatus').className = 'ms-2 badge bg-info';
+
             try {
-                const data = await submitPrediction(formData);
-                
-                // Always hide modal first
-                hideLoadingModal();
-                
+                const response = await fetch('/predict', {method: 'POST', body: formData});
+                const data = await response.json();
+
                 if (data.success) {
-                    // Small delay to ensure modal is fully hidden
-                    setTimeout(() => {
-                        displayResults(data);
-                    }, 100);
+                    // Draw detection on photo
+                    drawPhotoDetection(data, 'photoOverlay');
+
+                    // Display detection info
+                    displayDetectionInfo(data, 'uploadInfoText');
+
+                    // Update status
+                    document.getElementById('uploadStatus').textContent = 'Complete';
+                    document.getElementById('uploadStatus').className = 'ms-2 badge bg-success';
                 } else {
-                    setTimeout(() => {
-                        alert(data.error || 'Prediction failed');
-                    }, 100);
+                    document.getElementById('uploadStatus').textContent = 'Failed';
+                    document.getElementById('uploadStatus').className = 'ms-2 badge bg-danger';
+                    alert(data.error || 'Prediction failed');
                 }
             } catch (error) {
-                hideLoadingModal();
-                setTimeout(() => {
-                    alert('Error: ' + error.message + '. Please try again.');
-                }, 100);
+                document.getElementById('uploadStatus').textContent = 'Error';
+                document.getElementById('uploadStatus').className = 'ms-2 badge bg-danger';
+                alert('Error: ' + error.message + '. Please try again.');
             }
         }
         
@@ -501,6 +467,8 @@
             }
             document.getElementById('daysUntilMolt').textContent = 
                 data.days_until_molt !== undefined ? data.days_until_molt.toFixed(1) + ' days' : 'N/A';
+            document.getElementById('estimatedMoltDate').textContent =
+                data.estimated_molt_event_date ? `Estimated molt date: ${data.estimated_molt_event_date}` : '';
             
             // Phase badge
             const phaseBadge = document.getElementById('phaseBadge');
@@ -526,7 +494,8 @@
             const detectionMeta = document.getElementById('detectionMeta');
             const bboxCount = data.bbox_count ?? 0;
             const cropUsed = data.crop_used ? 'yes' : 'no';
-            detectionMeta.textContent = `Detections: ${bboxCount} | Crop used: ${cropUsed}`;
+            const estimateInput = data.app_estimate_input ? ` | Estimate input: ${data.app_estimate_input}` : '';
+            detectionMeta.textContent = `Detections: ${bboxCount} | Crop used: ${cropUsed}${estimateInput}`;
             const detectionDebug = document.getElementById('detectionDebug');
             if (data.detection_debug) {
                 detectionDebug.textContent = JSON.stringify(data.detection_debug, null, 2);
@@ -557,8 +526,9 @@
                 await cameraPreview.play();
                 startStreamBtn.disabled = true;
                 stopStreamBtn.disabled = false;
-                burstStreamBtn.disabled = true;
-                streamStatus.innerHTML = '<span class="badge bg-success">Streaming</span><span class="ms-2 text-muted">Sending frames...</span>';
+                streamStatus.textContent = 'Camera Active';
+                streamStatus.classList.remove('bg-secondary');
+                streamStatus.classList.add('bg-success');
 
                 streamInterval = setInterval(captureAndSendFrame, streamIntervalMs);
             } catch (err) {
@@ -582,22 +552,202 @@
             sendingFrame = false;
             startStreamBtn.disabled = false;
             stopStreamBtn.disabled = true;
-            burstStreamBtn.disabled = false;
-            streamStatus.innerHTML = '<span class="badge bg-secondary">Idle</span><span class="ms-2 text-muted">No camera active</span>';
+            streamStatus.textContent = 'Camera Off';
+            streamStatus.classList.remove('bg-success');
+            streamStatus.classList.add('bg-secondary');
         }
 
-        async function startBurstStream() {
-            const durationSeconds = Number(burstDuration.value);
-            if (!mediaStream) {
-                await startCameraStream();
+        // Display detection info in text format
+        function displayDetectionInfo(data, elementId) {
+            const infoElement = document.getElementById(elementId);
+            if (!infoElement) return;
+
+            let infoText = '';
+
+            // Molt phase and timing
+            if (data.phase) {
+                infoText += `<div><strong>Molt Phase:</strong> ${data.phase}</div>`;
             }
-            if (streamTimeout) {
-                clearTimeout(streamTimeout);
+            if (data.days_until_molt !== undefined) {
+                infoText += `<div><strong>Days to Molt:</strong> ${data.days_until_molt.toFixed(2)} days</div>`;
             }
-            streamStatus.innerHTML = `<span class="badge bg-info">Burst</span><span class="ms-2 text-muted">Running ${durationSeconds}s burst...</span>`;
-            streamTimeout = setTimeout(() => {
-                stopCameraStream();
-            }, durationSeconds * 1000);
+            if (data.estimated_molt_event_date) {
+                infoText += `<div><strong>Estimated Molt Date:</strong> ${data.estimated_molt_event_date}</div>`;
+            }
+
+            infoText += `<div class="mt-2 mb-1"><strong>Molt Estimate Details:</strong></div>`;
+            infoText += `<div><strong>Crabs Detected:</strong> ${data.bbox_count || 0}</div>`;
+
+            // Bbox detection confidence
+            if (data.primary_bbox && data.primary_bbox.confidence !== undefined) {
+                infoText += `<div><strong>Bbox Confidence:</strong> ${(data.primary_bbox.confidence * 100).toFixed(1)}%</div>`;
+            }
+
+            // Molt estimate confidence
+            if (data.confidence) {
+                infoText += `<div><strong>Estimate Confidence:</strong> ${data.confidence}</div>`;
+            }
+
+            infoText += `<div><strong>Crop Used:</strong> ${data.crop_used ? 'Yes' : 'No'}</div>`;
+            infoText += `<div><strong>Input Source:</strong> ${data.app_estimate_input || 'N/A'}</div>`;
+
+            // Fallback warning
+            if (data.whole_image_fallback_used) {
+                infoText += `<div class="text-warning mt-1"><strong>⚠ Fallback:</strong> No confident crab detection - using whole image estimate</div>`;
+            }
+
+            // Placeholder debug tags (to be implemented)
+            infoText += `<div class="mt-2 mb-1"><strong>Debug Tags (Placeholder):</strong></div>`;
+            infoText += `<div class="text-muted"><strong>View:</strong> <em>Not yet implemented</em></div>`;
+            infoText += `<div class="text-muted"><strong>Sex:</strong> <em>Not yet implemented</em></div>`;
+
+            infoElement.innerHTML = infoText;
+            infoElement.parentElement.style.display = 'block';
+        }
+
+        // Draw detection overlay on photo
+        function drawPhotoDetection(prediction, photoOverlayId) {
+            const canvas = document.getElementById(photoOverlayId);
+            const img = document.getElementById('previewImg');
+
+            if (!canvas || !img) return;
+
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            canvas.style.width = img.clientWidth + 'px';
+            canvas.style.height = img.clientHeight + 'px';
+
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!prediction.primary_bbox) return;
+
+            const bbox = prediction.primary_bbox;
+            const x = bbox.xmin;
+            const y = bbox.ymin;
+            const w = bbox.xmax - bbox.xmin;
+            const h = bbox.ymax - bbox.ymin;
+
+            // Draw bbox
+            ctx.strokeStyle = prediction.color;
+            ctx.lineWidth = 6;
+            ctx.strokeRect(x, y, w, h);
+
+            // Draw label
+            const labelText = `${prediction.days_until_molt.toFixed(1)}d - ${prediction.phase}`;
+            ctx.font = 'bold 32px Arial';
+            const textWidth = ctx.measureText(labelText).width;
+
+            ctx.fillStyle = prediction.color;
+            ctx.fillRect(x, Math.max(0, y - 50), textWidth + 30, 50);
+
+            ctx.fillStyle = 'white';
+            ctx.fillText(labelText, x + 15, Math.max(35, y - 10));
+        }
+
+        // Draw detection overlay on canvas
+        function drawDetection(prediction) {
+            const overlayCanvas = document.getElementById('overlayCanvas');
+            const video = document.getElementById('cameraPreview');
+
+            if (!overlayCanvas || !video) return;
+
+            // Sync canvas size with video display size
+            overlayCanvas.width = video.videoWidth;
+            overlayCanvas.height = video.videoHeight;
+
+            const ctx = overlayCanvas.getContext('2d');
+            ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+            // Check if we have detection data
+            if (!prediction.primary_bbox || !prediction.image_width || !prediction.image_height) {
+                // Show "No crab detected" message
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(10, 10, overlayCanvas.width - 20, 60);
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 20px Arial';
+                ctx.fillText('No crab detected', 20, 40);
+                ctx.font = '14px Arial';
+                ctx.fillText('Point camera at a crab for molt analysis', 20, 60);
+                return;
+            }
+
+            // Scale bbox coordinates from original image to video display size
+            const scaleX = overlayCanvas.width / prediction.image_width;
+            const scaleY = overlayCanvas.height / prediction.image_height;
+
+            const bbox = prediction.primary_bbox;
+            const x = bbox.xmin * scaleX;
+            const y = bbox.ymin * scaleY;
+            const w = (bbox.xmax - bbox.xmin) * scaleX;
+            const h = (bbox.ymax - bbox.ymin) * scaleY;
+
+            // Draw bounding box with phase color
+            ctx.strokeStyle = prediction.color;
+            ctx.lineWidth = 6;
+            ctx.strokeRect(x, y, w, h);
+
+            // Prepare comprehensive label
+            const daysText = `${prediction.days_until_molt.toFixed(1)} days until molt`;
+            const phaseText = prediction.phase.toUpperCase();
+            const recText = prediction.recommendation || '';
+
+            // Calculate text dimensions
+            ctx.font = 'bold 24px Arial';
+            const phaseWidth = ctx.measureText(phaseText).width;
+            ctx.font = '18px Arial';
+            const daysWidth = ctx.measureText(daysText).width;
+            const recWidth = ctx.measureText(recText).width;
+            const maxWidth = Math.max(phaseWidth, daysWidth, recWidth) + 40;
+            const labelHeight = 110;
+
+            // Position label (prefer top-left of bbox, but adjust if near edges)
+            let labelX = x;
+            let labelY = y - labelHeight - 10;
+            if (labelY < 0) {
+                labelY = y + h + 10; // Place below bbox if top is cut off
+            }
+            if (labelX + maxWidth > overlayCanvas.width) {
+                labelX = overlayCanvas.width - maxWidth - 10;
+            }
+            if (labelX < 0) labelX = 10;
+
+            // Draw semi-transparent background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+            ctx.fillRect(labelX, labelY, maxWidth, labelHeight);
+
+            // Draw colored accent bar
+            ctx.fillStyle = prediction.color;
+            ctx.fillRect(labelX, labelY, 8, labelHeight);
+
+            // Draw phase text (large, colored)
+            ctx.fillStyle = prediction.color;
+            ctx.font = 'bold 24px Arial';
+            ctx.fillText(phaseText, labelX + 20, labelY + 32);
+
+            // Draw days text
+            ctx.fillStyle = 'white';
+            ctx.font = '18px Arial';
+            ctx.fillText(daysText, labelX + 20, labelY + 60);
+
+            // Draw recommendation text (smaller, wrapped if needed)
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#cccccc';
+            const words = recText.split(' ');
+            let line = '';
+            let lineY = labelY + 85;
+            for (let word of words) {
+                const testLine = line + word + ' ';
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > maxWidth - 40 && line.length > 0) {
+                    ctx.fillText(line, labelX + 20, lineY);
+                    line = word + ' ';
+                    lineY += 18;
+                } else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, labelX + 20, lineY);
         }
 
         async function captureAndSendFrame() {
@@ -620,9 +770,20 @@
                 try {
                     const res = await fetch('/predict_stream', { method: 'POST', body: formData });
                     const data = await res.json();
-                    displayResults(data);
+
+                    // Draw detection overlay on video (clears if no detection)
+                    drawDetection(data);
+
+                    // Display detection info
+                    displayDetectionInfo(data, 'videoInfoText');
                 } catch (err) {
                     console.warn('Stream frame failed', err);
+                    // Clear overlay on error
+                    const canvas = document.getElementById('overlayCanvas');
+                    if (canvas) {
+                        const ctx = canvas.getContext('2d');
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    }
                 } finally {
                     sendingFrame = false;
                 }
@@ -631,9 +792,6 @@
 
         startStreamBtn.addEventListener('click', startCameraStream);
         stopStreamBtn.addEventListener('click', stopCameraStream);
-        burstStreamBtn.addEventListener('click', startBurstStream);
-        frameInterval.addEventListener('input', updateFrameInterval);
-        updateFrameInterval();
         document.getElementById('resetDemoBtn').addEventListener('click', () => {
             stopCameraStream();
             resetUpload();

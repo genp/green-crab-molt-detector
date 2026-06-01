@@ -16,6 +16,7 @@ import logging
 import os
 import sys
 import threading
+from datetime import date, timedelta
 from io import BytesIO
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -33,7 +34,7 @@ if not hasattr(torch, "uint16"):
 import numpy as np
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
@@ -216,41 +217,62 @@ def load_models_async():
 
 
 def get_molt_phase_category(days_until_molt: float) -> Dict[str, object]:
-    """Convert days until molt to category and recommendation."""
+    """
+    Convert days until molt to category and recommendation.
+
+    Updated with refined categories based on field experience:
+    - Peeler: < 1 day (harvest immediately)
+    - Imminent: < 3 days (monitor closely)
+    - Pre-molt Near: < 5 days
+    - Pre-molt Later: < 14 days
+    - Intermolt: > 14 days
+    """
     if days_until_molt < 0:
         return {
             "phase": "Post-molt",
-            "color": "success",
+            "color": "#00cc66",
             "recommendation": "Crab has recently molted. Shell is likely soft.",
             "harvest_ready": False,
         }
-    if days_until_molt <= 3:
+    if days_until_molt < 1:
         return {
-            "phase": "Peeler (Imminent molt)",
-            "color": "danger",
+            "phase": "Peeler - Harvest Now",
+            "color": "#ff0000",
+            "recommendation": "HARVEST IMMEDIATELY! Crab will molt within 24 hours.",
+            "harvest_ready": True,
+        }
+    if days_until_molt < 3:
+        return {
+            "phase": "Imminent Molt",
+            "color": "#ff6600",
             "recommendation": "HARVEST NOW! Crab will molt within 3 days.",
             "harvest_ready": True,
         }
-    if days_until_molt <= 7:
+    if days_until_molt < 5:
         return {
             "phase": "Pre-molt (Near)",
-            "color": "warning",
+            "color": "#ffff00",
             "recommendation": "Monitor closely. Harvest window approaching.",
             "harvest_ready": False,
         }
-    if days_until_molt <= 14:
+    if days_until_molt < 14:
         return {
             "phase": "Pre-molt (Early)",
-            "color": "info",
-            "recommendation": "Check again in a week.",
+            "color": "#a0ff00",
+            "recommendation": "Check again in a few days.",
             "harvest_ready": False,
         }
     return {
         "phase": "Inter-molt",
-        "color": "primary",
+        "color": "#44ff44",
         "recommendation": "Crab is not close to molting.",
         "harvest_ready": False,
     }
+
+
+def get_estimated_molt_event_date(days_until_molt: float) -> str:
+    """Estimate molt event date relative to the current app date."""
+    return (date.today() + timedelta(days=float(days_until_molt))).isoformat()
 
 
 def run_detection(image: Image.Image) -> List[Dict[str, float]]:
@@ -419,61 +441,44 @@ async def predict_image(file: UploadFile) -> Dict[str, object]:
 
     raw_bboxes = run_detection(image) if DETECTION_ENABLED else []
     bboxes = filter_bboxes(image, raw_bboxes) if DETECTION_ENABLED else []
-    if DETECTION_ENABLED and not bboxes:
-        return {
-            "success": False,
-            "error": "No crabs detected in the image.",
-            "phase": "No detection",
-            "color": "secondary",
-            "recommendation": "Try a closer shot with better lighting and a clear view of the crab.",
-            "harvest_ready": False,
-            "confidence": "Low",
-            "thumbnail": None,
-            "feature_type": feature_type.upper() if feature_type else None,
-            "bbox_count": 0,
-            "crop_used": False,
-            "primary_bbox": None,
-            "bboxes": [],
-            "detection_debug": {
-                "enabled": DETECTION_ENABLED,
-                "raw_count": len(raw_bboxes),
-                "filtered_count": 0,
-                "class_filter": "Crab",
-                "filters": {
-                    "conf_min": YOLO_CONF_MIN,
-                    "min_area_pct": YOLO_MIN_AREA_PCT,
-                    "max_area_pct": YOLO_MAX_AREA_PCT,
-                    "min_aspect": YOLO_MIN_ASPECT,
-                    "max_aspect": YOLO_MAX_ASPECT,
-                },
-                "raw_bboxes": raw_bboxes[:3],
-            },
-        }
     primary_bbox = select_primary_bbox(bboxes) if DETECTION_CROP_ENABLED else None
     roi_image = crop_to_bbox(image, primary_bbox) if primary_bbox else image
+    estimate_input = "yolo_crop" if primary_bbox else "whole_image_fallback" if DETECTION_ENABLED else "whole_image"
 
     np_image = np.array(roi_image)
     features = feature_extractor.extract_features(np_image).reshape(1, -1)
     days_until_molt = float(regressor.predict(features)[0])
+    estimated_molt_event_date = get_estimated_molt_event_date(days_until_molt)
     phase_info = get_molt_phase_category(days_until_molt)
 
     label_text = f"{phase_info['phase']} ({days_until_molt:.1f}d)"
     thumbnail = encode_thumbnail(image, label_text, bboxes, phase_info["color"])
+    recommendation = phase_info["recommendation"]
+    if DETECTION_ENABLED and not bboxes:
+        recommendation = (
+            "No confident crab detection. Estimate was run on the full image; "
+            "try a closer, centered shot for a crop-based estimate."
+        )
 
     return {
         "success": True,
         "days_until_molt": days_until_molt,
+        "estimated_molt_event_date": estimated_molt_event_date,
         "phase": phase_info["phase"],
         "color": phase_info["color"],
-        "recommendation": phase_info["recommendation"],
+        "recommendation": recommendation,
         "harvest_ready": phase_info["harvest_ready"],
         "confidence": "High" if abs(days_until_molt) < 20 else "Medium",
+        "app_estimate_input": estimate_input,
+        "whole_image_fallback_used": DETECTION_ENABLED and primary_bbox is None,
         "thumbnail": thumbnail,
         "feature_type": feature_type.upper() if feature_type else None,
         "bbox_count": len(bboxes),
         "crop_used": primary_bbox is not None,
         "primary_bbox": primary_bbox,
         "bboxes": bboxes,
+        "image_width": image.width,
+        "image_height": image.height,
         "detection_debug": {
             "enabled": DETECTION_ENABLED,
             "raw_count": len(raw_bboxes),
@@ -581,7 +586,16 @@ def about():
     }
 
 
-@app.get("/robots.txt")
+@app.get("/about-page", response_class=HTMLResponse)
+async def about_page():
+    """Serve the About Us page."""
+    about_path = BASE_PATH / "templates" / "about.html"
+    if not about_path.exists():
+        raise HTTPException(status_code=404, detail="About page not found")
+    return HTMLResponse(about_path.read_text(encoding="utf-8"))
+
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
 def robots():
     """Serve robots.txt for search engines."""
     with open(BASE_PATH / "static" / "robots.txt") as f:

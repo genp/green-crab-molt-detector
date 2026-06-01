@@ -46,9 +46,17 @@ Fill these when known:
 
 - `days_until_molt_if_known`: number of days from photo date until observed molt
 - `molt_event_date`: actual molt date, formatted `YYYY-MM-DD`
-- `app_estimated_days_to_molt`: app estimate, if the image was run through the app
+- `app_estimated_days_to_molt`: selected app estimate, using the YOLO crab crop when available and the whole image as fallback
+- `app_estimated_molt_event_date`: estimated molt date from the selected app estimate
 - `app_phase`: app phase label
 - `app_confidence`: app confidence label
+- `app_estimate_input`: `yolo_crop`, `whole_image_fallback`, or `not_run`
+- `whole_image_estimated_days_to_molt`: app estimate from the whole image
+- `whole_image_estimated_molt_event_date`: estimated molt date from the whole-image estimate
+- `whole_image_app_phase`: phase from the whole-image estimate
+- `yolo_crop_estimated_days_to_molt`: app estimate from the YOLO crop, only when a filtered detection exists
+- `yolo_crop_estimated_molt_event_date`: estimated molt date from the YOLO crop estimate
+- `yolo_crop_app_phase`: phase from the YOLO crop estimate
 - `human_confidence`: confidence in the manual label
 - `shell_condition_notes`: visual molt clues, shell softness, color, plates, etc.
 - `limb_loss_or_injury`: missing limbs, damaged shell, unusual condition
@@ -164,6 +172,16 @@ medium
 low
 unknown
 ```
+
+### `app_estimate_input`
+
+```text
+yolo_crop
+whole_image_fallback
+not_run
+```
+
+Use `whole_image_fallback` when the crab detector fails but the image still contains a usable crab. This is important for current field data because the YOLO detector is missing many clear hand-held crab images.
 
 ### `review_status`
 
