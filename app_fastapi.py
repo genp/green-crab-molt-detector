@@ -52,6 +52,26 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Green Crab Molt Detector", version="1.0.0")
+
+# Security headers middleware
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=*, microphone=(), geolocation=()"
+    # Add Content Security Policy for additional trust
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self' https:; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "img-src 'self' data: blob:; "
+        "font-src 'self' https://cdn.jsdelivr.net;"
+    )
+    return response
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -544,3 +564,25 @@ def ui():
 def api_info():
     """API information endpoint."""
     return {"message": "Green Crab Molt Detector API (FastAPI)", "endpoints": ["/predict", "/predict_stream", "/health"]}
+
+
+@app.get("/about")
+def about():
+    """About page for web filters and categorization services."""
+    return {
+        "name": "MoltMeter - Green Crab Molt Detection",
+        "description": "AI-powered tool for predicting green crab molt phases to support sustainable harvesting",
+        "purpose": "Marine biology research and sustainable fisheries management",
+        "technology": "Computer vision and machine learning for molt phase estimation",
+        "category": "Science and Research / Environmental / Sustainable Fisheries",
+        "contact": "https://moltmeter.ai",
+        "privacy": "No personal data collected. Only crab images processed for molt prediction.",
+        "security": "Hosted on Google Cloud Platform with SSL encryption"
+    }
+
+
+@app.get("/robots.txt")
+def robots():
+    """Serve robots.txt for search engines."""
+    with open(BASE_PATH / "static" / "robots.txt") as f:
+        return f.read()

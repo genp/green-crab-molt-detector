@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Green Crab Molt Detection System
+# https://moltmeter.ai
