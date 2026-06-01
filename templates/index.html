@@ -176,6 +176,58 @@
                     </div>
                 </div>
 
+                <!-- Prediction Summary -->
+                <div class="card shadow-sm mt-4" id="resultCard" style="display: none;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-3">
+                            <div>
+                                <h3 class="card-title mb-1">Prediction Summary</h3>
+                                <p class="text-muted mb-0">Primary molt estimate returned by the model.</p>
+                            </div>
+                            <img id="resultThumbnail" alt="Prediction thumbnail" class="img-fluid rounded" style="max-width: 220px; display: none;">
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <div class="p-3 bg-light rounded h-100">
+                                    <div class="text-muted small text-uppercase mb-1">Days Until Molt</div>
+                                    <div id="daysUntilMolt" class="h4 mb-0">N/A</div>
+                                    <div id="estimatedMoltDate" class="small text-muted mt-1"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 bg-light rounded h-100">
+                                    <div class="text-muted small text-uppercase mb-1">Phase</div>
+                                    <span id="phaseBadge" class="badge phase-badge">N/A</span>
+                                    <div id="confidenceBadge" class="small text-muted mt-2">Low Confidence</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="recommendationAlert" class="alert alert-secondary h-100 mb-0">
+                                    <div class="fw-semibold mb-2">Recommendation</div>
+                                    <div id="recommendationText">No recommendation available.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-3">
+                                <div class="p-3 bg-light rounded h-100">
+                                    <div class="text-muted small text-uppercase mb-1">Model</div>
+                                    <div id="modelType" class="fw-semibold">N/A</div>
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="p-3 bg-light rounded h-100">
+                                    <div class="text-muted small text-uppercase mb-1">Detection Details</div>
+                                    <div id="detectionMeta" class="small mb-2"></div>
+                                    <pre id="detectionDebug" class="small mb-0" style="white-space: pre-wrap; word-break: break-word;">No debug data.</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Info Cards -->
                 <div class="row mt-4">
                     <div class="col-md-6">
@@ -328,7 +380,9 @@
             fileInput.value = '';
             uploadArea.style.display = 'block';
             imagePreview.style.display = 'none';
-            resultCard.style.display = 'none';
+            if (resultCard) {
+                resultCard.style.display = 'none';
+            }
         }
         
         function delay(ms) {
@@ -379,6 +433,7 @@
 
                     // Display detection info
                     displayDetectionInfo(data, 'uploadInfoText');
+                    displayResults(data);
 
                     // Update status
                     document.getElementById('uploadStatus').textContent = 'Complete';
@@ -457,6 +512,8 @@
         }
         
         function displayResults(data) {
+            if (!resultCard) return;
+
             // Update result elements
             const thumbnailEl = document.getElementById('resultThumbnail');
             if (data.thumbnail) {
@@ -474,15 +531,19 @@
             // Phase badge
             const phaseBadge = document.getElementById('phaseBadge');
             phaseBadge.textContent = data.phase;
-            phaseBadge.className = `badge phase-badge bg-${data.color}`;
-            
+            phaseBadge.style.backgroundColor = data.color || '#6c757d';
+            phaseBadge.style.color = '#ffffff';
+            phaseBadge.style.border = '1px solid rgba(0,0,0,0.08)';
+
             // Confidence badge
             document.getElementById('confidenceBadge').textContent = 
                 data.confidence ? `${data.confidence} Confidence` : 'Low Confidence';
-            
+
             // Recommendation
             const recommendationAlert = document.getElementById('recommendationAlert');
-            recommendationAlert.className = `alert alert-${data.color}`;
+            recommendationAlert.className = 'alert mb-0 h-100';
+            recommendationAlert.style.borderLeft = `6px solid ${data.color || '#6c757d'}`;
+            recommendationAlert.style.backgroundColor = '#f8f9fa';
             document.getElementById('recommendationText').textContent = data.recommendation || 'No recommendation available.';
             
             // Add harvest alert animation if ready

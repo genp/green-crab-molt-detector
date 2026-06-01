@@ -12,14 +12,14 @@ import shutil
 
 def create_procfile():
     """Create Procfile for Heroku deployment."""
-    content = "web: gunicorn app:app\n"
+    content = "web: uvicorn app_fastapi:app --host 0.0.0.0 --port ${PORT:-8080}\n"
     with open("Procfile", "w") as f:
         f.write(content)
     print("Created Procfile")
 
 def create_runtime_txt():
     """Create runtime.txt for Python version specification."""
-    content = "python-3.10.12\n"
+    content = "python-3.12.12\n"
     with open("runtime.txt", "w") as f:
         f.write(content)
     print("Created runtime.txt")
@@ -42,7 +42,7 @@ def create_docker_files():
     """Create Docker files for containerized deployment."""
     
     # Dockerfile
-    dockerfile_content = """FROM python:3.10-slim
+    dockerfile_content = """FROM python:3.12-slim
 
 WORKDIR /app
 
@@ -67,10 +67,12 @@ COPY . .
 RUN mkdir -p temp_uploads models data/processed
 
 # Expose port
-EXPOSE 5000
+EXPOSE 8080
 
 # Run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+ENV MODEL_LOAD_ASYNC=true
+ENV MAX_CONCURRENT_INFERENCES=2
+CMD ["uvicorn", "app_fastapi:app", "--host", "0.0.0.0", "--port", "8080"]
 """
     
     with open("Dockerfile", "w") as f:
@@ -84,9 +86,10 @@ services:
   web:
     build: .
     ports:
-      - "5000:5000"
+      - "8080:8080"
     environment:
-      - FLASK_ENV=production
+      - MODEL_LOAD_ASYNC=true
+      - MAX_CONCURRENT_INFERENCES=2
     volumes:
       - ./models:/app/models
       - ./data:/app/data
@@ -156,10 +159,10 @@ def create_deployment_guide():
 pip install -r requirements.txt
 
 # Run the application
-python app.py
+python -m uvicorn app_fastapi:app --host 127.0.0.1 --port 8080
 ```
 
-The app will be available at http://localhost:5000
+The app will be available at http://localhost:8080
 
 ### Option 2: Docker
 
@@ -215,15 +218,16 @@ docker-compose up -d
 
 1. Connect your GitHub repository
 2. Configure the app with:
-   - Python 3.10 runtime
+   - Python 3.12 runtime
    - Build command: `pip install -r requirements.txt`
-   - Run command: `gunicorn app:app`
+   - Run command: `uvicorn app_fastapi:app --host 0.0.0.0 --port 8080`
 
 ## Environment Variables
 
 Set these environment variables for production:
 
-- `FLASK_ENV=production`
+- `MODEL_LOAD_ASYNC=true`
+- `MAX_CONCURRENT_INFERENCES=2`
 - `MODEL_PATH=/path/to/models` (optional, defaults to ./models)
 
 ## Performance Considerations

@@ -27,9 +27,9 @@ Before deploying, ensure you have:
 Create a `.env` file for production settings:
 
 ```bash
-# Flask Configuration
-FLASK_ENV=production
-FLASK_DEBUG=False
+# ASGI / FastAPI Configuration
+MODEL_LOAD_ASYNC=true
+MAX_CONCURRENT_INFERENCES=2
 SECRET_KEY=your-secret-key-here
 
 # Model Configuration
@@ -37,7 +37,7 @@ MODEL_PATH=/app/models/
 DATA_PATH=/app/data/
 
 # Server Configuration
-PORT=5000
+PORT=8080
 WORKERS=4
 THREADS=2
 
@@ -73,12 +73,12 @@ heroku buildpacks:add heroku/python
 
 **Procfile:**
 ```
-web: gunicorn app:app --workers 4 --threads 2 --worker-class sync
+web: uvicorn app_fastapi:app --host 0.0.0.0 --port ${PORT:-8080}
 ```
 
 **runtime.txt:**
 ```
-python-3.10.12
+python-3.12.12
 ```
 
 #### 4. Deploy
@@ -100,7 +100,8 @@ heroku open
 
 #### 5. Configure Environment Variables
 ```bash
-heroku config:set FLASK_ENV=production
+heroku config:set MODEL_LOAD_ASYNC=true
+heroku config:set MAX_CONCURRENT_INFERENCES=2
 heroku config:set SECRET_KEY=$(python -c 'import secrets; print(secrets.token_hex(32))')
 ```
 
@@ -148,7 +149,7 @@ server {
     server_name your-domain.com;
 
     location / {
-        proxy_pass http://127.0.0.1:5000;
+        proxy_pass http://127.0.0.1:8080;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -178,14 +179,14 @@ sudo nano /etc/supervisor/conf.d/green-crab.conf
 Add:
 ```ini
 [program:green-crab]
-command=/home/ubuntu/green-crab-molt-detector/venv/bin/gunicorn app:app --workers 4 --bind 127.0.0.1:5000
+command=/home/ubuntu/green-crab-molt-detector/venv/bin/python -m uvicorn app_fastapi:app --host 127.0.0.1 --port 8080
 directory=/home/ubuntu/green-crab-molt-detector
 user=ubuntu
 autostart=true
 autorestart=true
 redirect_stderr=true
 stdout_logfile=/var/log/green-crab/app.log
-environment=PATH="/home/ubuntu/green-crab-molt-detector/venv/bin",FLASK_ENV="production"
+environment=PATH="/home/ubuntu/green-crab-molt-detector/venv/bin",MODEL_LOAD_ASYNC="true",MAX_CONCURRENT_INFERENCES="2"
 ```
 
 Start supervisor:
@@ -211,7 +212,7 @@ gcloud auth login
 
 #### 2. Create Dockerfile
 ```dockerfile
-FROM python:3.10-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
@@ -228,7 +229,6 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install gunicorn
 
 # Copy application files
 COPY . .
@@ -237,11 +237,11 @@ COPY . .
 RUN mkdir -p models data/processed
 
 # Set environment variables
-ENV FLASK_ENV=production
+ENV MODEL_LOAD_ASYNC=true
 ENV PORT=8080
 
 # Run the application
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app
+CMD exec uvicorn app_fastapi:app --host 0.0.0.0 --port $PORT
 ```
 
 #### 3. Build and Deploy
@@ -300,7 +300,6 @@ cd green-crab-molt-detector
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-pip install gunicorn
 ```
 
 #### 4. Create Systemd Service
@@ -319,8 +318,9 @@ User=deploy
 Group=deploy
 WorkingDirectory=/home/deploy/green-crab-molt-detector
 Environment="PATH=/home/deploy/green-crab-molt-detector/venv/bin"
-Environment="FLASK_ENV=production"
-ExecStart=/home/deploy/green-crab-molt-detector/venv/bin/gunicorn app:app --workers 4 --bind unix:green-crab.sock
+Environment="MODEL_LOAD_ASYNC=true"
+Environment="MAX_CONCURRENT_INFERENCES=2"
+ExecStart=/home/deploy/green-crab-molt-detector/venv/bin/python -m uvicorn app_fastapi:app --host 127.0.0.1 --port 8080
 
 [Install]
 WantedBy=multi-user.target
@@ -385,15 +385,16 @@ Create `docker-compose.yml`:
 version: '3.8'
 
 services:
-  web:
-    build: .
+    web:
+      build: .
     ports:
-      - "80:5000"
+      - "80:8080"
     volumes:
       - ./models:/app/models
       - ./data:/app/data
     environment:
-      - FLASK_ENV=production
+      - MODEL_LOAD_ASYNC=true
+      - MAX_CONCURRENT_INFERENCES=2
       - SECRET_KEY=${SECRET_KEY}
     restart: unless-stopped
     
