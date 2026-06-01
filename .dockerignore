@@ -1,21 +1,98 @@
+# Python
 __pycache__/
 *.pyc
-.git/
-.gitignore
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
 .venv/
 venv/
+env/
+ENV/
 green_crabs_mps/
+green_crabs_3.14/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+tests/
+test_*.py
+
+# Development and training data
 data/
+field_data/
+runs/
 notebooks/
 plots/
 reports/
+models/temporal/
+models/temporal_7day/
+
+# Test results
 test_results/
 test_results_final/
 test_results_realistic/
 testset_complete_results/
 unlabeled_test_results/
+
+# Temporary files
 temp_uploads/
 *.log
+.cache/
+*.tmp
+
+# Documentation (keep README.md)
+*.md
+!README.md
+docs/
+
+# Media files (exclude large test media)
 *.mp3
+*.mp4
+*.mov
+*.avi
+*.mkv
 *.zip
+*.tar
+*.gz
 *.pdf
+
+# Claude Code
+.claude/
+
+# Deployment files (already in repo, no need in context)
+PHASE1_PLAN.md
+WHITELIST_REQUEST.md
+agents.md
+
+# Keep these essential files/directories for deployment:
+# - app_fastapi.py
+# - src/
+# - models/*.joblib (pre-trained models)
+# - static/
+# - templates/
+# - requirements.txt
+# - Dockerfile
+# - cloudbuild.yaml
