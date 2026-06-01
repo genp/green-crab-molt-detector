@@ -1,0 +1,4 @@
+date,condo_id,image_id,icloud_album_name,image_filename,photographer,view_angle,distance_category,lighting,background,crab_in_frame_count,crab_position,motion_blur,sex,known_molt_phase,days_until_molt_if_known,molt_event_date,app_estimated_days_to_molt,app_phase,app_confidence,human_confidence,shell_condition_notes,limb_loss_or_injury,notes,review_status
+2026-06-01,C01,2026-06-01_C01_ventral_close_sun_001,June 2026 Condo C01,IMG_0001.JPG,Grace,ventral,close_under_6in,sun,hand,1,centered,none,male,unknown,,,,,,medium,,,,new
+2026-06-01,C01,2026-06-01_C01_dorsal_close_sun_002,June 2026 Condo C01,IMG_0002.JPG,Grace,dorsal,close_under_6in,sun,hand,1,centered,none,male,unknown,,,,,,medium,,,,new
+2026-06-01,C01,2026-06-01_C01_side_close_sun_003,June 2026 Condo C01,IMG_0003.JPG,Grace,side,close_under_6in,sun,hand,1,centered,slight,male,unknown,,,,,,medium,,,,new
