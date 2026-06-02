@@ -655,6 +655,7 @@ green_crabs/
 - [ ] Session export is not implemented: no JSZip import, session frame store, export button, or ZIP creation flow.
 - [ ] Temporal smoothing is not implemented: no prediction history buffer or `smooth_prediction()` path.
 - [ ] Performance validation is still needed for frame latency, practical FPS, mobile behavior, and stutter/freezing.
+- [ ] CPU detect+estimate latency is too slow for live field testing: current 4-vCPU gcloud instance takes about 5 seconds from known-crab frame upload to bbox overlay; target is 0.5 seconds or lower for this week's testing.
 - [ ] Deployment validation is still needed for Docker/Cloud Run/moltmeter.ai and monitoring.
 - [ ] Detector upgrade is still needed: train/deploy a new detector bootstrapped from reviewed SAM3 bbox outputs.
 - [ ] Qualitatively test the SAM3-bootstrapped detector on `data/raw/Green Crab AI 2026` images, including hands, coolers, dorsal/ventral views, lighting variation, field negatives, and side-ish views.
@@ -670,6 +671,15 @@ green_crabs/
 
 ### 2. Performance Testing
 - [ ] Frame processing latency < 250ms (target 200ms)
+- [ ] CPU live-stream round-trip latency < 500ms on 4-vCPU gcloud test instance for a known single-crab frame.
+- [ ] Add request timing instrumentation for upload decode, YOLO detect, bbox filter/crop, feature extraction, regression, JSON response, and frontend canvas draw.
+- [ ] Test smaller stream inputs: client-side downscale to 640px or 416px max dimension before upload; JPEG quality 0.6-0.75.
+- [ ] Benchmark detector-only latency for `yolov8n`/bootstrap detector at `imgsz=320`, `416`, and `640`.
+- [ ] Benchmark estimate-only latency on a known crop to determine whether ViT feature extraction/regression or YOLO detection is the bottleneck.
+- [ ] Add fast path for video stream: return bbox/phase metadata only, no server-generated thumbnail/base64 image.
+- [ ] Avoid running full regression on every frame: detect every frame if cheap, estimate every N frames or only when bbox changes enough.
+- [ ] Cache/reuse last good bbox and last estimate for short windows to keep the overlay responsive while inference catches up.
+- [ ] Consider ONNX/OpenVINO/CoreML/TorchScript export for detector and feature extractor if Python/PyTorch CPU inference remains above target.
 - [ ] 5 FPS feels smooth and interactive
 - [ ] No stuttering or freezing
 - [ ] Works on mobile devices
@@ -697,7 +707,15 @@ green_crabs/
 - [ ] Train or fine-tune a green crab detector from the reviewed SAM3-bootstrap labels.
 - [ ] Run qualitative detector review on `data/raw/Green Crab AI 2026` images.
 - [ ] Check failure modes: false positives on hands/gloves/cooler edges, missed crabs, poor ventral/dorsal coverage, side-view misses, and lighting/distance sensitivity.
-- [ ] Deploy the new detector through `YOLO_MODEL_PATH` and verify the app uses crop-based regression when detections are confident.
+- [ ] Keep the bootstrap effort split into two tracks:
+  - detector track: bootstrap a stronger YOLO v2 from reviewed boxes and field negatives
+  - estimator track: keep a separate MVP v2 discussion for the molt estimator and auxiliary tags
+- [ ] If SAM3 bootstrapping is restarted, add review-time tags for `view` (`dorsal`, `ventral`, `side`, `unknown`), `sex` (`male`, `female`, `unknown`), and image quality/negative categories such as `human`, `oyster`, `cage`, `equipment`, `table`, `tray`, `vegetation`, `partial crab`, and `legs only`.
+- [ ] Keep the detector target simple: one crab class for YOLO, with the negative diversity coming from the reviewed bootstrap set.
+- [ ] Treat aux tags as downstream signals first; only move them into the detector if the tagged data shows a measurable gain in either detection quality or molt estimation.
+- [ ] After bootstrap v2 updates land, deploy the corrected detector + params locally first, compare dogfood results on original vs downscaled 416px/Q0.65 frames, and only then promote to Cloud Run.
+- [ ] After detector v2 is stable, decide whether to restart SAM3 with the tighter prompt/tag set or to begin a separate estimator MVP v2 run using `view`/`sex` tags.
+- [ ] Retrain the estimator against the actual streaming-frame resolution and compression settings so molt predictions stay good on the frames sent by the video stream, not just on original high-resolution photos.
 
 ### 7. Multi-Crab Output Testing
 - [ ] Update backend response to include a `crab_predictions` list: bbox, detection confidence, crop-used flag, days-to-molt, phase, color, and recommendation for each confident crab.
@@ -733,12 +751,17 @@ green_crabs/
 - [x] Update navigation to include About link
 - [ ] Add temporal smoothing for live predictions
 - [ ] Add explicit processing indicator/spinner for frame inference
+- [ ] Add CPU latency instrumentation to `/predict_stream` and frontend frame loop.
+- [ ] Optimize `/predict_stream` fast path to avoid thumbnail/base64 generation for live video.
+- [ ] Downscale client video frames before upload and benchmark 320/416/640 detector image sizes.
+- [ ] Profile YOLO detection versus crop feature extraction/regression on the 4-vCPU gcloud instance.
+- [ ] Add frame-skipping/cached-estimate strategy so overlays update within 0.5 seconds even if full estimate runs slower.
 - [ ] Qualitatively test current detector on `data/raw/Green Crab AI 2026`
 - [ ] Train/fine-tune SAM3-bootstrapped detector from reviewed bbox outputs
+- [ ] Test locally: `uvicorn app_fastapi:app --reload`
 - [ ] Deploy SAM3-bootstrapped detector with `YOLO_MODEL_PATH`
 - [ ] Qualitatively test SAM3-bootstrapped detector on `data/raw/Green Crab AI 2026`
 - [ ] Add multi-crab detection and estimation output for all confident crab detections
-- [ ] Test locally: `uvicorn app_fastapi:app --reload`
 - [ ] Build Docker image
 - [ ] Deploy to Cloud Run
 - [ ] Test on moltmeter.ai
@@ -747,7 +770,7 @@ green_crabs/
 ## Success Metrics
 
 1. **Usability**: Process 100 crabs in < 20 minutes (vs. current struggles)
-2. **Responsiveness**: Frame latency < 250ms
+2. **Responsiveness**: CPU stream overlay latency < 500ms on a 4-vCPU gcloud instance; stretch target < 250ms
 3. **Learning**: Color coding helps users identify molt phases
 4. **Validation**: Collect 5+ session exports from field tests
 5. **Adoption**: Generate interest via About page contact info

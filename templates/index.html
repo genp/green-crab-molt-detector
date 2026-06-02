@@ -305,6 +305,8 @@
         let streamTimeout = null;
         let sendingFrame = false;
         let streamIntervalMs = 200; // 5 FPS for smooth interactive feel
+        const streamMaxDimension = 416;
+        const streamJpegQuality = 0.65;
         
         // Drag and drop
         uploadArea.addEventListener('dragover', (e) => {
@@ -550,7 +552,7 @@
             }
             
             // Model type
-            document.getElementById('modelType').textContent = data.feature_type;
+            document.getElementById('modelType').textContent = data.model_display_name || data.feature_type || 'N/A';
 
             // Show results
             resultCard.style.display = 'block';
@@ -645,6 +647,21 @@
                 infoText += `<div class="text-warning mt-1"><strong>⚠ Fallback:</strong> No confident crab detection - using whole image estimate</div>`;
             }
 
+            if (data.stream_mode) {
+                const cacheFlags = [];
+                if (data.bbox_cached) cacheFlags.push('bbox reused');
+                if (data.estimate_cached) cacheFlags.push('estimate reused');
+                infoText += `<div class="mt-2 mb-1"><strong>Stream Performance:</strong></div>`;
+                infoText += `<div><strong>Client Round Trip:</strong> ${data.client_round_trip_ms ? data.client_round_trip_ms.toFixed(0) + 'ms' : 'N/A'}</div>`;
+                if (data.server_timing_ms && data.server_timing_ms.total !== undefined) {
+                    infoText += `<div><strong>Server Total:</strong> ${data.server_timing_ms.total.toFixed(0)}ms</div>`;
+                    infoText += `<div class="text-muted">detect ${formatTiming(data.server_timing_ms.detect)}, estimate ${formatTiming(data.server_timing_ms.estimate || data.server_timing_ms.estimate_cache)}, decode ${formatTiming(data.server_timing_ms.decode)}</div>`;
+                }
+                if (cacheFlags.length > 0) {
+                    infoText += `<div class="text-muted">${cacheFlags.join(', ')}</div>`;
+                }
+            }
+
             // Placeholder debug tags (to be implemented)
             infoText += `<div class="mt-2 mb-1"><strong>Debug Tags (Placeholder):</strong></div>`;
             infoText += `<div class="text-muted"><strong>View:</strong> <em>Not yet implemented</em></div>`;
@@ -652,6 +669,10 @@
 
             infoElement.innerHTML = infoText;
             infoElement.parentElement.style.display = 'block';
+        }
+
+        function formatTiming(value) {
+            return value !== undefined ? `${Number(value).toFixed(0)}ms` : 'N/A';
         }
 
         function getPredictionBboxes(prediction) {
@@ -782,9 +803,13 @@
 
             sendingFrame = true;
             const ctx = captureCanvas.getContext('2d');
-            captureCanvas.width = cameraPreview.videoWidth;
-            captureCanvas.height = cameraPreview.videoHeight;
+            const sourceWidth = cameraPreview.videoWidth;
+            const sourceHeight = cameraPreview.videoHeight;
+            const scale = Math.min(1, streamMaxDimension / Math.max(sourceWidth, sourceHeight));
+            captureCanvas.width = Math.max(1, Math.round(sourceWidth * scale));
+            captureCanvas.height = Math.max(1, Math.round(sourceHeight * scale));
             ctx.drawImage(cameraPreview, 0, 0, captureCanvas.width, captureCanvas.height);
+            const requestStartedAt = performance.now();
 
             captureCanvas.toBlob(async (blob) => {
                 if (!blob) {
@@ -796,12 +821,17 @@
                 try {
                     const res = await fetch('/predict_stream', { method: 'POST', body: formData });
                     const data = await res.json();
+                    data.client_round_trip_ms = performance.now() - requestStartedAt;
 
                     // Draw detection overlay on video (clears if no detection)
                     drawDetection(data);
 
                     // Display detection info
                     displayDetectionInfo(data, 'videoInfoText');
+                    const serverMs = data.server_timing_ms && data.server_timing_ms.total !== undefined
+                        ? ` / server ${data.server_timing_ms.total.toFixed(0)}ms`
+                        : '';
+                    streamStatus.textContent = `Camera Active • ${data.client_round_trip_ms.toFixed(0)}ms${serverMs}`;
                 } catch (err) {
                     console.warn('Stream frame failed', err);
                     // Clear overlay on error
@@ -813,7 +843,7 @@
                 } finally {
                     sendingFrame = false;
                 }
-            }, 'image/jpeg', 0.8);
+            }, 'image/jpeg', streamJpegQuality);
         }
 
         startStreamBtn.addEventListener('click', startCameraStream);

@@ -1,0 +1,17 @@
+bootstrapv1 detector checkpoint
+
+Source:
+  runs/detect/green_crab_detector_bootstrapv1_top1_no_green_crab_ai_2026_yolov8n/weights/best.pt
+
+Copied here so deployment can reference a stable models/ path instead of a runs/ artifact.
+
+Intended use:
+  - temporary deployment of the bootstrapv1 detector while retraining on more negatives is pending
+  - set YOLO_MODEL_PATH=models/bootstrapv1_detector_best.pt for local or Cloud Run usage
+
+Observed class map:
+  - 0: green_crab
+
+Related validation:
+  - local manual test on /predict_stream with data/raw/Green Crab AI 2026/IMG_2530.jpeg
+  - dogfood comparison against yolov8n on original and downscaled 416px/quality 0.65 frames

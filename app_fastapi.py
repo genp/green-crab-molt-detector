@@ -16,6 +16,7 @@ import logging
 import os
 import sys
 import threading
+import time
 from datetime import date, timedelta
 from io import BytesIO
 from pathlib import Path
@@ -92,12 +93,18 @@ DEFAULT_LIGHT_YOLO_MODEL_PATH = (
 INFERENCE_MODE = os.getenv("INFERENCE_MODE", "cpu").lower()
 DETECTION_ENABLED = os.getenv("DETECTION_ENABLED", "true").lower() == "true"
 DETECTION_CROP_ENABLED = os.getenv("DETECTION_CROP_ENABLED", "true").lower() == "true"
-YOLO_CONF_MIN = float(os.getenv("YOLO_CONF_MIN", "0.25"))
-YOLO_MAX_DETECTIONS = int(os.getenv("YOLO_MAX_DETECTIONS", "5"))
+YOLO_CONF_MIN = float(os.getenv("YOLO_CONF_MIN", "0.35"))
+YOLO_MAX_DETECTIONS = int(os.getenv("YOLO_MAX_DETECTIONS", "10"))
 YOLO_MIN_AREA_PCT = float(os.getenv("YOLO_MIN_AREA_PCT", "0.01"))
 YOLO_MAX_AREA_PCT = float(os.getenv("YOLO_MAX_AREA_PCT", "0.8"))
 YOLO_MIN_ASPECT = float(os.getenv("YOLO_MIN_ASPECT", "0.5"))
 YOLO_MAX_ASPECT = float(os.getenv("YOLO_MAX_ASPECT", "2.0"))
+YOLO_NMS_IOU = float(os.getenv("YOLO_NMS_IOU", "0.45"))
+STREAM_YOLO_IMGSZ = int(os.getenv("STREAM_YOLO_IMGSZ", "416"))
+STREAM_ESTIMATE_EVERY_MS = int(os.getenv("STREAM_ESTIMATE_EVERY_MS", "1000"))
+STREAM_CACHE_TTL_MS = int(os.getenv("STREAM_CACHE_TTL_MS", "800"))
+STREAM_BBOX_REUSE_IOU = float(os.getenv("STREAM_BBOX_REUSE_IOU", "0.65"))
+STREAM_SKIP_THUMBNAIL = os.getenv("STREAM_SKIP_THUMBNAIL", "true").lower() == "true"
 YOLO_MODEL_PATH = (
     Path(os.getenv("YOLO_MODEL_PATH"))
     if os.getenv("YOLO_MODEL_PATH")
@@ -121,11 +128,15 @@ if (BASE_PATH / "static").exists():
 feature_extractor: Optional[GeneralCrustaceanFeatureExtractor] = None
 regressor: Optional[MoltPhaseRegressor] = None
 feature_type: Optional[str] = None
+regressor_model_path: Optional[Path] = None
+detector_model_path: Optional[Path] = None
 yolo_detector = None
 yolo_class_names: Optional[Dict[int, str]] = None
 inference_semaphore = asyncio.Semaphore(int(os.getenv("MAX_CONCURRENT_INFERENCES", "2")))
 models_ready = threading.Event()
 model_load_lock = threading.Lock()
+stream_cache_lock = threading.Lock()
+stream_cache: Dict[str, object] = {}
 
 
 def allowed_file(filename: str) -> bool:
@@ -134,7 +145,7 @@ def allowed_file(filename: str) -> bool:
 
 def load_models(load_detector: bool = True):
     """Load feature extractor, regressor, and optional YOLO detector."""
-    global feature_extractor, regressor, feature_type, yolo_detector, yolo_class_names
+    global feature_extractor, regressor, feature_type, regressor_model_path, detector_model_path, yolo_detector, yolo_class_names
 
     feature_model = os.getenv("FEATURE_MODEL", "vit_base")
     logger.info("Loading feature extractor: %s", feature_model)
@@ -174,6 +185,7 @@ def load_models(load_detector: bool = True):
     logger.info("Loading regressor from %s", model_path)
     regressor = MoltPhaseRegressor("random_forest")
     regressor.load_model(model_path)
+    regressor_model_path = model_path
 
     if not hasattr(regressor.scaler, "mean_"):
         vit_scaler_path = MODELS_DIR / "vit_scaler.joblib"
@@ -186,6 +198,7 @@ def load_models(load_detector: bool = True):
     if load_detector and DETECTION_ENABLED and YOLO and YOLO_MODEL_PATH and YOLO_MODEL_PATH.exists():
         try:
             yolo_detector = YOLO(str(YOLO_MODEL_PATH))
+            detector_model_path = YOLO_MODEL_PATH
             if hasattr(yolo_detector, "model") and hasattr(yolo_detector.model, "names"):
                 yolo_class_names = yolo_detector.model.names
             logger.info("Loaded YOLO detector for bboxes from %s", YOLO_MODEL_PATH)
@@ -210,6 +223,7 @@ def load_models_async():
         try:
             yolo_detector_local = YOLO(str(YOLO_MODEL_PATH))
             globals()["yolo_detector"] = yolo_detector_local
+            globals()["detector_model_path"] = YOLO_MODEL_PATH
             if hasattr(yolo_detector_local, "model") and hasattr(yolo_detector_local.model, "names"):
                 globals()["yolo_class_names"] = yolo_detector_local.model.names
             logger.info("Loaded YOLO detector in background: %s", YOLO_MODEL_PATH)
@@ -276,12 +290,39 @@ def get_estimated_molt_event_date(days_until_molt: float) -> str:
     return (date.today() + timedelta(days=float(days_until_molt))).isoformat()
 
 
-def run_detection(image: Image.Image) -> List[Dict[str, float]]:
+def get_model_display_name() -> str:
+    """Return a human-readable description of the active detector and estimator."""
+    detector_name = "fathomnet pretrained detector"
+    if detector_model_path and "bootstrapv1" in str(detector_model_path).lower():
+        detector_name = "bootstrapv1 detector"
+
+    estimator_name = "transformer based molt estimator"
+    if regressor_model_path:
+        regressor_name = regressor_model_path.name.lower()
+        if "mvp" in regressor_name:
+            estimator_name = "mvp v1 estimator"
+        elif "temporal" in regressor_name:
+            estimator_name = "temporal molt estimator"
+        elif "vit" in regressor_name:
+            estimator_name = "transformer based molt estimator"
+
+    return f"{detector_name} and {estimator_name}"
+
+
+def run_detection(image: Image.Image, imgsz: Optional[int] = None) -> List[Dict[str, float]]:
     """Return bbox detections if YOLO detector is configured."""
     if yolo_detector is None:
         return []
     try:
-        results = yolo_detector(image, verbose=False)
+        kwargs = {
+            "verbose": False,
+            "conf": YOLO_CONF_MIN,
+            "max_det": YOLO_MAX_DETECTIONS,
+            "iou": YOLO_NMS_IOU,
+        }
+        if imgsz:
+            kwargs["imgsz"] = imgsz
+        results = yolo_detector(image, **kwargs)
         boxes_out: List[Dict[str, float]] = []
         if results and hasattr(results[0], "boxes") and results[0].boxes is not None:
             for box in results[0].boxes:
@@ -317,7 +358,7 @@ def filter_bboxes(image: Image.Image, bboxes: List[Dict[str, float]]) -> List[Di
     filtered: List[Dict[str, float]] = []
     for box in bboxes:
         class_name = box.get("class_name")
-        if class_name and class_name != "Crab":
+        if class_name and "crab" not in str(class_name).lower():
             continue
         xmin = max(0.0, float(box["xmin"]))
         ymin = max(0.0, float(box["ymin"]))
@@ -358,6 +399,90 @@ def crop_to_bbox(image: Image.Image, bbox: Dict[str, float]) -> Image.Image:
     if xmax <= xmin or ymax <= ymin:
         return image
     return image.crop((xmin, ymin, xmax, ymax))
+
+
+def bbox_iou(first: Optional[Dict[str, float]], second: Optional[Dict[str, float]]) -> float:
+    """Compute intersection-over-union for two xyxy bboxes."""
+    if not first or not second:
+        return 0.0
+    x1 = max(float(first["xmin"]), float(second["xmin"]))
+    y1 = max(float(first["ymin"]), float(second["ymin"]))
+    x2 = min(float(first["xmax"]), float(second["xmax"]))
+    y2 = min(float(first["ymax"]), float(second["ymax"]))
+    intersection = max(0.0, x2 - x1) * max(0.0, y2 - y1)
+    first_area = max(0.0, float(first["xmax"]) - float(first["xmin"])) * max(
+        0.0, float(first["ymax"]) - float(first["ymin"])
+    )
+    second_area = max(0.0, float(second["xmax"]) - float(second["xmin"])) * max(
+        0.0, float(second["ymax"]) - float(second["ymin"])
+    )
+    union = first_area + second_area - intersection
+    return intersection / union if union > 0 else 0.0
+
+
+def get_fresh_stream_cache(now_ms: int, image: Image.Image) -> Optional[Dict[str, object]]:
+    """Return cached stream state while dimensions and TTL still match."""
+    with stream_cache_lock:
+        cached = dict(stream_cache)
+    if not cached:
+        return None
+    if now_ms - int(cached.get("updated_at_ms", 0)) > STREAM_CACHE_TTL_MS:
+        return None
+    if cached.get("image_size") != (image.width, image.height):
+        return None
+    return cached
+
+
+def update_stream_cache(
+    *,
+    now_ms: int,
+    image: Image.Image,
+    bboxes: List[Dict[str, float]],
+    primary_bbox: Optional[Dict[str, float]],
+    days_until_molt: float,
+    phase_info: Dict[str, object],
+    estimated_molt_event_date: str,
+    recommendation: str,
+    estimate_input: str,
+) -> None:
+    """Store the latest stream result for bbox/estimate reuse."""
+    with stream_cache_lock:
+        stream_cache.clear()
+        stream_cache.update(
+            {
+                "updated_at_ms": now_ms,
+                "estimate_at_ms": now_ms,
+                "image_size": (image.width, image.height),
+                "bboxes": [dict(box) for box in bboxes],
+                "primary_bbox": dict(primary_bbox) if primary_bbox else None,
+                "days_until_molt": days_until_molt,
+                "estimated_molt_event_date": estimated_molt_event_date,
+                "phase_info": dict(phase_info),
+                "recommendation": recommendation,
+                "estimate_input": estimate_input,
+            }
+        )
+
+
+def refresh_stream_cache_detection(
+    *,
+    now_ms: int,
+    image: Image.Image,
+    bboxes: List[Dict[str, float]],
+    primary_bbox: Optional[Dict[str, float]],
+) -> None:
+    """Keep stream bbox state current when the heavier estimate is reused."""
+    with stream_cache_lock:
+        if not stream_cache:
+            return
+        stream_cache.update(
+            {
+                "updated_at_ms": now_ms,
+                "image_size": (image.width, image.height),
+                "bboxes": [dict(box) for box in bboxes],
+                "primary_bbox": dict(primary_bbox) if primary_bbox else None,
+            }
+        )
 
 
 def encode_thumbnail(
@@ -423,44 +548,113 @@ def encode_thumbnail(
     return f"data:image/jpeg;base64,{encoded}"
 
 
-async def predict_image(file: UploadFile) -> Dict[str, object]:
+async def predict_image(
+    file: UploadFile,
+    *,
+    stream_mode: bool = False,
+    include_thumbnail: bool = True,
+    detection_imgsz: Optional[int] = None,
+) -> Dict[str, object]:
+    started_at = time.perf_counter()
+    stage_started_at = started_at
+    timing_ms: Dict[str, float] = {}
+
+    def mark(stage: str) -> None:
+        nonlocal stage_started_at
+        now = time.perf_counter()
+        timing_ms[stage] = round((now - stage_started_at) * 1000, 1)
+        stage_started_at = now
+
     if not models_ready.is_set():
         deadline = asyncio.get_running_loop().time() + float(os.getenv("MODEL_READY_TIMEOUT", "20"))
         while not models_ready.is_set() and asyncio.get_running_loop().time() < deadline:
             await asyncio.sleep(0.2)
         if not models_ready.is_set():
             raise HTTPException(status_code=503, detail="Model loading, please retry shortly.")
+    mark("model_wait")
 
     if not allowed_file(file.filename):
         raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image.")
 
     raw_bytes = await file.read()
+    mark("upload_read")
     try:
         image = Image.open(BytesIO(raw_bytes))
         image = ImageOps.exif_transpose(image).convert("RGB")
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Could not read image: {exc}") from exc
+    mark("decode")
 
-    raw_bboxes = run_detection(image) if DETECTION_ENABLED else []
+    raw_bboxes = run_detection(image, imgsz=detection_imgsz) if DETECTION_ENABLED else []
     bboxes = filter_bboxes(image, raw_bboxes) if DETECTION_ENABLED else []
+    now_ms = int(time.time() * 1000)
+    cached = get_fresh_stream_cache(now_ms, image) if stream_mode else None
+    bbox_cached = False
+    if stream_mode and not bboxes and cached and cached.get("bboxes"):
+        cached_age_ms = now_ms - int(cached.get("updated_at_ms", 0))
+        if cached_age_ms <= STREAM_CACHE_TTL_MS:
+            bboxes = [dict(box) for box in cached.get("bboxes", [])]
+            bbox_cached = True
     primary_bbox = select_primary_bbox(bboxes) if DETECTION_CROP_ENABLED else None
     roi_image = crop_to_bbox(image, primary_bbox) if primary_bbox else image
     estimate_input = "yolo_crop" if primary_bbox else "whole_image_fallback" if DETECTION_ENABLED else "whole_image"
+    mark("detect")
 
-    np_image = np.array(roi_image)
-    features = feature_extractor.extract_features(np_image).reshape(1, -1)
-    days_until_molt = float(regressor.predict(features)[0])
-    estimated_molt_event_date = get_estimated_molt_event_date(days_until_molt)
-    phase_info = get_molt_phase_category(days_until_molt)
+    estimate_cached = False
+    should_reuse_estimate = False
+    if stream_mode and cached:
+        cached_primary = cached.get("primary_bbox") if isinstance(cached.get("primary_bbox"), dict) else None
+        same_bbox = primary_bbox is not None and bbox_iou(primary_bbox, cached_primary) >= STREAM_BBOX_REUSE_IOU
+        estimate_age_ms = now_ms - int(cached.get("estimate_at_ms", 0))
+        should_reuse_estimate = same_bbox and estimate_age_ms < STREAM_ESTIMATE_EVERY_MS
+
+    if should_reuse_estimate and cached:
+        days_until_molt = float(cached["days_until_molt"])
+        estimated_molt_event_date = str(cached["estimated_molt_event_date"])
+        phase_info = dict(cached["phase_info"])  # type: ignore[arg-type]
+        recommendation = str(cached["recommendation"])
+        estimate_input = str(cached["estimate_input"])
+        estimate_cached = True
+        refresh_stream_cache_detection(
+            now_ms=now_ms,
+            image=image,
+            bboxes=bboxes,
+            primary_bbox=primary_bbox,
+        )
+    else:
+        if feature_extractor is None or regressor is None:
+            raise HTTPException(status_code=503, detail="Models are not loaded.")
+        np_image = np.array(roi_image)
+        features = feature_extractor.extract_features(np_image).reshape(1, -1)
+        days_until_molt = float(regressor.predict(features)[0])
+        estimated_molt_event_date = get_estimated_molt_event_date(days_until_molt)
+        phase_info = get_molt_phase_category(days_until_molt)
+        recommendation = str(phase_info["recommendation"])
+        if DETECTION_ENABLED and not bboxes:
+            recommendation = (
+                "No confident crab detection. Estimate was run on the full image; "
+                "try a closer, centered shot for a crop-based estimate."
+            )
+        if stream_mode:
+            update_stream_cache(
+                now_ms=now_ms,
+                image=image,
+                bboxes=bboxes,
+                primary_bbox=primary_bbox,
+                days_until_molt=days_until_molt,
+                phase_info=phase_info,
+                estimated_molt_event_date=estimated_molt_event_date,
+                recommendation=recommendation,
+                estimate_input=estimate_input,
+            )
+    mark("estimate" if not estimate_cached else "estimate_cache")
 
     label_text = f"{phase_info['phase']} ({days_until_molt:.1f}d)"
-    thumbnail = encode_thumbnail(image, label_text, bboxes, phase_info["color"])
-    recommendation = phase_info["recommendation"]
-    if DETECTION_ENABLED and not bboxes:
-        recommendation = (
-            "No confident crab detection. Estimate was run on the full image; "
-            "try a closer, centered shot for a crop-based estimate."
-        )
+    thumbnail = None
+    if include_thumbnail:
+        thumbnail = encode_thumbnail(image, label_text, bboxes, str(phase_info["color"]))
+    mark("thumbnail" if include_thumbnail else "thumbnail_skip")
+    timing_ms["total"] = round((time.perf_counter() - started_at) * 1000, 1)
 
     return {
         "success": True,
@@ -475,23 +669,30 @@ async def predict_image(file: UploadFile) -> Dict[str, object]:
         "whole_image_fallback_used": DETECTION_ENABLED and primary_bbox is None,
         "thumbnail": thumbnail,
         "feature_type": feature_type.upper() if feature_type else None,
+        "model_display_name": get_model_display_name(),
         "bbox_count": len(bboxes),
         "crop_used": primary_bbox is not None,
+        "stream_mode": stream_mode,
+        "bbox_cached": bbox_cached,
+        "estimate_cached": estimate_cached,
         "primary_bbox": primary_bbox,
         "bboxes": bboxes,
         "image_width": image.width,
         "image_height": image.height,
+        "server_timing_ms": timing_ms,
         "detection_debug": {
             "enabled": DETECTION_ENABLED,
             "raw_count": len(raw_bboxes),
             "filtered_count": len(bboxes),
+            "stream_imgsz": detection_imgsz,
             "class_filter": "Crab",
-            "filters": {
-                "conf_min": YOLO_CONF_MIN,
-                "max_detections": YOLO_MAX_DETECTIONS,
-                "min_area_pct": YOLO_MIN_AREA_PCT,
-                "max_area_pct": YOLO_MAX_AREA_PCT,
-                "min_aspect": YOLO_MIN_ASPECT,
+                "filters": {
+                    "conf_min": YOLO_CONF_MIN,
+                    "max_detections": YOLO_MAX_DETECTIONS,
+                    "nms_iou": YOLO_NMS_IOU,
+                    "min_area_pct": YOLO_MIN_AREA_PCT,
+                    "max_area_pct": YOLO_MAX_AREA_PCT,
+                    "min_aspect": YOLO_MIN_ASPECT,
                 "max_aspect": YOLO_MAX_ASPECT,
             },
             "raw_bboxes": raw_bboxes[:3],
@@ -521,6 +722,7 @@ def health():
         "feature_extractor": feature_extractor is not None,
         "regressor": regressor is not None and regressor.is_fitted if regressor else False,
         "feature_type": feature_type,
+        "model_display_name": get_model_display_name() if regressor is not None else None,
         "yolo_detector": yolo_detector is not None,
         "models_ready": models_ready.is_set(),
     }
@@ -543,7 +745,12 @@ async def predict(file: UploadFile = File(...)):
 async def predict_stream(file: UploadFile = File(...)):
     async with inference_semaphore:
         try:
-            result = await predict_image(file)
+            result = await predict_image(
+                file,
+                stream_mode=True,
+                include_thumbnail=not STREAM_SKIP_THUMBNAIL,
+                detection_imgsz=STREAM_YOLO_IMGSZ,
+            )
             return JSONResponse(content=result)
         except HTTPException as exc:
             raise exc
