@@ -161,7 +161,7 @@
                                 <canvas id="photoOverlay" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
                             </div>
                             <div class="mt-3">
-                                <button class="btn btn-primary" onclick="resetUpload()">
+                                <button class="btn btn-primary" type="button" id="uploadNewImageBtn">
                                     <i class="bi bi-upload"></i> Upload New Image
                                 </button>
                                 <span class="ms-2 badge bg-info" id="uploadStatus">Analyzing...</span>
@@ -211,17 +211,10 @@
                         </div>
 
                         <div class="row g-3 mt-1">
-                            <div class="col-md-3">
+                            <div class="col-md-12">
                                 <div class="p-3 bg-light rounded h-100">
                                     <div class="text-muted small text-uppercase mb-1">Model</div>
                                     <div id="modelType" class="fw-semibold">N/A</div>
-                                </div>
-                            </div>
-                            <div class="col-md-9">
-                                <div class="p-3 bg-light rounded h-100">
-                                    <div class="text-muted small text-uppercase mb-1">Detection Details</div>
-                                    <div id="detectionMeta" class="small mb-2"></div>
-                                    <pre id="detectionDebug" class="small mb-0" style="white-space: pre-wrap; word-break: break-word;">No debug data.</pre>
                                 </div>
                             </div>
                         </div>
@@ -343,6 +336,11 @@
 
         document.getElementById('chooseFileBtn').addEventListener('click', (e) => {
             e.stopPropagation();
+            fileInput.click();
+        });
+
+        document.getElementById('uploadNewImageBtn').addEventListener('click', () => {
+            fileInput.value = '';
             fileInput.click();
         });
         
@@ -553,18 +551,7 @@
             
             // Model type
             document.getElementById('modelType').textContent = data.feature_type;
-            const detectionMeta = document.getElementById('detectionMeta');
-            const bboxCount = data.bbox_count ?? 0;
-            const cropUsed = data.crop_used ? 'yes' : 'no';
-            const estimateInput = data.app_estimate_input ? ` | Estimate input: ${data.app_estimate_input}` : '';
-            detectionMeta.textContent = `Detections: ${bboxCount} | Crop used: ${cropUsed}${estimateInput}`;
-            const detectionDebug = document.getElementById('detectionDebug');
-            if (data.detection_debug) {
-                detectionDebug.textContent = JSON.stringify(data.detection_debug, null, 2);
-            } else {
-                detectionDebug.textContent = 'No debug data.';
-            }
-            
+
             // Show results
             resultCard.style.display = 'block';
             resultCard.scrollIntoView({ behavior: 'smooth' });
@@ -667,6 +654,48 @@
             infoElement.parentElement.style.display = 'block';
         }
 
+        function getPredictionBboxes(prediction) {
+            if (Array.isArray(prediction.bboxes) && prediction.bboxes.length > 0) {
+                return prediction.bboxes;
+            }
+            return prediction.primary_bbox ? [prediction.primary_bbox] : [];
+        }
+
+        function isPrimaryBbox(prediction, bbox) {
+            const primary = prediction.primary_bbox;
+            if (!primary || !bbox) return false;
+            return ['xmin', 'ymin', 'xmax', 'ymax'].every(key => Math.abs(Number(primary[key]) - Number(bbox[key])) < 0.5);
+        }
+
+        function drawBboxLabel(ctx, text, x, y, color, fontSize, canvasWidth) {
+            ctx.font = `bold ${fontSize}px Arial`;
+            const paddingX = Math.max(8, Math.round(fontSize * 0.45));
+            const paddingY = Math.max(5, Math.round(fontSize * 0.25));
+            const textWidth = ctx.measureText(text).width;
+            const labelWidth = Math.min(textWidth + paddingX * 2, canvasWidth - 8);
+            const labelHeight = fontSize + paddingY * 2;
+            let labelX = x;
+            let labelY = y - labelHeight - 4;
+            if (labelY < 0) labelY = y + 4;
+            if (labelX + labelWidth > canvasWidth) labelX = canvasWidth - labelWidth - 4;
+            if (labelX < 4) labelX = 4;
+
+            ctx.fillStyle = color;
+            ctx.fillRect(labelX, labelY, labelWidth, labelHeight);
+            ctx.fillStyle = 'white';
+            ctx.fillText(text, labelX + paddingX, labelY + fontSize + paddingY - 2);
+        }
+
+        function getBboxLabelText(prediction, bbox) {
+            const daysText = prediction.days_until_molt !== undefined
+                ? `${prediction.days_until_molt.toFixed(1)}d`
+                : 'N/A';
+            const confidenceText = bbox.confidence !== undefined
+                ? `${(bbox.confidence * 100).toFixed(0)}%`
+                : prediction.confidence || 'N/A';
+            return `${daysText} | ${confidenceText}`;
+        }
+
         // Draw detection overlay on photo
         function drawPhotoDetection(prediction, photoOverlayId) {
             const canvas = document.getElementById(photoOverlayId);
@@ -682,29 +711,22 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            if (!prediction.primary_bbox) return;
+            const bboxes = getPredictionBboxes(prediction);
+            if (bboxes.length === 0) return;
 
-            const bbox = prediction.primary_bbox;
-            const x = bbox.xmin;
-            const y = bbox.ymin;
-            const w = bbox.xmax - bbox.xmin;
-            const h = bbox.ymax - bbox.ymin;
+            bboxes.forEach((bbox, index) => {
+                const x = bbox.xmin;
+                const y = bbox.ymin;
+                const w = bbox.xmax - bbox.xmin;
+                const h = bbox.ymax - bbox.ymin;
+                const isPrimary = isPrimaryBbox(prediction, bbox);
+                const labelText = getBboxLabelText(prediction, bbox);
 
-            // Draw bbox
-            ctx.strokeStyle = prediction.color;
-            ctx.lineWidth = 6;
-            ctx.strokeRect(x, y, w, h);
-
-            // Draw label
-            const labelText = `${prediction.days_until_molt.toFixed(1)}d - ${prediction.phase}`;
-            ctx.font = 'bold 32px Arial';
-            const textWidth = ctx.measureText(labelText).width;
-
-            ctx.fillStyle = prediction.color;
-            ctx.fillRect(x, Math.max(0, y - 50), textWidth + 30, 50);
-
-            ctx.fillStyle = 'white';
-            ctx.fillText(labelText, x + 15, Math.max(35, y - 10));
+                ctx.strokeStyle = prediction.color || '#0d6efd';
+                ctx.lineWidth = isPrimary ? 6 : 4;
+                ctx.strokeRect(x, y, w, h);
+                drawBboxLabel(ctx, labelText, x, y, prediction.color || '#0d6efd', isPrimary ? 32 : 24, canvas.width);
+            });
         }
 
         // Draw detection overlay on canvas
@@ -722,7 +744,8 @@
             ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
             // Check if we have detection data
-            if (!prediction.primary_bbox || !prediction.image_width || !prediction.image_height) {
+            const bboxes = getPredictionBboxes(prediction);
+            if (bboxes.length === 0 || !prediction.image_width || !prediction.image_height) {
                 // Show "No crab detected" message
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                 ctx.fillRect(10, 10, overlayCanvas.width - 20, 60);
@@ -738,78 +761,19 @@
             const scaleX = overlayCanvas.width / prediction.image_width;
             const scaleY = overlayCanvas.height / prediction.image_height;
 
-            const bbox = prediction.primary_bbox;
-            const x = bbox.xmin * scaleX;
-            const y = bbox.ymin * scaleY;
-            const w = (bbox.xmax - bbox.xmin) * scaleX;
-            const h = (bbox.ymax - bbox.ymin) * scaleY;
+            bboxes.forEach((bbox, index) => {
+                const x = bbox.xmin * scaleX;
+                const y = bbox.ymin * scaleY;
+                const w = (bbox.xmax - bbox.xmin) * scaleX;
+                const h = (bbox.ymax - bbox.ymin) * scaleY;
+                const isPrimary = isPrimaryBbox(prediction, bbox);
+                const labelText = getBboxLabelText(prediction, bbox);
 
-            // Draw bounding box with phase color
-            ctx.strokeStyle = prediction.color;
-            ctx.lineWidth = 6;
-            ctx.strokeRect(x, y, w, h);
-
-            // Prepare comprehensive label
-            const daysText = `${prediction.days_until_molt.toFixed(1)} days until molt`;
-            const phaseText = prediction.phase.toUpperCase();
-            const recText = prediction.recommendation || '';
-
-            // Calculate text dimensions
-            ctx.font = 'bold 24px Arial';
-            const phaseWidth = ctx.measureText(phaseText).width;
-            ctx.font = '18px Arial';
-            const daysWidth = ctx.measureText(daysText).width;
-            const recWidth = ctx.measureText(recText).width;
-            const maxWidth = Math.max(phaseWidth, daysWidth, recWidth) + 40;
-            const labelHeight = 110;
-
-            // Position label (prefer top-left of bbox, but adjust if near edges)
-            let labelX = x;
-            let labelY = y - labelHeight - 10;
-            if (labelY < 0) {
-                labelY = y + h + 10; // Place below bbox if top is cut off
-            }
-            if (labelX + maxWidth > overlayCanvas.width) {
-                labelX = overlayCanvas.width - maxWidth - 10;
-            }
-            if (labelX < 0) labelX = 10;
-
-            // Draw semi-transparent background
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-            ctx.fillRect(labelX, labelY, maxWidth, labelHeight);
-
-            // Draw colored accent bar
-            ctx.fillStyle = prediction.color;
-            ctx.fillRect(labelX, labelY, 8, labelHeight);
-
-            // Draw phase text (large, colored)
-            ctx.fillStyle = prediction.color;
-            ctx.font = 'bold 24px Arial';
-            ctx.fillText(phaseText, labelX + 20, labelY + 32);
-
-            // Draw days text
-            ctx.fillStyle = 'white';
-            ctx.font = '18px Arial';
-            ctx.fillText(daysText, labelX + 20, labelY + 60);
-
-            // Draw recommendation text (smaller, wrapped if needed)
-            ctx.font = '14px Arial';
-            ctx.fillStyle = '#cccccc';
-            const words = recText.split(' ');
-            let line = '';
-            let lineY = labelY + 85;
-            for (let word of words) {
-                const testLine = line + word + ' ';
-                const metrics = ctx.measureText(testLine);
-                if (metrics.width > maxWidth - 40 && line.length > 0) {
-                    ctx.fillText(line, labelX + 20, lineY);
-                    line = word + ' ';
-                    lineY += 18;
-                } else {
-                    line = testLine;
-                }
-            }
-            ctx.fillText(line, labelX + 20, lineY);
+                ctx.strokeStyle = prediction.color || '#0d6efd';
+                ctx.lineWidth = isPrimary ? 6 : 4;
+                ctx.strokeRect(x, y, w, h);
+                drawBboxLabel(ctx, labelText, x, y, prediction.color || '#0d6efd', 16, overlayCanvas.width);
+            });
         }
 
         async function captureAndSendFrame() {

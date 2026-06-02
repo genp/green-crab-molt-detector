@@ -92,7 +92,8 @@ DEFAULT_LIGHT_YOLO_MODEL_PATH = (
 INFERENCE_MODE = os.getenv("INFERENCE_MODE", "cpu").lower()
 DETECTION_ENABLED = os.getenv("DETECTION_ENABLED", "true").lower() == "true"
 DETECTION_CROP_ENABLED = os.getenv("DETECTION_CROP_ENABLED", "true").lower() == "true"
-YOLO_CONF_MIN = float(os.getenv("YOLO_CONF_MIN", "0.2"))
+YOLO_CONF_MIN = float(os.getenv("YOLO_CONF_MIN", "0.25"))
+YOLO_MAX_DETECTIONS = int(os.getenv("YOLO_MAX_DETECTIONS", "5"))
 YOLO_MIN_AREA_PCT = float(os.getenv("YOLO_MIN_AREA_PCT", "0.01"))
 YOLO_MAX_AREA_PCT = float(os.getenv("YOLO_MAX_AREA_PCT", "0.8"))
 YOLO_MIN_ASPECT = float(os.getenv("YOLO_MIN_ASPECT", "0.5"))
@@ -336,7 +337,8 @@ def filter_bboxes(image: Image.Image, bboxes: List[Dict[str, float]]) -> List[Di
         if aspect < YOLO_MIN_ASPECT or aspect > YOLO_MAX_ASPECT:
             continue
         filtered.append(box)
-    return filtered
+    filtered.sort(key=lambda item: item.get("confidence") or 0.0, reverse=True)
+    return filtered[:YOLO_MAX_DETECTIONS]
 
 
 def select_primary_bbox(bboxes: List[Dict[str, float]]) -> Optional[Dict[str, float]]:
@@ -486,6 +488,7 @@ async def predict_image(file: UploadFile) -> Dict[str, object]:
             "class_filter": "Crab",
             "filters": {
                 "conf_min": YOLO_CONF_MIN,
+                "max_detections": YOLO_MAX_DETECTIONS,
                 "min_area_pct": YOLO_MIN_AREA_PCT,
                 "max_area_pct": YOLO_MAX_AREA_PCT,
                 "min_aspect": YOLO_MIN_ASPECT,
