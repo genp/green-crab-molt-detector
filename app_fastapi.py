@@ -950,6 +950,7 @@ def save_debug_session_capture(
         source_suffix = ".bin"
     source_input_path = capture_dir / f"source_input{source_suffix}"
     source_input_path.write_bytes(raw_bytes)
+    source_input_relpath = str(source_input_path.relative_to(DEBUG_SESSION_DIR))
 
     input_path = capture_dir / "input.jpg"
     image.convert("RGB").save(input_path, quality=92)
@@ -998,6 +999,7 @@ def save_debug_session_capture(
         "capture_id": capture_id,
         "captured_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "source_filename": source_filename,
+        "source_file_path": source_input_relpath,
         "image_width": image.width,
         "image_height": image.height,
         "days_until_molt": days_until_molt,
@@ -1127,7 +1129,7 @@ def build_debug_session_workbook(session_dir: Path) -> Path:
                 metadata.get("captured_at_utc", ""),
                 metadata.get("session_name", ""),
                 metadata.get("location_name", ""),
-                metadata.get("source_filename", ""),
+                metadata.get("source_file_path", metadata.get("source_filename", "")),
                 aux_tags.get("view_angle", "unknown"),
                 aux_tags.get("sex", "unknown"),
                 aux_tags.get("incorrect_detection", "none"),
