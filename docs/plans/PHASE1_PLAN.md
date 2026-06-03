@@ -653,6 +653,10 @@ green_crabs/
 
 ### Not Yet Complete
 - [ ] Session export is not implemented: no JSZip import, session frame store, export button, or ZIP creation flow.
+- [ ] Debug review export still needs validation: persist per-run bundles with the source image, detection overlay, estimate crop, aux tags, and a downloadable zip for expert review.
+- [ ] Remote debug review export still needs a cloud plan: persist expert-review bundles from the deployed app in durable object storage, expose a download link or signed URL, and keep the run manifest available for later inspection.
+- [ ] Build a review pass for experts: generate contact sheets from exported debug runs so reviewers can scan the source frame, all detections, the estimate crop, and aux tags without opening each image one by one.
+- [ ] Add a compact review index for exported runs with `run_id`, source image name, bbox count, estimate, and aux tags so field experts can triage the exported cases quickly.
 - [ ] Temporal smoothing is not implemented: no prediction history buffer or `smooth_prediction()` path.
 - [ ] Performance validation is still needed for frame latency, practical FPS, mobile behavior, and stutter/freezing.
 - [ ] CPU detect+estimate latency is too slow for live field testing: current 4-vCPU gcloud instance takes about 5 seconds from known-crab frame upload to bbox overlay; target is 0.5 seconds or lower for this week's testing.
@@ -716,6 +720,9 @@ green_crabs/
 - [ ] After bootstrap v2 updates land, deploy the corrected detector + params locally first, compare dogfood results on original vs downscaled 416px/Q0.65 frames, and only then promote to Cloud Run.
 - [ ] After detector v2 is stable, decide whether to restart SAM3 with the tighter prompt/tag set or to begin a separate estimator MVP v2 run using `view`/`sex` tags.
 - [ ] Retrain the estimator against the actual streaming-frame resolution and compression settings so molt predictions stay good on the frames sent by the video stream, not just on original high-resolution photos.
+- [ ] Improve side-view recognition and side-view molt estimates, since side views are often used by human harvesters and need to work reliably in the field workflow.
+- [ ] Improve detector recall across crab sizes, view angles, and partial occlusions so more valid crabs are found instead of missed.
+- [ ] Decrease distractor detections on humans, gloves, and other non-crab field objects while preserving recall on true crabs.
 
 ### 7. Multi-Crab Output Testing
 - [ ] Update backend response to include a `crab_predictions` list: bbox, detection confidence, crop-used flag, days-to-molt, phase, color, and recommendation for each confident crab.

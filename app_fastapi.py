@@ -1114,6 +1114,15 @@ def build_debug_session_workbook(session_dir: Path) -> Path:
         sheet.column_dimensions[col].width = width
 
     manifest_rows = _load_debug_session_manifest()
+    session_state_path = session_dir / "session.json"
+    session_state: Dict[str, Any] = {}
+    if session_state_path.exists():
+        try:
+            session_state = json.loads(session_state_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            session_state = {}
+    session_name = session_state.get("run_name")
+    session_location = session_state.get("location_name")
     for row_index, manifest_row in enumerate(manifest_rows, start=2):
         capture_dir = session_dir / manifest_row["capture_dir"]
         metadata_path = capture_dir / "metadata.json"
@@ -1127,8 +1136,8 @@ def build_debug_session_workbook(session_dir: Path) -> Path:
             [
                 metadata.get("capture_id", ""),
                 metadata.get("captured_at_utc", ""),
-                metadata.get("session_name", ""),
-                metadata.get("location_name", ""),
+                session_name or metadata.get("session_name", ""),
+                session_location or metadata.get("location_name", ""),
                 metadata.get("source_file_path", metadata.get("source_filename", "")),
                 aux_tags.get("view_angle", "unknown"),
                 aux_tags.get("sex", "unknown"),
