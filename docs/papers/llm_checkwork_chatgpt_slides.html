@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChatGPT Web + llm_checkwork.py</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/theme/white.css">
+  <style>
+    :root {
+      --blue: #2f5fa7;
+      --text: #1f2933;
+      --muted: #5f6b76;
+      --border: #cfd7df;
+      --soft: #eef2f6;
+    }
+
+    .reveal {
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+    }
+
+    .reveal h1,
+    .reveal h2,
+    .reveal h3,
+    .reveal p,
+    .reveal li {
+      letter-spacing: 0;
+    }
+
+    .reveal section {
+      position: relative;
+    }
+
+    .slide-copy {
+      position: absolute;
+      left: 54%;
+      top: 14%;
+      width: 39%;
+      color: var(--text);
+      text-align: left;
+    }
+
+    .slide-copy.footer-safe {
+      top: 12%;
+    }
+
+    .title-copy {
+      top: 15%;
+    }
+
+    .kicker {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin: 0 0 14px 0;
+    }
+
+    .slide-copy h1 {
+      color: var(--blue);
+      font-size: 46px;
+      line-height: 1.08;
+      margin: 0 0 16px 0;
+      font-weight: 700;
+    }
+
+    .slide-copy h2 {
+      color: var(--blue);
+      font-size: 32px;
+      line-height: 1.1;
+      margin: 0 0 14px 0;
+      font-weight: 700;
+    }
+
+    .slide-copy h3 {
+      color: var(--blue);
+      font-size: 22px;
+      line-height: 1.2;
+      margin: 0 0 10px 0;
+      font-weight: 700;
+    }
+
+    .slide-copy p,
+    .slide-copy li {
+      font-size: 22px;
+      line-height: 1.32;
+      margin: 0;
+    }
+
+    .slide-copy ul,
+    .slide-copy ol {
+      margin: 0;
+      padding-left: 24px;
+    }
+
+    .slide-copy li + li {
+      margin-top: 10px;
+    }
+
+    .slide-copy .small {
+      font-size: 16px;
+      color: var(--muted);
+    }
+
+    .codebox,
+    .callout {
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.86);
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-sizing: border-box;
+    }
+
+    .callout {
+      margin-top: 16px;
+    }
+
+    .codebox pre {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .path {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      background: var(--soft);
+      border-radius: 4px;
+      padding: 0 4px;
+      font-size: 0.95em;
+    }
+
+    .label {
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .tight li + li {
+      margin-top: 8px;
+    }
+
+    .note {
+      font-size: 16px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <section data-background-image="../../presentation_templates/ccai_agentic_title_footer.png" data-background-size="cover">
+        <div class="slide-copy title-copy footer-safe">
+          <div class="kicker">ChatGPT web workflow</div>
+          <h1>Using ChatGPT Web to Explain <span class="path">llm_checkwork.py</span></h1>
+          <p>Source files live in <span class="path">~/Practical ML Tools for Climate Change Course Materials/</span></p>
+          <div class="callout" style="margin-top: 22px;">
+            <p class="small">Goal: use the web version of ChatGPT to generate the step-by-step logic, then verify every claim against the notebook and data files.</p>
+          </div>
+        </div>
+      </section>
+
+      <section data-background-image="../../presentation_templates/ccai_agentic_content_no_footer.png" data-background-size="cover">
+        <div class="slide-copy">
+          <div class="label">Prompt pattern</div>
+          <h2>Ask for structure first, not code first</h2>
+          <div class="codebox" style="margin-top: 14px;">
+            <pre>Read llm_checkwork.py and explain each block in order.
+Use the source data in:
+  - icecore/vostok.icecore.co2
+  - icecore/vostok.1999.temp.dat
+  - modern_climate/co2_mm_mlo.txt
+  - modern_climate/Land_and_Ocean_complete.txt
+
+Return:
+  1. a concise step list
+  2. file dependencies
+  3. any assumptions that need verification</pre>
+          </div>
+          <p class="note">This keeps ChatGPT focused on explanation and provenance before it starts narrating results.</p>
+        </div>
+      </section>
+
+      <section data-background-image="../../presentation_templates/ccai_agentic_content_footer.png" data-background-size="cover">
+        <div class="slide-copy footer-safe">
+          <div class="label">Notebook map</div>
+          <h2>What the script actually does</h2>
+          <ol class="tight">
+            <li>Load Vostok CO2 and temperature tables from the course materials.</li>
+            <li>Merge them on age using nearest-time alignment.</li>
+            <li>Sort in reverse chronology and plot temperature and CO2.</li>
+            <li>Compute Pearson correlation and mutual information.</li>
+            <li>Fit orbital-cycle priors with 2-cycle and 3-cycle models.</li>
+            <li>Compare paleo and modern CO2 with a Welch t-test.</li>
+            <li>Forecast temperature anomalies with linear, bootstrap, and Bayesian models.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section data-background-image="../../presentation_templates/ccai_agentic_figure_no_footer.png" data-background-size="cover">
+        <div class="slide-copy">
+          <div class="label">Source data</div>
+          <h2>Make ChatGPT name the files, not just the concepts</h2>
+          <div class="two-col">
+            <div class="callout">
+              <h3>Ice core</h3>
+              <ul class="tight">
+                <li><span class="path">course/icecore/vostok.icecore.co2</span></li>
+                <li><span class="path">course/icecore/vostok.1999.temp.dat</span></li>
+              </ul>
+            </div>
+            <div class="callout">
+              <h3>Modern climate</h3>
+              <ul class="tight">
+                <li><span class="path">course/modern_climate/co2_mm_mlo.txt</span></li>
+                <li><span class="path">course/modern_climate/Land_and_Ocean_complete.txt</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="callout" style="margin-top: 16px;">
+            <p class="small">Related notebooks that give context: <span class="path">Module1.1</span> through <span class="path">Module1.4</span>.</p>
+          </div>
+        </div>
+      </section>
+
+      <section data-background-image="../../presentation_templates/ccai_agentic_section_footer.png" data-background-size="cover">
+        <div class="slide-copy footer-safe">
+          <div class="label">Verification</div>
+          <h2>Use ChatGPT as a checker, not as the source of truth</h2>
+          <ul class="tight">
+            <li>Confirm <span class="path">skiprows</span> and column names match the files.</li>
+            <li>Confirm the merge direction and age alignment are intentional.</li>
+            <li>Check units: ppmv, degrees C, and years before present.</li>
+            <li>Verify the forecast horizon and model assumptions locally.</li>
+            <li>Re-run the notebook blocks that use curve fitting or PyMC.</li>
+          </ul>
+          <div class="callout" style="margin-top: 16px;">
+            <p class="small">If the explanation diverges from the code, fix the prompt and ask again before you trust the summary.</p>
+          </div>
+        </div>
+      </section>
+
+      <section data-background-image="../../presentation_templates/ccai_agentic_title_no_footer.png" data-background-size="cover">
+        <div class="slide-copy title-copy">
+          <div class="kicker">Workflow</div>
+          <h1>A practical loop: ask, verify, revise</h1>
+          <ol class="tight">
+            <li>Paste the notebook export.</li>
+            <li>Ask ChatGPT for a block-by-block summary.</li>
+            <li>Ask for the file map and the assumptions.</li>
+            <li>Check the source files locally.</li>
+            <li>Revise until the explanation matches the code.</li>
+            <li>Turn the verified steps into speaker notes or slides.</li>
+          </ol>
+          <div class="callout" style="margin-top: 18px;">
+            <p class="small">The model is good at explanation and organization. The local files remain the authority.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      controls: true,
+      progress: true,
+      center: false,
+      width: 1672,
+      height: 941,
+      margin: 0.0,
+      transition: 'fade'
+    });
+  </script>
+</body>
+</html>

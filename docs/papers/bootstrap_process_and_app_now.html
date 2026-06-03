@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Green Crab Bootstrapping and Current App</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/theme/white.css">
+  <style>
+    :root {
+      --ink: #12212f;
+      --muted: #4d6275;
+      --line: #d9e2ea;
+      --blue: #1e66d0;
+      --green: #1f8a4c;
+      --teal: #2a8c89;
+      --amber: #c47b00;
+      --bg: #f7fafc;
+      --panel: #ffffff;
+    }
+
+    body {
+      background: var(--bg);
+    }
+
+    .reveal {
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .reveal h1,
+    .reveal h2,
+    .reveal h3 {
+      color: var(--ink);
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .deck-note {
+      color: var(--muted);
+      font-size: 0.72em;
+    }
+
+    .eyebrow {
+      color: var(--blue);
+      font-size: 0.52em;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.85rem;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.9rem 1rem;
+      box-shadow: 0 6px 18px rgba(18, 33, 47, 0.05);
+      text-align: left;
+    }
+
+    .panel h3,
+    .panel h4 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+
+    .panel p,
+    .panel li {
+      font-size: 0.8em;
+      line-height: 1.35;
+    }
+
+    .img-frame {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 24px rgba(18, 33, 47, 0.08);
+    }
+
+    .img-frame img {
+      width: 100%;
+      display: block;
+    }
+
+    .caption {
+      padding: 0.55rem 0.7rem 0.75rem;
+      font-size: 0.6em;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      text-align: left;
+    }
+
+    .arrow-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 0.75rem 0;
+      color: var(--muted);
+      font-size: 0.8em;
+    }
+
+    .arrow-chip {
+      padding: 0.35rem 0.6rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 0.25rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.6em;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .status.green { background: #e7f6ec; color: #13653b; }
+    .status.blue { background: #e7f0fe; color: #1e4fa6; }
+    .status.amber { background: #fff3dc; color: #8a5500; }
+
+    table.metrics {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.72em;
+      margin-top: 0.4rem;
+    }
+
+    table.metrics th,
+    table.metrics td {
+      border-bottom: 1px solid var(--line);
+      padding: 0.4rem 0.3rem;
+      text-align: left;
+    }
+
+    table.metrics th {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .small {
+      font-size: 0.72em;
+    }
+
+    .tight ul {
+      margin-top: 0.35rem;
+    }
+
+    .tight li {
+      margin: 0.25rem 0;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.45rem;
+      margin-top: 0.9rem;
+      font-size: 0.7em;
+    }
+
+    .flow div {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.55rem 0.45rem;
+      background: #fff;
+      line-height: 1.25;
+      min-height: 90px;
+    }
+
+    .flow .step {
+      color: var(--blue);
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .footer {
+      margin-top: 1rem;
+      font-size: 0.58em;
+      color: var(--muted);
+    }
+
+    .title-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .hero-card {
+      background: linear-gradient(135deg, #eef5ff, #edf9f4);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 1rem 1.05rem;
+      text-align: left;
+      box-shadow: 0 8px 26px rgba(18, 33, 47, 0.06);
+    }
+
+    .hero-card h2 {
+      margin: 0 0 0.4rem;
+      font-size: 1.8em;
+    }
+
+    .hero-card p {
+      font-size: 0.82em;
+      line-height: 1.35;
+      margin: 0.45rem 0;
+    }
+
+    .tag-row {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-top: 0.7rem;
+    }
+
+    .tag {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.28rem 0.52rem;
+      font-size: 0.64em;
+      color: var(--muted);
+    }
+
+    .reveal section img.fit {
+      object-fit: cover;
+      height: 100%;
+    }
+
+    .reveal ul {
+      margin-left: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section>
+        <div class="title-grid">
+          <div class="hero-card">
+            <div class="eyebrow">Green crab workflow</div>
+            <h2>Bootstrapping the detector and running the app now</h2>
+            <p>
+              A practical deck on how the SAM3 bootstrap pipeline was built, what the
+              current bootstrapv1 app does, and what comes next after the top1 update.
+            </p>
+            <div class="tag-row">
+              <span class="tag">SAM3 proposals</span>
+              <span class="tag">YOLO bootstrap</span>
+              <span class="tag">Live stream app</span>
+              <span class="tag">Cloud Run</span>
+            </div>
+            <p class="footer">
+              Open directly in a browser or serve from <code>docs/papers</code>.
+            </p>
+          </div>
+          <div class="img-frame">
+            <img src="../../data/bootstrap_bboxes/bootstrapv1_vs_yolo8n_green_crab_ai_2026/original/contact_sheets/contact_sheet_001.jpg" alt="Bootstrap contact sheet">
+            <div class="caption">Bootstrapv1 vs YOLOv8n contact sheet on Green Crab AI 2026 images.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">Why bootstrap</div>
+        <h2>Field images were too messy for the original detector</h2>
+        <div class="grid-2">
+          <div class="panel tight">
+            <h3>What was happening</h3>
+            <ul>
+              <li>Single crabs in hand, coolers, trays, and cages were easy for humans but noisy for the model.</li>
+              <li>The detector produced false positives on gloves, people, and edges of equipment.</li>
+              <li>Partial crabs and crab legs created messy candidate boxes.</li>
+            </ul>
+          </div>
+          <div class="panel tight">
+            <h3>Bootstrap goal</h3>
+            <ul>
+              <li>Use SAM3 to propose candidate crab boxes from raw field images.</li>
+              <li>Review the proposals, keep the good ones, and export them as YOLO labels.</li>
+              <li>Train a stronger field-domain detector from those reviewed labels and hard negatives.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">SAM3 pipeline</div>
+        <h2>The bootstrap loop is proposal, review, export, retrain</h2>
+        <div class="flow">
+          <div><div class="step">1. Raw images</div>Field images from <code>data/raw/Green Crab AI 2026</code> and related folders.</div>
+          <div><div class="step">2. SAM3 prompts</div>Run text-prompt segmentation for crab and negative categories.</div>
+          <div><div class="step">3. Review</div>Keep useful boxes, reject legs-only or background boxes, and annotate edge cases.</div>
+          <div><div class="step">4. Export</div>Write accepted boxes to a YOLO dataset with deterministic splits.</div>
+          <div><div class="step">5. Retrain</div>Train a cleaner detector and compare it on the dogfood set.</div>
+        </div>
+        <div class="grid-2" style="margin-top: 1rem;">
+          <div class="panel">
+            <h3>Two-track bootstrap plan</h3>
+            <ul>
+              <li>Detector track: keep YOLO to one crab class and improve negatives.</li>
+              <li>Estimator track: keep molt estimation separate, then decide whether aux tags help there.</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>Best practice from the repo notes</h3>
+            <ul>
+              <li>Do not train on dogfood images.</li>
+              <li>Use the reviewed SAM3 set to capture hard negatives.</li>
+              <li>Prefer top-1 / clean bbox labels over noisy multi-box clutter.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">Prompting and tags</div>
+        <h2>Extended SAM3 prompts help us see what the model confuses</h2>
+        <div class="grid-2">
+          <div class="panel tight">
+            <h3>Prompt set used for the extended run</h3>
+            <p class="small muted">Green crab, dorsal, ventral, side, male, female, human, oyster, cage, equipment, table, tray, vegetation.</p>
+            <ul>
+              <li>Crab prompts expose missing detections.</li>
+              <li>Negative prompts expose what the detector should ignore.</li>
+              <li>Review-time tags preserve view and quality context without turning the detector into a multi-task model too early.</li>
+            </ul>
+          </div>
+          <div class="img-frame">
+            <img src="../../static/app%20screenshot.png" alt="Current app screenshot">
+            <div class="caption">Current app UI with the live upload and analysis flow.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">Bootstrapv1 results</div>
+        <h2>The top1 checkpoint is the stable bootstrapv1 model now copied into <code>models/</code></h2>
+        <div class="grid-2">
+          <div class="panel">
+            <h3>Top1 validation numbers</h3>
+            <table class="metrics">
+              <tr><th>Metric</th><th>Value</th><th>Epoch</th></tr>
+              <tr><td>Precision</td><td>0.78369</td><td>19</td></tr>
+              <tr><td>Recall</td><td>0.77941</td><td>19</td></tr>
+              <tr><td>mAP50</td><td>0.83506</td><td>19</td></tr>
+              <tr><td>mAP50-95</td><td>0.58825</td><td>19</td></tr>
+            </table>
+            <p class="small muted" style="margin-top:0.5rem;">
+              The stable file is <code>models/bootstrapv1_detector_best.pt</code>, copied from the top1 run.
+            </p>
+          </div>
+          <div class="img-frame">
+            <img src="../../static/peeler_result.png" alt="Peeler result">
+            <div class="caption">Example app result for a peeler crab: clear output card, days-to-molt, and recommendation.</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">How the app works now</div>
+        <h2>Current app flow: upload or stream, detect, crop, estimate, overlay</h2>
+        <div class="grid-2">
+          <div class="panel tight">
+            <h3>User-facing flow</h3>
+            <ul>
+              <li>Photo upload uses `/predict`.</li>
+              <li>Live camera uses `/predict_stream`.</li>
+              <li>The app shows a descriptive model label instead of raw internal names.</li>
+              <li>Overlay and response metadata include bbox and estimate timing fields.</li>
+            </ul>
+          </div>
+          <div class="panel tight">
+            <h3>Current deployment settings</h3>
+            <ul>
+              <li><code>YOLO_MODEL_PATH=models/bootstrapv1_detector_best.pt</code></li>
+              <li><code>YOLO_CONF_MIN=0.45</code>, <code>YOLO_NMS_IOU=0.35</code></li>
+              <li><code>YOLO_MAX_DETECTIONS=10</code></li>
+              <li><code>STREAM_YOLO_IMGSZ=416</code>, <code>STREAM_CACHE_TTL_MS=800</code></li>
+              <li><code>STREAM_ESTIMATE_EVERY_MS=1000</code></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">Stream internals</div>
+        <h2>The live video path is tuned for lower CPU latency</h2>
+        <div class="grid-2">
+          <div class="panel tight">
+            <h3>Browser side</h3>
+            <ul>
+              <li>Capture camera frames every 200 ms.</li>
+              <li>Downscale frames before upload to keep payloads small.</li>
+              <li>Send compressed JPEG instead of full-resolution frames.</li>
+            </ul>
+          </div>
+          <div class="panel tight">
+            <h3>Server side</h3>
+            <ul>
+              <li>Run YOLO at 416 px for the stream path.</li>
+              <li>Reuse the last good bbox and estimate briefly if the crab stays stable.</li>
+              <li>Throttle the full ViT estimate so the overlay stays responsive.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="img-frame" style="margin-top: 0.9rem;">
+          <img src="../../static/inter-molt%20result.png" alt="Inter-molt app result">
+          <div class="caption">Inter-molt example. The app still gives a clear estimated molt timing card and recommendation.</div>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">What comes after bootstrap v2</div>
+        <h2>The next decision is detector hardening versus estimator tagging</h2>
+        <div class="grid-2">
+          <div class="panel tight">
+            <h3>After the detector updates</h3>
+            <ul>
+              <li>Deploy the corrected detector locally first.</li>
+              <li>Compare dogfood results on original images vs 416 px / quality 0.65 frames.</li>
+              <li>Promote to Cloud Run once the latency and false positives are acceptable.</li>
+            </ul>
+          </div>
+          <div class="panel tight">
+            <h3>Then decide on the next training branch</h3>
+            <ul>
+              <li>Restart SAM3 with tighter prompts and review-time tags if the detector still needs better negatives.</li>
+              <li>Or move into a separate estimator MVP v2 with `view` and `sex` as downstream signals.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="small muted" style="margin-top:0.85rem;">
+          That is the clean sequence you asked to preserve: detector v2 first, then Cloud Run, then decide whether SAM3 gets restarted or the estimator gets a v2 pass.
+        </p>
+      </section>
+
+      <section>
+        <div class="eyebrow">Reference map</div>
+        <h2>Files behind this deck</h2>
+        <div class="grid-3">
+          <div class="panel">
+            <h3>Bootstrap pipeline</h3>
+            <p><code>docs/BOOTSTRAP_DETECTOR_PIPELINE.md</code></p>
+            <p class="small muted">Explains SAM3 proposals, review, YOLO export, and retraining.</p>
+          </div>
+          <div class="panel">
+            <h3>Current app</h3>
+            <p><code>app_fastapi.py</code></p>
+            <p class="small muted">Implements upload and stream prediction, current detector settings, and overlay responses.</p>
+          </div>
+          <div class="panel">
+            <h3>Current UI</h3>
+            <p><code>templates/index.html</code></p>
+            <p class="small muted">Implements the live video stream and overlay behavior.</p>
+          </div>
+        </div>
+        <p class="footer">
+          Deck file: <code>docs/papers/bootstrap_process_and_app_now.html</code>
+        </p>
+      </section>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.3.1/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: true,
+      transition: 'slide',
+      backgroundTransition: 'fade',
+      controls: true,
+      progress: true,
+      center: true
+    });
+  </script>
+</body>
+</html>
