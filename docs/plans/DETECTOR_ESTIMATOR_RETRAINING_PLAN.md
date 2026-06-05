@@ -63,6 +63,8 @@ Training data:
 
 Detector settings to test:
 
+- Use YOLO11 as the next detector baseline once the reviewed detector dataset
+  is ready. Train `yolo11n` and `yolo11s` before considering larger models.
 - Train at `imgsz=960` and `imgsz=1280`.
 - Compare stream inference at `STREAM_YOLO_IMGSZ=416`, `640`, and `960`.
 - Lower small-object filter candidates from `YOLO_MIN_AREA_PCT=0.01` to
@@ -81,6 +83,38 @@ Evaluation:
 
 Initial deployment target: reduce the documented whole-image fallback rate on
 `data/raw/Green Crab AI 2026/` without unacceptable false positives.
+
+### YOLO11 Migration Gate
+
+Switching the app detector to YOLO11 is planned, but gated on dataset and
+benchmark readiness.
+
+Dataset readiness:
+
+- Reviewed SAM3/bootstrap boxes are available for `Green Crab AI Photo
+  Database`, `moltmeter_debug_*`, in situ images, red crabs, side views, and
+  small obvious crabs.
+- Human/glove/equipment false positives are included as hard negatives.
+- `data/processed/global_split_registry.csv` validates that detector and
+  estimator train/val/test groups are consistent.
+- Detector export is built only from accepted/reviewed detector labels, not
+  molt-cue proposal rows.
+
+Model comparison:
+
+- Train `yolo11n` and `yolo11s` with the same registry-aware detector dataset.
+- Compare against the current YOLOv8/bootstrap detector on the same holdout.
+- Report recall by size, view, color state, and in situ status.
+- Report false positives per image on field negatives.
+- Benchmark Cloud Run CPU latency using ONNX or OpenVINO export at stream image
+  sizes `640` and `960`.
+
+Promotion criteria:
+
+- Better small-crab recall than the current detector.
+- No unacceptable increase in human/glove/equipment false positives.
+- Lower whole-frame fallback rate in the streaming app.
+- Meets the target Cloud Run CPU latency budget for the expected traffic.
 
 ## Phase 3: SAM3 Bootstrap Expansion
 
