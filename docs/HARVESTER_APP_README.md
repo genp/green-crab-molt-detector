@@ -15,6 +15,10 @@ MoltMeter estimates how many days remain before a crab molts. This matters becau
 
 ![App home screen](../static/app%20screenshot.png)
 
+Use the live camera screenshot below as the reference for what the app looks like right after starting:
+
+![Streaming camera start](../static/streaming_camera_start.png)
+
 The streaming screenshots used for the live camera workflow are already saved in `static/` and listed below. The older upload screenshots are still useful as result examples, but the streaming captures are the canonical field guide images now.
 
 ## How to See the Bounding Boxes
@@ -36,6 +40,10 @@ When a box appears, the label on or near the box shows:
 
 Example: `2.1 days to molt | 88%` means the app estimates the crab will molt in about 2 days, and it is fairly confident that the box is actually on a crab.
 
+Use this screenshot when you are learning to read the box label:
+
+![Streaming bbox estimate](../static/streaming_bbox_estimate.png)
+
 ## How to Read Days to Molt
 
 `Days to Molt` is the estimated number of days until the crab molts.
@@ -51,6 +59,10 @@ The app also shows a phase name and recommendation. Use the number first, then u
 ![Inter-molt result](../static/inter-molt%20result.png)
 
 These result screenshots show the upload pipeline. In live camera mode, read the same information from the bounding box label and the `Detection Details` panel below the video.
+
+The live camera view should look like this when the estimate is being shown in the details panel:
+
+![Streaming detection details](../static/streaming_detection_details.png)
 
 ## Sorting Crabs into Farm Bins
 
@@ -107,27 +119,21 @@ When there is no box:
 
 In short: a no-box `Days to Molt` can help you decide what to try next, but a clean bounding box is the normal standard for bin sorting.
 
+When the app cannot draw a box, use this screenshot as the guide for what to read in `Detection Details`:
+
+![Streaming no bbox fallback](../static/streaming_no_bbox_fallback.png)
+
 ## Recommended Streaming Screenshots
 
-These files already exist in `static/`, so the guide can point directly at them instead of asking you to make new captures. If you want to refresh them later, use the same filenames.
+These files already exist in `static/`, so the guide points directly at them instead of asking you to create new captures first. If you want to refresh them later, keep the same filenames so the links below keep working.
 
-Take these screenshots from the deployed app or local app:
+Use these screenshots as the visual reference for the live camera workflow:
 
-1. `static/streaming_camera_start.png`: camera view after clicking `Start Camera`, before any crab is detected.
-2. `static/streaming_bbox_estimate.png`: a crab with a clean bounding box and a readable `X.X days to molt | confidence` label.
-3. `static/streaming_detection_details.png`: the `Detection Details` panel showing the large `Days to Molt` value, `Crabs Detected`, `BBox Confidence`, `Crop Used`, and `Input Source`.
-4. `static/streaming_no_bbox_fallback.png`: a frame where no box appears but `Detection Details` shows `Crabs Detected: 0`, `Crop Used: No`, and `Input Source: whole_image_fallback`.
-5. `static/streaming_debug_panel.png`: the `Debug` panel open with view, sex, molt details, expert estimate, notes, and `Capture`.
-6. `static/streaming_export_session.png`: the export session panel showing `Start Export Session`, `Stop Export Session`, and `Download Zip`.
+![Streaming debug panel](../static/streaming_debug_panel.png)
 
-Suggested capture steps:
+![Streaming export session](../static/streaming_export_session.png)
 
-1. Open the app at `/ui`.
-2. Use a phone or laptop camera in the same way a harvester will use it.
-3. Click `Start Camera`.
-4. Use the browser or operating system screenshot tool if you want to replace one of the existing images.
-5. Save each image under the exact `static/` filenames above.
-6. Keep the filenames unchanged so the guide links continue to work.
+If you want to replace any screenshot later, open `/ui`, use the camera the same way a harvester will use it, then save the replacement image under the same `static/` filename.
 
 On macOS, press `Command-Shift-4`, drag around the app area, and save the screenshot. On Windows, use `Win-Shift-S`. On a phone, use the normal phone screenshot shortcut.
 
@@ -158,6 +164,10 @@ Steps:
 11. Repeat for each useful example.
 12. Click `Download Zip`.
 
+Use this screenshot as the reference for what the debug panel should look like before capture:
+
+![Streaming debug panel](../static/streaming_debug_panel.png)
+
 The debug download bundle includes:
 
 - Source camera images.
@@ -181,6 +191,10 @@ Steps:
 3. Work normally while the app records live detections.
 4. Click `Stop Export Session`.
 5. Click `Download Zip`.
+
+Use this screenshot as the reference for the session export controls:
+
+![Streaming export session](../static/streaming_export_session.png)
 
 The export session download contains the same kind of files as debug capture: source images, overlays, crops, metadata, and spreadsheet/CSV summary. New export sessions overwrite old sessions.
 
