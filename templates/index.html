@@ -1102,6 +1102,9 @@
 	                infoText += `<div class="p-2 mb-2 bg-white rounded border border-primary">`;
 	                infoText += `<div class="text-muted small text-uppercase">Days to Molt</div>`;
 	                infoText += `<div class="h3 mb-0 text-primary">${data.days_until_molt.toFixed(2)} days</div>`;
+                    if (data.estimate_range_days && data.estimate_range_days.sample_count > 1) {
+                        infoText += `<div class="small text-muted">range ${Number(data.estimate_range_days.low).toFixed(1)}-${Number(data.estimate_range_days.high).toFixed(1)} days from ${data.estimate_range_days.sample_count} frames</div>`;
+                    }
 	                infoText += `</div>`;
 	            }
 	            if (data.phase) {
@@ -1131,11 +1134,18 @@
             if (data.whole_image_fallback_used) {
                 infoText += `<div class="text-warning mt-1"><strong>⚠ Fallback:</strong> No confident crab detection - using whole image estimate</div>`;
             }
+            if (data.estimate_stale) {
+                infoText += `<div class="text-warning mt-1"><strong>Last estimate:</strong> crab detection was lost${data.last_detection_age_ms ? ` ${data.last_detection_age_ms}ms ago` : ''}</div>`;
+            }
+            if (data.bbox_cleared_reason) {
+                infoText += `<div class="text-muted"><strong>Bbox cleared:</strong> ${escapeHtml(data.bbox_cleared_reason)}</div>`;
+            }
 
             if (data.stream_mode) {
                 const cacheFlags = [];
                 if (data.bbox_cached) cacheFlags.push('bbox reused');
                 if (data.estimate_cached) cacheFlags.push('estimate reused');
+                if (data.estimate_smoothed) cacheFlags.push('estimate smoothed');
                 infoText += `<div class="mt-2 mb-1"><strong>Stream Performance:</strong></div>`;
                 infoText += `<div><strong>Client Round Trip:</strong> ${data.client_round_trip_ms ? data.client_round_trip_ms.toFixed(0) + 'ms' : 'N/A'}</div>`;
                 if (data.server_timing_ms && data.server_timing_ms.total !== undefined) {

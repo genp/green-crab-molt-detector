@@ -91,7 +91,9 @@ app.add_middleware(
 BASE_PATH = Path(__file__).parent
 MODELS_DIR = BASE_PATH / "models"
 UPLOAD_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".bmp"}
-DEFAULT_YOLO_MODEL_PATH = MODELS_DIR / "fathomnet_mvp_yolov8_1280_20240914.pt"
+BOOTSTRAP_YOLO_MODEL_PATH = MODELS_DIR / "bootstrapv1_detector_best.pt"
+FATHOMNET_YOLO_MODEL_PATH = MODELS_DIR / "fathomnet_mvp_yolov8_1280_20240914.pt"
+DEFAULT_YOLO_MODEL_PATH = BOOTSTRAP_YOLO_MODEL_PATH if BOOTSTRAP_YOLO_MODEL_PATH.exists() else FATHOMNET_YOLO_MODEL_PATH
 DEFAULT_LIGHT_YOLO_MODEL_PATH = (
     MODELS_DIR / "yolov8n.pt" if (MODELS_DIR / "yolov8n.pt").exists() else BASE_PATH / "yolov8n.pt"
 )
@@ -100,15 +102,17 @@ DETECTION_ENABLED = os.getenv("DETECTION_ENABLED", "true").lower() == "true"
 DETECTION_CROP_ENABLED = os.getenv("DETECTION_CROP_ENABLED", "true").lower() == "true"
 YOLO_CONF_MIN = float(os.getenv("YOLO_CONF_MIN", "0.35"))
 YOLO_MAX_DETECTIONS = int(os.getenv("YOLO_MAX_DETECTIONS", "10"))
-YOLO_MIN_AREA_PCT = float(os.getenv("YOLO_MIN_AREA_PCT", "0.01"))
+YOLO_MIN_AREA_PCT = float(os.getenv("YOLO_MIN_AREA_PCT", "0.003"))
 YOLO_MAX_AREA_PCT = float(os.getenv("YOLO_MAX_AREA_PCT", "0.8"))
 YOLO_MIN_ASPECT = float(os.getenv("YOLO_MIN_ASPECT", "0.5"))
 YOLO_MAX_ASPECT = float(os.getenv("YOLO_MAX_ASPECT", "2.0"))
 YOLO_NMS_IOU = float(os.getenv("YOLO_NMS_IOU", "0.45"))
-STREAM_YOLO_IMGSZ = int(os.getenv("STREAM_YOLO_IMGSZ", "416"))
+STREAM_YOLO_IMGSZ = int(os.getenv("STREAM_YOLO_IMGSZ", "640"))
 STREAM_ESTIMATE_EVERY_MS = int(os.getenv("STREAM_ESTIMATE_EVERY_MS", "1000"))
 STREAM_CACHE_TTL_MS = int(os.getenv("STREAM_CACHE_TTL_MS", "800"))
 STREAM_BBOX_REUSE_IOU = float(os.getenv("STREAM_BBOX_REUSE_IOU", "0.65"))
+STREAM_ESTIMATE_STALE_MS = int(os.getenv("STREAM_ESTIMATE_STALE_MS", "2500"))
+STREAM_ESTIMATE_SMOOTH_WINDOW = int(os.getenv("STREAM_ESTIMATE_SMOOTH_WINDOW", "7"))
 STREAM_SKIP_THUMBNAIL = os.getenv("STREAM_SKIP_THUMBNAIL", "true").lower() == "true"
 DEBUG_EXPORTS_DIR = BASE_PATH / "data" / "debug_exports"
 DEBUG_SESSION_DIR = DEBUG_EXPORTS_DIR / "current"
@@ -437,13 +441,13 @@ def bbox_iou(first: Optional[Dict[str, float]], second: Optional[Dict[str, float
     return intersection / union if union > 0 else 0.0
 
 
-def get_fresh_stream_cache(now_ms: int, image: Image.Image) -> Optional[Dict[str, object]]:
+def get_fresh_stream_cache(now_ms: int, image: Image.Image, ttl_ms: Optional[int] = None) -> Optional[Dict[str, object]]:
     """Return cached stream state while dimensions and TTL still match."""
     with stream_cache_lock:
         cached = dict(stream_cache)
     if not cached:
         return None
-    if now_ms - int(cached.get("updated_at_ms", 0)) > STREAM_CACHE_TTL_MS:
+    if now_ms - int(cached.get("updated_at_ms", 0)) > (ttl_ms or STREAM_CACHE_TTL_MS):
         return None
     if cached.get("image_size") != (image.width, image.height):
         return None
@@ -461,9 +465,16 @@ def update_stream_cache(
     estimated_molt_event_date: str,
     recommendation: str,
     estimate_input: str,
+    raw_days_until_molt: Optional[float] = None,
 ) -> None:
     """Store the latest stream result for bbox/estimate reuse."""
     with stream_cache_lock:
+        cached_primary = stream_cache.get("primary_bbox") if isinstance(stream_cache.get("primary_bbox"), dict) else None
+        same_track = primary_bbox is not None and bbox_iou(primary_bbox, cached_primary) >= STREAM_BBOX_REUSE_IOU
+        prior_history = stream_cache.get("estimate_history") if same_track else None
+        estimate_history = list(prior_history) if isinstance(prior_history, list) else []
+        estimate_history.append(float(raw_days_until_molt if raw_days_until_molt is not None else days_until_molt))
+        estimate_history = estimate_history[-max(STREAM_ESTIMATE_SMOOTH_WINDOW, 1) :]
         stream_cache.clear()
         stream_cache.update(
             {
@@ -477,6 +488,8 @@ def update_stream_cache(
                 "phase_info": dict(phase_info),
                 "recommendation": recommendation,
                 "estimate_input": estimate_input,
+                "estimate_history": estimate_history,
+                "raw_days_until_molt": raw_days_until_molt if raw_days_until_molt is not None else days_until_molt,
             }
         )
 
@@ -500,6 +513,42 @@ def refresh_stream_cache_detection(
                 "primary_bbox": dict(primary_bbox) if primary_bbox else None,
             }
         )
+
+
+def smooth_stream_estimate(
+    *,
+    raw_days_until_molt: float,
+    cached: Optional[Dict[str, object]],
+    primary_bbox: Optional[Dict[str, float]],
+) -> Dict[str, object]:
+    """Return robust stream estimate fields for a stable bbox track."""
+    history: List[float] = []
+    if cached and primary_bbox is not None:
+        cached_primary = cached.get("primary_bbox") if isinstance(cached.get("primary_bbox"), dict) else None
+        if bbox_iou(primary_bbox, cached_primary) >= STREAM_BBOX_REUSE_IOU:
+            cached_history = cached.get("estimate_history")
+            if isinstance(cached_history, list):
+                for value in cached_history:
+                    try:
+                        history.append(float(value))
+                    except (TypeError, ValueError):
+                        continue
+    history.append(float(raw_days_until_molt))
+    history = history[-max(STREAM_ESTIMATE_SMOOTH_WINDOW, 1) :]
+    smoothed = float(np.median(history))
+    q25 = float(np.percentile(history, 25))
+    q75 = float(np.percentile(history, 75))
+    return {
+        "days_until_molt": smoothed,
+        "raw_days_until_molt": float(raw_days_until_molt),
+        "estimate_history": history,
+        "estimate_range_days": {
+            "low": round(q25, 2),
+            "high": round(q75, 2),
+            "sample_count": len(history),
+        },
+        "estimate_smoothed": len(history) > 1,
+    }
 
 
 def encode_thumbnail(
@@ -1313,45 +1362,73 @@ async def predict_image(
     raw_bboxes = run_detection(image, imgsz=detection_imgsz) if DETECTION_ENABLED else []
     bboxes = filter_bboxes(image, raw_bboxes) if DETECTION_ENABLED else []
     now_ms = int(time.time() * 1000)
-    cached = get_fresh_stream_cache(now_ms, image) if stream_mode else None
+    stream_cache_ttl_ms = max(STREAM_CACHE_TTL_MS, STREAM_ESTIMATE_STALE_MS)
+    cached = get_fresh_stream_cache(now_ms, image, ttl_ms=stream_cache_ttl_ms) if stream_mode else None
     bbox_cached = False
-    if stream_mode and not bboxes and cached and cached.get("bboxes"):
-        cached_age_ms = now_ms - int(cached.get("updated_at_ms", 0))
-        if cached_age_ms <= STREAM_CACHE_TTL_MS:
-            bboxes = [dict(box) for box in cached.get("bboxes", [])]
-            bbox_cached = True
     primary_bbox = select_primary_bbox(bboxes) if DETECTION_CROP_ENABLED else None
     roi_image = crop_to_bbox(image, primary_bbox) if primary_bbox else image
     estimate_input = "yolo_crop" if primary_bbox else "whole_image_fallback" if DETECTION_ENABLED else "whole_image"
+    bbox_stale = False
+    bbox_cleared_reason = None
+    last_detection_age_ms = 0
+    if stream_mode and not primary_bbox and cached:
+        cached_primary = cached.get("primary_bbox") if isinstance(cached.get("primary_bbox"), dict) else None
+        if cached_primary:
+            last_detection_age_ms = now_ms - int(cached.get("updated_at_ms", 0))
+            bbox_cleared_reason = "no_detection"
     mark("detect")
 
     estimate_cached = False
+    estimate_stale = False
+    raw_days_until_molt: Optional[float] = None
+    estimate_range_days: Optional[Dict[str, object]] = None
+    estimate_smoothed = False
     should_reuse_estimate = False
     if stream_mode and cached:
         cached_primary = cached.get("primary_bbox") if isinstance(cached.get("primary_bbox"), dict) else None
         same_bbox = primary_bbox is not None and bbox_iou(primary_bbox, cached_primary) >= STREAM_BBOX_REUSE_IOU
         estimate_age_ms = now_ms - int(cached.get("estimate_at_ms", 0))
         should_reuse_estimate = same_bbox and estimate_age_ms < STREAM_ESTIMATE_EVERY_MS
+        if not primary_bbox and estimate_age_ms < STREAM_ESTIMATE_STALE_MS:
+            should_reuse_estimate = True
+            estimate_stale = True
 
     if should_reuse_estimate and cached:
         days_until_molt = float(cached["days_until_molt"])
+        raw_days_until_molt = float(cached.get("raw_days_until_molt", days_until_molt))
         estimated_molt_event_date = str(cached["estimated_molt_event_date"])
         phase_info = dict(cached["phase_info"])  # type: ignore[arg-type]
         recommendation = str(cached["recommendation"])
         estimate_input = str(cached["estimate_input"])
+        estimate_range_days = cached.get("estimate_range_days") if isinstance(cached.get("estimate_range_days"), dict) else None
+        estimate_smoothed = bool(cached.get("estimate_smoothed", False))
         estimate_cached = True
-        refresh_stream_cache_detection(
-            now_ms=now_ms,
-            image=image,
-            bboxes=bboxes,
-            primary_bbox=primary_bbox,
-        )
+        if primary_bbox:
+            refresh_stream_cache_detection(
+                now_ms=now_ms,
+                image=image,
+                bboxes=bboxes,
+                primary_bbox=primary_bbox,
+            )
+        if estimate_stale:
+            recommendation = "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading."
     else:
         if feature_extractor is None or regressor is None:
             raise HTTPException(status_code=503, detail="Models are not loaded.")
         np_image = np.array(roi_image)
         features = feature_extractor.extract_features(np_image).reshape(1, -1)
-        days_until_molt = float(regressor.predict(features)[0])
+        raw_days_until_molt = float(regressor.predict(features)[0])
+        if stream_mode and primary_bbox:
+            smoothed_payload = smooth_stream_estimate(
+                raw_days_until_molt=raw_days_until_molt,
+                cached=cached,
+                primary_bbox=primary_bbox,
+            )
+            days_until_molt = float(smoothed_payload["days_until_molt"])
+            estimate_range_days = smoothed_payload["estimate_range_days"]  # type: ignore[assignment]
+            estimate_smoothed = bool(smoothed_payload["estimate_smoothed"])
+        else:
+            days_until_molt = raw_days_until_molt
         estimated_molt_event_date = get_estimated_molt_event_date(days_until_molt)
         phase_info = get_molt_phase_category(days_until_molt)
         recommendation = str(phase_info["recommendation"])
@@ -1371,7 +1448,12 @@ async def predict_image(
                 estimated_molt_event_date=estimated_molt_event_date,
                 recommendation=recommendation,
                 estimate_input=estimate_input,
+                raw_days_until_molt=raw_days_until_molt,
             )
+            if estimate_range_days is not None:
+                with stream_cache_lock:
+                    stream_cache["estimate_range_days"] = dict(estimate_range_days)
+                    stream_cache["estimate_smoothed"] = estimate_smoothed
     mark("estimate" if not estimate_cached else "estimate_cache")
 
     label_text = f"{phase_info['phase']} ({days_until_molt:.1f}d)"
@@ -1399,12 +1481,17 @@ async def predict_image(
             aux_tags=aux_tags or {},
             response_payload={
                 "days_until_molt": days_until_molt,
+                "raw_days_until_molt": raw_days_until_molt,
                 "estimated_molt_event_date": estimated_molt_event_date,
                 "phase": phase_info["phase"],
                 "recommendation": recommendation,
                 "app_estimate_input": estimate_input,
                 "primary_bbox": primary_bbox,
                 "bboxes": bboxes,
+                "bbox_stale": bbox_stale,
+                "bbox_cleared_reason": bbox_cleared_reason,
+                "last_detection_age_ms": last_detection_age_ms,
+                "estimate_stale": estimate_stale,
             },
             debug_run_id=debug_run_id,
         )
@@ -1427,12 +1514,17 @@ async def predict_image(
             aux_tags=aux_tags or {},
             response_payload={
                 "days_until_molt": days_until_molt,
+                "raw_days_until_molt": raw_days_until_molt,
                 "estimated_molt_event_date": estimated_molt_event_date,
                 "phase": phase_info["phase"],
                 "recommendation": recommendation,
                 "app_estimate_input": estimate_input,
                 "primary_bbox": primary_bbox,
                 "bboxes": bboxes,
+                "bbox_stale": bbox_stale,
+                "bbox_cleared_reason": bbox_cleared_reason,
+                "last_detection_age_ms": last_detection_age_ms,
+                "estimate_stale": estimate_stale,
             },
             molt_details=molt_details or [],
         )
@@ -1440,6 +1532,9 @@ async def predict_image(
     return {
         "success": True,
         "days_until_molt": days_until_molt,
+        "raw_days_until_molt": raw_days_until_molt,
+        "estimate_range_days": estimate_range_days,
+        "estimate_smoothed": estimate_smoothed,
         "estimated_molt_event_date": estimated_molt_event_date,
         "phase": phase_info["phase"],
         "color": phase_info["color"],
@@ -1455,7 +1550,11 @@ async def predict_image(
         "crop_used": primary_bbox is not None,
         "stream_mode": stream_mode,
         "bbox_cached": bbox_cached,
+        "bbox_stale": bbox_stale,
+        "bbox_cleared_reason": bbox_cleared_reason,
+        "last_detection_age_ms": last_detection_age_ms,
         "estimate_cached": estimate_cached,
+        "estimate_stale": estimate_stale,
         "primary_bbox": primary_bbox,
         "bboxes": bboxes,
         "image_width": image.width,
