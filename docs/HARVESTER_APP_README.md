@@ -15,6 +15,8 @@ MoltMeter estimates how many days remain before a crab molts. This matters becau
 
 ![App home screen](../static/app%20screenshot.png)
 
+Note: the screenshots in this guide are currently from the upload workflow. The live camera workflow uses the same estimates and detection details, but the best guide screenshots should be taken from the streaming view with the camera running. See [Recommended Streaming Screenshots](#recommended-streaming-screenshots) for the exact shots to capture and where to place them.
+
 ## How to See the Bounding Boxes
 
 Bounding boxes are rectangles drawn over detected crabs in the live camera view. The box tells you which crab the app is using for the molt estimate.
@@ -48,6 +50,8 @@ The app also shows a phase name and recommendation. Use the number first, then u
 
 ![Inter-molt result](../static/inter-molt%20result.png)
 
+These result screenshots show the upload pipeline. In live camera mode, read the same information from the bounding box label and the `Detection Details` panel below the video.
+
 ## Sorting Crabs into Farm Bins
 
 Use literal holding bins or pots at the farm so crabs with similar molt timing stay together.
@@ -74,7 +78,9 @@ Use low confidence as a warning. If the box confidence is low, or if the box is 
 
 ## If No Bounding Box Appears
 
-Sometimes the app still gives a molt estimate even when no box appears. In that case, Detection Details may say the estimate used the whole image instead of a crop.
+Sometimes the app still gives a molt estimate even when no box appears. This can happen because the molt estimator can run on the whole camera frame even when the crab detector did not find a confident crab crop.
+
+When there is no box, read the estimate from `Detection Details`, not from a box label. The large `Days to Molt` value at the top of `Detection Details` is the app's best whole-frame estimate for the current image. Treat it as lower quality than an estimate with a clean bounding box around the crab.
 
 Read these fields:
 
@@ -82,6 +88,13 @@ Read these fields:
 - `Crop Used`: `No` means the app estimated from the full camera frame.
 - `Input Source`: `whole_image_fallback` means the model did not get a clean crab crop.
 - `Fallback`: the warning means you should take another view before sorting the crab.
+
+How to use a no-box estimate:
+
+- If `Days to Molt` is far from a sorting boundary, use it only as a rough hint and re-check the crab.
+- If `Days to Molt` is near an important boundary, such as 3 days or 5 days, do not sort from that estimate alone.
+- If the frame includes hands, gloves, buckets, cage wire, multiple crabs, or water glare, assume the whole-frame estimate may be contaminated.
+- If a trained reviewer agrees with the estimate, write the expert estimate in `Debug` and capture it for the bundle.
 
 When there is no box:
 
@@ -91,6 +104,32 @@ When there is no box:
 4. Remove gloves, hands, cage edges, and other crabs from the frame if possible.
 5. Try top and belly views.
 6. Sort only after the box appears on the crab or after a trained reviewer confirms the estimate.
+
+In short: a no-box `Days to Molt` can help you decide what to try next, but a clean bounding box is the normal standard for bin sorting.
+
+## Recommended Streaming Screenshots
+
+Manual screenshots are the best option right now because the live stream depends on a real camera, real lighting, and a crab in hand. Automated screenshots are possible only if we add a mocked camera/video feed, which would not show the real field workflow as well.
+
+Take these screenshots from the deployed app or local app:
+
+1. `static/streaming_camera_start.png`: camera view after clicking `Start Camera`, before any crab is detected.
+2. `static/streaming_bbox_estimate.png`: a crab with a clean bounding box and a readable `X.X days to molt | confidence` label.
+3. `static/streaming_detection_details.png`: the `Detection Details` panel showing the large `Days to Molt` value, `Crabs Detected`, `BBox Confidence`, `Crop Used`, and `Input Source`.
+4. `static/streaming_no_bbox_fallback.png`: a frame where no box appears but `Detection Details` shows `Crabs Detected: 0`, `Crop Used: No`, and `Input Source: whole_image_fallback`.
+5. `static/streaming_debug_panel.png`: the `Debug` panel open with view, sex, molt details, expert estimate, notes, and `Capture`.
+6. `static/streaming_export_session.png`: the export session panel showing `Start Export Session`, `Stop Export Session`, and `Download Zip`.
+
+Suggested capture steps:
+
+1. Open the app at `/ui`.
+2. Use a phone or laptop camera in the same way a harvester will use it.
+3. Click `Start Camera`.
+4. Use the browser or operating system screenshot tool.
+5. Save each image under the exact `static/` filenames above.
+6. Replace the upload screenshots in this guide with the streaming screenshots once they are saved.
+
+On macOS, press `Command-Shift-4`, drag around the app area, and save the screenshot. On Windows, use `Win-Shift-S`. On a phone, use the normal phone screenshot shortcut.
 
 ## Capture Debug: Record Known Bad Estimates
 
@@ -159,4 +198,3 @@ Use full export sessions for:
 - Keep `0-3 days` crabs separate from `3-5 days` and `5+ days` crabs.
 - Download debug/export bundles before starting a new session.
 - Add expert notes whenever the app is wrong. Those examples are the most valuable for improvement.
-
