@@ -580,6 +580,7 @@ def parse_aux_tags(
     sex: Optional[str] = None,
     incorrect_detection: Optional[str] = None,
     quality_tag: Optional[str] = None,
+    expert_molt_estimate: Optional[str] = None,
     review_notes: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Merge explicit aux fields and optional JSON tags into one review payload."""
@@ -599,6 +600,7 @@ def parse_aux_tags(
         "sex": sex,
         "incorrect_detection": incorrect_detection,
         "quality_tag": quality_tag,
+        "expert_molt_estimate": expert_molt_estimate,
         "review_notes": review_notes,
     }.items():
         if value not in (None, ""):
@@ -1079,6 +1081,7 @@ def build_debug_session_workbook(session_dir: Path) -> Path:
         "Sex",
         "Incorrect Detection",
         "Molt Details",
+        "Expert Molt Estimate",
         "Notes",
         "BBox Count",
         "Days Until Molt",
@@ -1102,13 +1105,14 @@ def build_debug_session_workbook(session_dir: Path) -> Path:
         "G": 12,
         "H": 16,
         "I": 26,
-        "J": 28,
-        "K": 12,
-        "L": 15,
-        "M": 18,
-        "N": 36,
-        "O": 16,
-        "P": 20,
+        "J": 22,
+        "K": 28,
+        "L": 12,
+        "M": 15,
+        "N": 18,
+        "O": 36,
+        "P": 16,
+        "Q": 20,
     }
     for col, width in width_map.items():
         sheet.column_dimensions[col].width = width
@@ -1143,6 +1147,7 @@ def build_debug_session_workbook(session_dir: Path) -> Path:
                 aux_tags.get("sex", "unknown"),
                 aux_tags.get("incorrect_detection", "none"),
                 ", ".join(metadata.get("molt_details", [])),
+                aux_tags.get("expert_molt_estimate", ""),
                 aux_tags.get("review_notes", ""),
                 len(metadata.get("bboxes", [])),
                 metadata.get("days_until_molt", ""),
@@ -1158,12 +1163,88 @@ def build_debug_session_workbook(session_dir: Path) -> Path:
                 img = XLImage(str(thumbnail_path))
                 img.width = 88
                 img.height = 88
-                sheet.add_image(img, f"P{row_index}")
+                sheet.add_image(img, f"Q{row_index}")
             except Exception:
                 continue
 
     workbook.save(workbook_path)
     return workbook_path
+
+
+def _debug_session_rows(session_dir: Path) -> List[List[Any]]:
+    """Build spreadsheet-compatible rows for debug/session captures."""
+    manifest_rows = _load_debug_session_manifest()
+    session_state_path = session_dir / "session.json"
+    session_state: Dict[str, Any] = {}
+    if session_state_path.exists():
+        try:
+            session_state = json.loads(session_state_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            session_state = {}
+    session_name = session_state.get("run_name")
+    session_location = session_state.get("location_name")
+    rows: List[List[Any]] = []
+    for manifest_row in manifest_rows:
+        capture_dir = session_dir / manifest_row["capture_dir"]
+        metadata_path = capture_dir / "metadata.json"
+        if not metadata_path.exists():
+            continue
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        aux_tags = metadata.get("aux_tags", {})
+        primary_bbox = metadata.get("primary_bbox") or {}
+        rows.append(
+            [
+                metadata.get("capture_id", ""),
+                metadata.get("captured_at_utc", ""),
+                session_name or metadata.get("session_name", ""),
+                session_location or metadata.get("location_name", ""),
+                metadata.get("source_file_path", metadata.get("source_filename", "")),
+                aux_tags.get("view_angle", "unknown"),
+                aux_tags.get("sex", "unknown"),
+                aux_tags.get("incorrect_detection", "none"),
+                ", ".join(metadata.get("molt_details", [])),
+                aux_tags.get("expert_molt_estimate", ""),
+                aux_tags.get("review_notes", ""),
+                len(metadata.get("bboxes", [])),
+                metadata.get("days_until_molt", ""),
+                metadata.get("phase_info", {}).get("phase", ""),
+                metadata.get("recommendation", ""),
+                primary_bbox.get("confidence", ""),
+                metadata.get("files", {}).get("bbox_thumbnail", ""),
+            ]
+        )
+    return rows
+
+
+def build_debug_session_csv(session_dir: Path) -> Path:
+    """Create a dependency-free CSV summary for all captures."""
+    import csv
+
+    csv_path = session_dir / "captures.csv"
+    headers = [
+        "Capture ID",
+        "Captured At UTC",
+        "Session Name",
+        "Location",
+        "Source File",
+        "View",
+        "Sex",
+        "Incorrect Detection",
+        "Molt Details",
+        "Expert Molt Estimate",
+        "Notes",
+        "BBox Count",
+        "Days Until Molt",
+        "Phase",
+        "Recommendation",
+        "Primary Confidence",
+        "Thumbnail",
+    ]
+    with csv_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(headers)
+        writer.writerows(_debug_session_rows(session_dir))
+    return csv_path
 
 
 def build_debug_session_zip() -> Path:
@@ -1173,7 +1254,11 @@ def build_debug_session_zip() -> Path:
         raise FileNotFoundError("No active debug session")
     if not DEBUG_SESSION_DIR.exists():
         raise FileNotFoundError("No active debug session data found")
-    build_debug_session_workbook(DEBUG_SESSION_DIR)
+    try:
+        build_debug_session_workbook(DEBUG_SESSION_DIR)
+    except RuntimeError as exc:
+        logger.warning("Excel debug export unavailable, writing CSV fallback: %s", exc)
+        build_debug_session_csv(DEBUG_SESSION_DIR)
     zip_name = f"moltmeter_debug_{_safe_debug_run_id(session.get('run_name'))}.zip"
     zip_path = DEBUG_EXPORTS_DIR / zip_name
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
@@ -1435,6 +1520,7 @@ async def predict(
     sex: Optional[str] = Form(None),
     incorrect_detection: Optional[str] = Form(None),
     quality_tag: Optional[str] = Form(None),
+    expert_molt_estimate: Optional[str] = Form(None),
     review_notes: Optional[str] = Form(None),
 ):
     async with inference_semaphore:
@@ -1447,6 +1533,7 @@ async def predict(
                     sex=sex,
                     incorrect_detection=incorrect_detection,
                     quality_tag=quality_tag,
+                    expert_molt_estimate=expert_molt_estimate,
                     review_notes=review_notes,
                 ),
             )
@@ -1466,24 +1553,32 @@ async def predict_stream(
     sex: Optional[str] = Form(None),
     incorrect_detection: Optional[str] = Form(None),
     quality_tag: Optional[str] = Form(None),
+    expert_molt_estimate: Optional[str] = Form(None),
+    export_capture: bool = Form(False),
     review_notes: Optional[str] = Form(None),
 ):
     async with inference_semaphore:
         try:
+            aux_tags = parse_aux_tags(
+                aux_tags_json=aux_tags_json,
+                view_angle=view_angle,
+                sex=sex,
+                incorrect_detection=incorrect_detection,
+                quality_tag=quality_tag,
+                expert_molt_estimate=expert_molt_estimate,
+                review_notes=review_notes,
+            )
             result = await predict_image(
                 file,
                 stream_mode=True,
                 include_thumbnail=not STREAM_SKIP_THUMBNAIL,
                 detection_imgsz=STREAM_YOLO_IMGSZ,
-                aux_tags=parse_aux_tags(
-                    aux_tags_json=aux_tags_json,
-                    view_angle=view_angle,
-                    sex=sex,
-                    incorrect_detection=incorrect_detection,
-                    quality_tag=quality_tag,
-                    review_notes=review_notes,
-                ),
+                aux_tags=aux_tags,
+                capture_debug=export_capture,
+                molt_details=_normalize_molt_details(aux_tags.get("molt_details")),
             )
+            if export_capture:
+                result["debug_session"] = get_active_debug_session() or dict(debug_session_state)
             return JSONResponse(content=result)
         except HTTPException as exc:
             raise exc
@@ -1548,6 +1643,7 @@ async def debug_session_capture(
     incorrect_detection: Optional[str] = Form(None),
     molt_details_json: Optional[str] = Form(None),
     quality_tag: Optional[str] = Form(None),
+    expert_molt_estimate: Optional[str] = Form(None),
     review_notes: Optional[str] = Form(None),
 ):
     async with inference_semaphore:
@@ -1563,6 +1659,7 @@ async def debug_session_capture(
                     sex=sex,
                     incorrect_detection=incorrect_detection,
                     quality_tag=quality_tag,
+                    expert_molt_estimate=expert_molt_estimate,
                     review_notes=review_notes,
                 ),
                 capture_debug=True,

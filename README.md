@@ -42,18 +42,13 @@ python -m uvicorn app_fastapi:app --host 127.0.0.1 --port 8080
 
 Then open http://127.0.0.1:8080/ui in your browser.
 
-## Debug Review Workflow
+## Field User Guide
 
-Use the debug menu when you want to save expert review captures for later inspection.
+For harvesters and biologists using the app in the field, see:
 
-1. Start the camera.
-2. Click `Debug` to open the review panel.
-3. Edit the location if needed; the run name updates automatically.
-4. Choose the crab view, sex, molt details, and any incorrect detection class.
-5. Click `Capture` only when the frame and tags are correct.
-6. Use `Download Zip` to export the session. The zip includes a spreadsheet plus capture images and bbox thumbnails.
+[MoltMeter Field Guide for Crab Harvesters](docs/HARVESTER_APP_README.md)
 
-The current debug session is overwritten when a new one starts so the export folder stays small.
+It explains bounding boxes, days-to-molt estimates, confidence, sorting bins, fallback/no-box estimates, debug captures for known bad estimates, and full-session exports.
 
 ## Project Structure
 

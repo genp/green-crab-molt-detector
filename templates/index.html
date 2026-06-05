@@ -113,36 +113,54 @@
                         <p class="text-muted">Point your camera at a crab to see real-time molt phase detection.</p>
 
                         <!-- Camera Controls -->
-                        <div class="mb-3 d-flex gap-2">
+	                        <div class="mb-3 d-flex flex-wrap gap-2">
                             <button class="btn btn-success btn-lg" id="startStreamBtn">
                                 <i class="bi bi-camera-video"></i> Start Camera
                             </button>
                             <button class="btn btn-danger btn-lg" id="stopStreamBtn" disabled>
                                 <i class="bi bi-stop-circle"></i> Stop Camera
                             </button>
-                            <button class="btn btn-outline-dark btn-lg" id="debugModeBtn" disabled>
-                                <i class="bi bi-bug"></i> Debug
-                            </button>
-                            <div class="ms-auto">
-                                <span class="badge bg-secondary fs-6 py-2" id="streamStatus">Camera Off</span>
+	                            <button class="btn btn-outline-dark btn-lg" id="debugModeBtn" disabled>
+	                                <i class="bi bi-bug"></i> Debug
+	                            </button>
+	                            <div class="ms-auto">
+	                                <span class="badge bg-secondary fs-6 py-2" id="streamStatus">Camera Off</span>
+	                            </div>
+                        </div>
+
+                        <div class="border rounded-3 bg-white p-3 mb-3">
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <div class="small text-muted me-auto">Record every live detection into one export bundle.</div>
+                                <button class="btn btn-outline-primary btn-sm" id="startExportSessionBtn" disabled>
+                                    <i class="bi bi-record-circle"></i> Start Export Session
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" id="stopExportSessionBtn" disabled>
+                                    <i class="bi bi-stop-circle"></i> Stop Export Session
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm" id="downloadExportSessionBtn" disabled>
+                                    <i class="bi bi-download"></i> Download Zip
+                                </button>
                             </div>
                         </div>
 
                         <div class="border rounded-3 bg-light p-3 mb-3" id="debugPanel" style="display:none;">
-                            <div class="d-flex justify-content-between align-items-center gap-3 mb-2">
-                                <div class="fw-semibold">
-                                    <i class="bi bi-bug"></i> Expert Review
-                                </div>
+	                            <div class="d-flex justify-content-between align-items-center gap-3 mb-2">
+	                                <div class="fw-semibold">
+	                                    <i class="bi bi-bug"></i> Expert Review
+	                                </div>
                                 <div class="d-flex gap-2">
                                     <button class="btn btn-success btn-sm" id="captureReviewBtn" disabled>
                                         <i class="bi bi-camera"></i> Capture
                                     </button>
                                     <button class="btn btn-outline-primary btn-sm" id="downloadReviewZipBtn" disabled>
                                         <i class="bi bi-download"></i> Download Zip
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="row g-2">
+	                                    </button>
+	                                </div>
+	                            </div>
+	                            <div class="small text-muted mb-3">
+	                                Capture reviewed frames with your field tags. The download bundle includes source images, detection overlays, crab crops, metadata JSON, and a spreadsheet or CSV summary.
+	                            </div>
+	                            <div class="row g-2">
                                 <div class="col-md-4">
                                     <div class="small text-muted mb-1">Run</div>
                                     <div id="debugRunName" class="form-control form-control-sm bg-white text-muted">off</div>
@@ -197,18 +215,43 @@
                                     </div>
                                 </div>
                                 <div class="col-md-8">
-                                    <label class="form-label small mb-1" for="moltDetailsSelect">Molt details</label>
-                                    <select class="form-select form-select-sm" id="moltDetailsSelect" multiple size="5">
-                                        <option value="halo slight">halo slight</option>
-                                        <option value="halo visible">halo visible</option>
-                                        <option value="split slight">split slight</option>
-                                        <option value="split visible">split visible</option>
-                                        <option value="blue hue">blue hue</option>
-                                    </select>
+                                    <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+                                        <div class="small text-muted">Molt details</div>
+                                        <div class="btn-group btn-group-sm" role="group" aria-label="Molt detail actions">
+                                            <button class="btn btn-outline-secondary" type="button" id="selectAllMoltDetailsBtn">All</button>
+                                            <button class="btn btn-outline-secondary" type="button" id="clearMoltDetailsBtn">Clear</button>
+                                        </div>
+                                    </div>
+                                    <div class="border rounded bg-white p-2">
+                                        <div class="row g-1">
+                                            <div class="col-sm-6">
+                                                <input type="checkbox" class="btn-check molt-detail-check" id="moltHaloSlight" value="halo slight">
+                                                <label class="btn btn-outline-secondary btn-sm w-100 text-start" for="moltHaloSlight">halo slight</label>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <input type="checkbox" class="btn-check molt-detail-check" id="moltHaloVisible" value="halo visible">
+                                                <label class="btn btn-outline-secondary btn-sm w-100 text-start" for="moltHaloVisible">halo visible</label>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <input type="checkbox" class="btn-check molt-detail-check" id="moltSplitSlight" value="split slight">
+                                                <label class="btn btn-outline-secondary btn-sm w-100 text-start" for="moltSplitSlight">split slight</label>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <input type="checkbox" class="btn-check molt-detail-check" id="moltSplitVisible" value="split visible">
+                                                <label class="btn btn-outline-secondary btn-sm w-100 text-start" for="moltSplitVisible">split visible</label>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <input type="checkbox" class="btn-check molt-detail-check" id="moltBlueHue" value="blue hue">
+                                                <label class="btn btn-outline-secondary btn-sm w-100 text-start" for="moltBlueHue">blue hue</label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="col-md-4">
+                                    <label class="form-label small mb-1" for="expertMoltEstimate">Expert molt time estimate</label>
+                                    <input type="text" class="form-control form-control-sm mb-2" id="expertMoltEstimate" placeholder="e.g. 2 days, tomorrow">
                                     <label class="form-label small mb-1" for="reviewNotes">Notes</label>
-                                    <textarea class="form-control form-control-sm" id="reviewNotes" rows="5" placeholder="Optional expert review notes"></textarea>
+                                    <textarea class="form-control form-control-sm" id="reviewNotes" rows="4" placeholder="Optional expert review notes"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -379,17 +422,23 @@
         const resultCard = document.getElementById('resultCard');
         const cameraPreview = document.getElementById('cameraPreview');
         const captureCanvas = document.getElementById('captureCanvas');
-        const startStreamBtn = document.getElementById('startStreamBtn');
-        const stopStreamBtn = document.getElementById('stopStreamBtn');
-        const debugModeBtn = document.getElementById('debugModeBtn');
-        const streamStatus = document.getElementById('streamStatus');
+	        const startStreamBtn = document.getElementById('startStreamBtn');
+	        const stopStreamBtn = document.getElementById('stopStreamBtn');
+	        const debugModeBtn = document.getElementById('debugModeBtn');
+	        const startExportSessionBtn = document.getElementById('startExportSessionBtn');
+	        const stopExportSessionBtn = document.getElementById('stopExportSessionBtn');
+	        const downloadExportSessionBtn = document.getElementById('downloadExportSessionBtn');
+	        const streamStatus = document.getElementById('streamStatus');
         const debugPanel = document.getElementById('debugPanel');
         const debugRunName = document.getElementById('debugRunName');
         const debugRunLocation = document.getElementById('debugRunLocation');
         const debugCaptureCount = document.getElementById('debugCaptureCount');
         const captureReviewBtn = document.getElementById('captureReviewBtn');
         const downloadReviewZipBtn = document.getElementById('downloadReviewZipBtn');
-        const moltDetailsSelect = document.getElementById('moltDetailsSelect');
+        const moltDetailChecks = Array.from(document.querySelectorAll('.molt-detail-check'));
+        const selectAllMoltDetailsBtn = document.getElementById('selectAllMoltDetailsBtn');
+        const clearMoltDetailsBtn = document.getElementById('clearMoltDetailsBtn');
+        const expertMoltEstimate = document.getElementById('expertMoltEstimate');
         const reviewNotes = document.getElementById('reviewNotes');
         const viewRadios = Array.from(document.querySelectorAll('input[name="viewRadio"]'));
         const sexRadios = Array.from(document.querySelectorAll('input[name="sexRadio"]'));
@@ -397,10 +446,14 @@
         
         // Store the selected file globally
         let selectedFile = null;
-        let debugSession = null;
-        let debugSessionRunName = null;
-        let debugSessionLocationName = null;
-        let debugSessionCaptureCount = 0;
+	        let debugSession = null;
+	        let debugSessionRunName = null;
+	        let debugSessionLocationName = null;
+	        let debugSessionCaptureCount = 0;
+	        let exportSession = null;
+	        let exportSessionActive = false;
+	        let exportSessionReadyForDownload = false;
+	        let exportSessionCaptureCount = 0;
         
         // Store modal instance globally
         let loadingModal = null;
@@ -408,7 +461,11 @@
         let streamInterval = null;
         let streamTimeout = null;
         let sendingFrame = false;
-        let debugCaptureBusy = false;
+        let debugCaptureCooldownUntil = 0;
+        let pendingDebugCaptures = 0;
+        let activeDebugUploads = 0;
+        const maxActiveDebugUploads = 2;
+        const debugCaptureCooldownMs = 500;
         let streamIntervalMs = 200; // 5 FPS for smooth interactive feel
         const streamMaxDimension = 416;
         const streamJpegQuality = 0.65;
@@ -430,7 +487,7 @@
         }
 
         function currentMoltDetails() {
-            return Array.from(moltDetailsSelect.selectedOptions).map((option) => option.value);
+            return moltDetailChecks.filter((check) => check.checked).map((check) => check.value);
         }
 
         function generateSessionRunName(locationName) {
@@ -480,6 +537,7 @@
                 sex: currentSexValue(),
                 incorrect_detection: currentIncorrectDetectionValue(),
                 molt_details: currentMoltDetails(),
+                expert_molt_estimate: expertMoltEstimate.value.trim(),
                 review_notes: reviewNotes.value.trim()
             };
         }
@@ -490,13 +548,14 @@
             formData.append('sex', tags.sex);
             formData.append('incorrect_detection', tags.incorrect_detection);
             formData.append('quality_tag', tags.molt_details.length > 0 ? tags.molt_details[0] : 'unknown');
+            formData.append('expert_molt_estimate', tags.expert_molt_estimate);
             formData.append('review_notes', tags.review_notes);
             formData.append('aux_tags_json', JSON.stringify(tags));
             formData.append('molt_details_json', JSON.stringify(tags.molt_details));
         }
 
-        function updateDebugUi() {
-            const active = Boolean(debugSession && debugSession.active);
+	        function updateDebugUi() {
+	            const active = Boolean(debugSession && debugSession.active);
             debugPanel.style.display = debugSession ? 'block' : 'none';
             debugModeBtn.classList.remove('btn-outline-dark', 'btn-dark', 'btn-warning');
             debugModeBtn.classList.add(active ? 'btn-warning' : 'btn-outline-dark');
@@ -504,9 +563,21 @@
             debugRunName.textContent = debugSessionRunName || previewRunNameFromLocation(debugRunLocation.value) || 'off';
             debugRunLocation.value = debugSessionLocationName || debugRunLocation.value || 'local';
             debugCaptureCount.textContent = String(debugSessionCaptureCount || 0);
-            captureReviewBtn.disabled = !active;
-            downloadReviewZipBtn.disabled = !debugSession;
-        }
+            captureReviewBtn.disabled = !active || Date.now() < debugCaptureCooldownUntil;
+            captureReviewBtn.innerHTML = pendingDebugCaptures > 0
+                ? `<i class="bi bi-camera"></i> Capture (${pendingDebugCaptures} saving)`
+                : '<i class="bi bi-camera"></i> Capture';
+	            downloadReviewZipBtn.disabled = !debugSession;
+	        }
+
+	        function updateExportSessionUi() {
+	            startExportSessionBtn.disabled = !mediaStream || exportSessionActive;
+	            stopExportSessionBtn.disabled = !mediaStream || !exportSessionActive;
+	            downloadExportSessionBtn.disabled = !exportSessionReadyForDownload;
+	            debugModeBtn.disabled = !mediaStream || exportSessionActive;
+	            startExportSessionBtn.classList.toggle('btn-primary', exportSessionActive);
+	            startExportSessionBtn.classList.toggle('btn-outline-primary', !exportSessionActive);
+	        }
 
         async function startDebugSession() {
             if (!mediaStream) return;
@@ -522,12 +593,13 @@
             debugSessionRunName = debugSession?.run_name || previewRunNameFromLocation(locationName);
             debugSessionLocationName = debugSession?.location_name || locationName;
             debugSessionCaptureCount = debugSession?.capture_count || 0;
-            updateDebugUi();
+	        updateDebugUi();
+	        updateExportSessionUi();
         }
 
-        async function stopDebugSession() {
-            try {
-                const response = await fetch('/debug-session/stop', { method: 'POST' });
+	        async function stopDebugSession() {
+	            try {
+	                const response = await fetch('/debug-session/stop', { method: 'POST' });
                 if (response.ok) {
                     const data = await response.json();
                     debugSession = data.session || debugSession;
@@ -538,10 +610,50 @@
             } catch (error) {
                 console.warn('Failed to stop debug session cleanly', error);
             }
-            updateDebugUi();
-        }
+	            updateDebugUi();
+	        }
 
-        async function syncDebugLocationChange() {
+	        async function startExportSession() {
+	            if (!mediaStream || exportSessionActive) return;
+	            if (debugSession && debugSession.active) {
+	                await stopDebugSession();
+	                debugPanel.style.display = 'none';
+	            }
+	            const locationName = (debugRunLocation.value || await resolveSessionLocation() || 'local').trim() || 'local';
+	            const formData = new FormData();
+	            formData.append('location_name', locationName);
+	            formData.append('run_name', generateSessionRunName(`${locationName}_full_export`));
+	            const response = await fetch('/debug-session/start', { method: 'POST', body: formData });
+	            if (!response.ok) {
+	                throw new Error('Failed to start export session');
+	            }
+	            const data = await response.json();
+	            exportSession = data.session || null;
+	            exportSessionActive = Boolean(exportSession && exportSession.active);
+	            exportSessionReadyForDownload = false;
+	            exportSessionCaptureCount = 0;
+	            streamStatus.textContent = 'Camera Active • export session started';
+	            updateExportSessionUi();
+	        }
+
+	        async function stopExportSession() {
+	            if (!exportSessionActive) return;
+	            const response = await fetch('/debug-session/stop', { method: 'POST' });
+	            if (!response.ok) {
+	                throw new Error('Failed to stop export session');
+	            }
+	            const data = await response.json();
+	            exportSession = data.session || exportSession;
+	            exportSessionActive = false;
+	            exportSessionReadyForDownload = Boolean(exportSession && exportSession.session_id);
+	            exportSessionCaptureCount = exportSession?.capture_count || exportSessionCaptureCount;
+		            streamStatus.textContent = mediaStream
+		                ? `Camera Active • export stopped (${exportSessionCaptureCount} captures)`
+		                : `Camera Off • export stopped (${exportSessionCaptureCount} captures)`;
+	            updateExportSessionUi();
+	        }
+
+	        async function syncDebugLocationChange() {
             const locationName = (debugRunLocation.value || 'local').trim() || 'local';
             if (!debugSession || !debugSession.active) {
                 debugSessionLocationName = locationName;
@@ -564,6 +676,19 @@
         }
 
         updateDebugUi();
+        updateExportSessionUi();
+
+        selectAllMoltDetailsBtn.addEventListener('click', () => {
+            moltDetailChecks.forEach((check) => {
+                check.checked = true;
+            });
+        });
+
+        clearMoltDetailsBtn.addEventListener('click', () => {
+            moltDetailChecks.forEach((check) => {
+                check.checked = false;
+            });
+        });
 
         function escapeHtml(value) {
             return String(value ?? '')
@@ -842,10 +967,11 @@
                 mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
                 cameraPreview.srcObject = mediaStream;
                 await cameraPreview.play();
-                startStreamBtn.disabled = true;
-                stopStreamBtn.disabled = false;
-                debugModeBtn.disabled = false;
-                streamStatus.textContent = 'Camera Active';
+	                startStreamBtn.disabled = true;
+	                stopStreamBtn.disabled = false;
+	                debugModeBtn.disabled = false;
+	                updateExportSessionUi();
+	                streamStatus.textContent = 'Camera Active';
                 streamStatus.classList.remove('bg-secondary');
                 streamStatus.classList.add('bg-success');
 
@@ -855,8 +981,9 @@
             }
         }
 
-        function stopCameraStream() {
-            const hadDebugSession = Boolean(debugSession && debugSession.active);
+	        function stopCameraStream() {
+	            const hadDebugSession = Boolean(debugSession && debugSession.active);
+	            const hadExportSession = exportSessionActive;
             if (streamInterval) {
                 clearInterval(streamInterval);
                 streamInterval = null;
@@ -870,17 +997,23 @@
                 mediaStream = null;
             }
             sendingFrame = false;
-            startStreamBtn.disabled = false;
-            stopStreamBtn.disabled = true;
-            debugModeBtn.disabled = true;
-            streamStatus.textContent = 'Camera Off';
+	            startStreamBtn.disabled = false;
+	            stopStreamBtn.disabled = true;
+		            debugModeBtn.disabled = true;
+		            streamStatus.textContent = 'Camera Off';
             streamStatus.classList.remove('bg-success');
             streamStatus.classList.add('bg-secondary');
-            if (hadDebugSession) {
-                stopDebugSession();
-            }
-            updateDebugUi();
-        }
+	            if (hadDebugSession) {
+	                stopDebugSession();
+	            }
+	            if (hadExportSession) {
+	                stopExportSession().catch((error) => {
+	                    console.warn('Failed to stop export session cleanly', error);
+	                });
+	            }
+	            updateDebugUi();
+	            updateExportSessionUi();
+	        }
 
         async function toggleDebugMode() {
             if (!mediaStream) return;
@@ -898,11 +1031,13 @@
         }
 
         async function captureDebugFrame() {
-            if (!debugSession || !debugSession.active || !mediaStream || debugCaptureBusy) return;
+            if (!debugSession || !debugSession.active || !mediaStream) return;
             if (cameraPreview.videoWidth === 0 || cameraPreview.videoHeight === 0) return;
+            if (Date.now() < debugCaptureCooldownUntil) return;
 
-            debugCaptureBusy = true;
+            debugCaptureCooldownUntil = Date.now() + debugCaptureCooldownMs;
             captureReviewBtn.disabled = true;
+            window.setTimeout(updateDebugUi, debugCaptureCooldownMs);
             const ctx = captureCanvas.getContext('2d');
             const sourceWidth = cameraPreview.videoWidth;
             const sourceHeight = cameraPreview.videoHeight;
@@ -913,32 +1048,46 @@
 
             captureCanvas.toBlob(async (blob) => {
                 if (!blob) {
-                    debugCaptureBusy = false;
                     updateDebugUi();
                     return;
                 }
                 const formData = new FormData();
                 formData.append('file', blob, 'debug_capture.jpg');
                 appendReviewFields(formData);
-                try {
-                    const response = await fetch('/debug-session/capture', { method: 'POST', body: formData });
-                    if (!response.ok) {
-                        throw new Error('Debug capture failed');
-                    }
-                    const data = await response.json();
-                    debugSession = data.debug_session || debugSession;
-                    debugSessionCaptureCount = debugSession?.capture_count || (debugSessionCaptureCount + 1);
-                    updateDebugUi();
-                    drawDetection(data);
-                    displayDetectionInfo(data, 'videoInfoText');
-                    streamStatus.textContent = `Camera Active • captured ${debugSessionCaptureCount}`;
-                } catch (error) {
-                    alert(error.message);
-                } finally {
-                    debugCaptureBusy = false;
-                    updateDebugUi();
-                }
+                enqueueDebugCapture(formData);
             }, 'image/jpeg', streamJpegQuality);
+        }
+
+        function enqueueDebugCapture(formData) {
+            pendingDebugCaptures += 1;
+            updateDebugUi();
+            runDebugCaptureUpload(formData);
+        }
+
+        async function runDebugCaptureUpload(formData) {
+            while (activeDebugUploads >= maxActiveDebugUploads) {
+                await delay(100);
+            }
+            activeDebugUploads += 1;
+            try {
+                const response = await fetch('/debug-session/capture', { method: 'POST', body: formData });
+                if (!response.ok) {
+                    throw new Error('Debug capture failed');
+                }
+                const data = await response.json();
+                debugSession = data.debug_session || debugSession;
+                debugSessionCaptureCount = debugSession?.capture_count || (debugSessionCaptureCount + 1);
+                drawDetection(data);
+                displayDetectionInfo(data, 'videoInfoText');
+                streamStatus.textContent = `Camera Active • captured ${debugSessionCaptureCount}`;
+            } catch (error) {
+                console.warn('Debug capture upload failed', error);
+                streamStatus.textContent = `Camera Active • capture save failed`;
+            } finally {
+                pendingDebugCaptures = Math.max(0, pendingDebugCaptures - 1);
+                activeDebugUploads = Math.max(0, activeDebugUploads - 1);
+                updateDebugUi();
+            }
         }
 
         // Display detection info in text format
@@ -948,16 +1097,19 @@
 
             let infoText = '';
 
-            // Molt phase and timing
-            if (data.phase) {
-                infoText += `<div><strong>Molt Phase:</strong> ${data.phase}</div>`;
-            }
-            if (data.days_until_molt !== undefined) {
-                infoText += `<div><strong>Days to Molt:</strong> ${data.days_until_molt.toFixed(2)} days</div>`;
-            }
-            if (data.estimated_molt_event_date) {
-                infoText += `<div><strong>Estimated Molt Date:</strong> ${data.estimated_molt_event_date}</div>`;
-            }
+	            // Molt phase and timing
+	            if (data.days_until_molt !== undefined) {
+	                infoText += `<div class="p-2 mb-2 bg-white rounded border border-primary">`;
+	                infoText += `<div class="text-muted small text-uppercase">Days to Molt</div>`;
+	                infoText += `<div class="h3 mb-0 text-primary">${data.days_until_molt.toFixed(2)} days</div>`;
+	                infoText += `</div>`;
+	            }
+	            if (data.phase) {
+	                infoText += `<div><strong>Molt Phase:</strong> ${data.phase}</div>`;
+	            }
+	            if (data.estimated_molt_event_date) {
+	                infoText += `<div><strong>Estimated Molt Date:</strong> ${data.estimated_molt_event_date}</div>`;
+	            }
 
             infoText += `<div class="mt-2 mb-1"><strong>Molt Estimate Details:</strong></div>`;
             infoText += `<div><strong>Crabs Detected:</strong> ${data.bbox_count || 0}</div>`;
@@ -1007,6 +1159,9 @@
             if (auxTags.review_notes) {
                 infoText += `<div><strong>Notes:</strong> ${escapeHtml(auxTags.review_notes)}</div>`;
             }
+            if (auxTags.expert_molt_estimate) {
+                infoText += `<div><strong>Expert Estimate:</strong> ${escapeHtml(auxTags.expert_molt_estimate)}</div>`;
+            }
 
             infoElement.innerHTML = infoText;
             infoElement.parentElement.style.display = 'block';
@@ -1029,33 +1184,39 @@
             return ['xmin', 'ymin', 'xmax', 'ymax'].every(key => Math.abs(Number(primary[key]) - Number(bbox[key])) < 0.5);
         }
 
-        function drawBboxLabel(ctx, text, x, y, color, fontSize, canvasWidth) {
-            ctx.font = `bold ${fontSize}px Arial`;
-            const paddingX = Math.max(8, Math.round(fontSize * 0.45));
-            const paddingY = Math.max(5, Math.round(fontSize * 0.25));
-            const textWidth = ctx.measureText(text).width;
-            const labelWidth = Math.min(textWidth + paddingX * 2, canvasWidth - 8);
-            const labelHeight = fontSize + paddingY * 2;
-            let labelX = x;
-            let labelY = y - labelHeight - 4;
+	        function drawBboxLabel(ctx, text, x, y, color, fontSize, canvasWidth) {
+	            let resolvedFontSize = fontSize;
+	            ctx.font = `bold ${resolvedFontSize}px Arial`;
+	            const maxTextWidth = Math.max(80, canvasWidth - 32);
+	            while (resolvedFontSize > 14 && ctx.measureText(text).width > maxTextWidth) {
+	                resolvedFontSize -= 2;
+	                ctx.font = `bold ${resolvedFontSize}px Arial`;
+	            }
+	            const paddingX = Math.max(8, Math.round(resolvedFontSize * 0.45));
+	            const paddingY = Math.max(5, Math.round(resolvedFontSize * 0.25));
+	            const textWidth = ctx.measureText(text).width;
+	            const labelWidth = Math.min(textWidth + paddingX * 2, canvasWidth - 8);
+	            const labelHeight = resolvedFontSize + paddingY * 2;
+	            let labelX = x;
+	            let labelY = y - labelHeight - 4;
             if (labelY < 0) labelY = y + 4;
             if (labelX + labelWidth > canvasWidth) labelX = canvasWidth - labelWidth - 4;
             if (labelX < 4) labelX = 4;
 
-            ctx.fillStyle = color;
-            ctx.fillRect(labelX, labelY, labelWidth, labelHeight);
-            ctx.fillStyle = 'white';
-            ctx.fillText(text, labelX + paddingX, labelY + fontSize + paddingY - 2);
-        }
+	            ctx.fillStyle = color;
+	            ctx.fillRect(labelX, labelY, labelWidth, labelHeight);
+	            ctx.fillStyle = 'white';
+	            ctx.fillText(text, labelX + paddingX, labelY + resolvedFontSize + paddingY - 2);
+	        }
 
-        function getBboxLabelText(prediction, bbox) {
-            const daysText = prediction.days_until_molt !== undefined
-                ? `${prediction.days_until_molt.toFixed(1)}d`
-                : 'N/A';
-            const confidenceText = bbox.confidence !== undefined
-                ? `${(bbox.confidence * 100).toFixed(0)}%`
-                : prediction.confidence || 'N/A';
-            return `${daysText} | ${confidenceText}`;
+	        function getBboxLabelText(prediction, bbox) {
+	            const daysText = prediction.days_until_molt !== undefined
+	                ? `${prediction.days_until_molt.toFixed(1)} days to molt`
+	                : 'N/A';
+	            const confidenceText = bbox.confidence !== undefined
+	                ? `${(bbox.confidence * 100).toFixed(0)}%`
+	                : prediction.confidence || 'N/A';
+	            return `${daysText} | ${confidenceText}`;
         }
 
         // Draw detection overlay on photo
@@ -1134,7 +1295,7 @@
                 ctx.strokeStyle = prediction.color || '#0d6efd';
                 ctx.lineWidth = isPrimary ? 6 : 4;
                 ctx.strokeRect(x, y, w, h);
-                drawBboxLabel(ctx, labelText, x, y, prediction.color || '#0d6efd', 16, overlayCanvas.width);
+	                drawBboxLabel(ctx, labelText, x, y, prediction.color || '#0d6efd', isPrimary ? 28 : 22, overlayCanvas.width);
             });
         }
 
@@ -1157,13 +1318,20 @@
                     sendingFrame = false;
                     return;
                 }
-                const formData = new FormData();
-                formData.append('file', blob, 'frame.jpg');
-                appendReviewFields(formData);
-                try {
-                    const res = await fetch('/predict_stream', { method: 'POST', body: formData });
-                    const data = await res.json();
-                    data.client_round_trip_ms = performance.now() - requestStartedAt;
+	                const formData = new FormData();
+	                formData.append('file', blob, 'frame.jpg');
+	                appendReviewFields(formData);
+	                if (exportSessionActive) {
+	                    formData.append('export_capture', 'true');
+	                }
+	                try {
+	                    const res = await fetch('/predict_stream', { method: 'POST', body: formData });
+	                    const data = await res.json();
+	                    data.client_round_trip_ms = performance.now() - requestStartedAt;
+	                    if (data.debug_session) {
+	                        exportSession = data.debug_session;
+	                        exportSessionCaptureCount = exportSession?.capture_count || exportSessionCaptureCount;
+	                    }
 
                     // Draw detection overlay on video (clears if no detection)
                     drawDetection(data);
@@ -1173,7 +1341,9 @@
                     const serverMs = data.server_timing_ms && data.server_timing_ms.total !== undefined
                         ? ` / server ${data.server_timing_ms.total.toFixed(0)}ms`
                         : '';
-                    streamStatus.textContent = `Camera Active • ${data.client_round_trip_ms.toFixed(0)}ms${serverMs}`;
+	                    streamStatus.textContent = exportSessionActive
+	                        ? `Camera Active • exporting ${exportSessionCaptureCount} • ${data.client_round_trip_ms.toFixed(0)}ms${serverMs}`
+	                        : `Camera Active • ${data.client_round_trip_ms.toFixed(0)}ms${serverMs}`;
                 } catch (err) {
                     console.warn('Stream frame failed', err);
                     // Clear overlay on error
@@ -1190,10 +1360,34 @@
 
         startStreamBtn.addEventListener('click', startCameraStream);
         stopStreamBtn.addEventListener('click', stopCameraStream);
-        debugModeBtn.addEventListener('click', async () => {
-            await toggleDebugMode();
-        });
-        debugRunLocation.addEventListener('input', () => {
+	        debugModeBtn.addEventListener('click', async () => {
+	            await toggleDebugMode();
+	        });
+	        startExportSessionBtn.addEventListener('click', async () => {
+	            try {
+	                await startExportSession();
+	            } catch (error) {
+	                console.warn('Failed to start export session', error);
+	                alert('Could not start export session: ' + error.message);
+	            }
+	        });
+	        stopExportSessionBtn.addEventListener('click', async () => {
+	            try {
+	                await stopExportSession();
+	            } catch (error) {
+	                console.warn('Failed to stop export session', error);
+	                alert('Could not stop export session: ' + error.message);
+	            }
+	        });
+	        downloadExportSessionBtn.addEventListener('click', () => {
+	            const link = document.createElement('a');
+	            link.href = '/debug-session/download';
+	            link.rel = 'noopener';
+	            document.body.appendChild(link);
+	            link.click();
+	            link.remove();
+	        });
+	        debugRunLocation.addEventListener('input', () => {
             const currentLocation = debugRunLocation.value.trim();
             if (!debugSession || !debugSession.active) {
                 debugSessionLocationName = currentLocation || 'local';
