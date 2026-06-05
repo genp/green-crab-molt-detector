@@ -104,6 +104,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-aspect", type=float, default=4.0, help="Maximum bbox width/height.")
     parser.add_argument("--nms-iou", type=float, default=0.65, help="NMS IoU threshold across prompts.")
     parser.add_argument("--top-k", type=int, default=4, help="Max candidates to keep per image after NMS.")
+    parser.add_argument(
+        "--inference-max-side",
+        type=int,
+        default=0,
+        help="Resize images so their longest side is at most this many pixels for SAM3 inference; 0 keeps original size.",
+    )
     parser.add_argument("--no-clip", action="store_true", help="Disable OpenCLIP crop ranking.")
     parser.add_argument("--contact-sheet-cols", type=int, default=4)
     parser.add_argument("--resume", action="store_true", help="Skip images already listed in processed_images.csv.")
@@ -329,10 +335,29 @@ def process_image(
         image = ImageOps.exif_transpose(opened).convert("RGB")
     image_id = stable_image_id(path)
     orig_w, orig_h = image.size
+    inference_image = image
+    scale_x = 1.0
+    scale_y = 1.0
+    if args.inference_max_side and max(orig_w, orig_h) > args.inference_max_side:
+        scale = args.inference_max_side / max(orig_w, orig_h)
+        inf_w = max(1, int(round(orig_w * scale)))
+        inf_h = max(1, int(round(orig_h * scale)))
+        inference_image = image.resize((inf_w, inf_h), Image.Resampling.LANCZOS)
+        scale_x = orig_w / inf_w
+        scale_y = orig_h / inf_h
     raw_candidates = []
     for prompt in args.prompts:
-        for bbox, mask_area_pct, rank in propose_for_prompt(image, prompt, model, processor, device, args):
-            raw_candidates.append((prompt, bbox, mask_area_pct, rank))
+        for bbox, mask_area_pct, rank in propose_for_prompt(inference_image, prompt, model, processor, device, args):
+            x1, y1, x2, y2 = bbox
+            scaled_bbox = (
+                max(0, min(orig_w, int(round(x1 * scale_x)))),
+                max(0, min(orig_h, int(round(y1 * scale_y)))),
+                max(0, min(orig_w, int(round(x2 * scale_x)))),
+                max(0, min(orig_h, int(round(y2 * scale_y)))),
+            )
+            if scaled_bbox[2] <= scaled_bbox[0] or scaled_bbox[3] <= scaled_bbox[1]:
+                continue
+            raw_candidates.append((prompt, scaled_bbox, mask_area_pct, rank))
 
     scored = []
     for prompt, bbox, mask_area_pct, rank in raw_candidates:
