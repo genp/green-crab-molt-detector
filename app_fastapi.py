@@ -58,7 +58,7 @@ except Exception:  # pragma: no cover - optional dependency
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Green Crab Molt Detector", version="1.0.0")
+app = FastAPI(title="Green Crab Molt Detector", version=os.getenv("APP_VERSION", "2026.06.05"))
 
 # Security headers middleware
 @app.middleware("http")
@@ -89,6 +89,8 @@ app.add_middleware(
 
 # Configuration
 BASE_PATH = Path(__file__).parent
+APP_VERSION = os.getenv("APP_VERSION", "2026.06.05")
+APP_RELEASE_DATE = os.getenv("APP_RELEASE_DATE", "2026-06-05")
 MODELS_DIR = BASE_PATH / "models"
 UPLOAD_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".bmp"}
 BOOTSTRAP_YOLO_MODEL_PATH = MODELS_DIR / "bootstrapv1_detector_best.pt"
@@ -1317,6 +1319,17 @@ def build_debug_session_zip() -> Path:
     return zip_path
 
 
+def render_ui_html() -> str:
+    """Render the main UI template with deployment metadata."""
+    if not TEMPLATE_PATH.exists():
+        raise FileNotFoundError("UI not found")
+    html = TEMPLATE_PATH.read_text(encoding="utf-8")
+    return (
+        html.replace("{{APP_VERSION}}", APP_VERSION)
+        .replace("{{APP_RELEASE_DATE}}", APP_RELEASE_DATE)
+    )
+
+
 async def predict_image(
     file: UploadFile,
     *,
@@ -1791,17 +1804,19 @@ def debug_session_download():
 @app.get("/", response_class=HTMLResponse)
 def root():
     """Serve the web UI at the root domain."""
-    if not TEMPLATE_PATH.exists():
-        raise HTTPException(status_code=404, detail="UI not found")
-    return HTMLResponse(TEMPLATE_PATH.read_text(encoding="utf-8"))
+    try:
+        return HTMLResponse(render_ui_html())
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @app.get("/ui", response_class=HTMLResponse)
 def ui():
     """Alias for root - serves the same web UI."""
-    if not TEMPLATE_PATH.exists():
-        raise HTTPException(status_code=404, detail="UI not found")
-    return HTMLResponse(TEMPLATE_PATH.read_text(encoding="utf-8"))
+    try:
+        return HTMLResponse(render_ui_html())
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @app.get("/api")

@@ -15,7 +15,7 @@ MoltMeter estimates how many days remain before a crab molts. This matters becau
 
 ![App home screen](../static/app%20screenshot.png)
 
-Note: the screenshots in this guide are currently from the upload workflow. The live camera workflow uses the same estimates and detection details, but the best guide screenshots should be taken from the streaming view with the camera running. See [Recommended Streaming Screenshots](#recommended-streaming-screenshots) for the exact shots to capture and where to place them.
+The streaming screenshots used for the live camera workflow are already saved in `static/` and listed below. The older upload screenshots are still useful as result examples, but the streaming captures are the canonical field guide images now.
 
 ## How to See the Bounding Boxes
 
@@ -109,7 +109,7 @@ In short: a no-box `Days to Molt` can help you decide what to try next, but a cl
 
 ## Recommended Streaming Screenshots
 
-Manual screenshots are the best option right now because the live stream depends on a real camera, real lighting, and a crab in hand. Automated screenshots are possible only if we add a mocked camera/video feed, which would not show the real field workflow as well.
+These files already exist in `static/`, so the guide can point directly at them instead of asking you to make new captures. If you want to refresh them later, use the same filenames.
 
 Take these screenshots from the deployed app or local app:
 
@@ -125,9 +125,9 @@ Suggested capture steps:
 1. Open the app at `/ui`.
 2. Use a phone or laptop camera in the same way a harvester will use it.
 3. Click `Start Camera`.
-4. Use the browser or operating system screenshot tool.
+4. Use the browser or operating system screenshot tool if you want to replace one of the existing images.
 5. Save each image under the exact `static/` filenames above.
-6. Replace the upload screenshots in this guide with the streaming screenshots once they are saved.
+6. Keep the filenames unchanged so the guide links continue to work.
 
 On macOS, press `Command-Shift-4`, drag around the app area, and save the screenshot. On Windows, use `Win-Shift-S`. On a phone, use the normal phone screenshot shortcut.
 
