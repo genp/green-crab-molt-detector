@@ -110,6 +110,11 @@ def parse_args() -> argparse.Namespace:
         default=0,
         help="Resize images so their longest side is at most this many pixels for SAM3 inference; 0 keeps original size.",
     )
+    parser.add_argument(
+        "--skip-postprocess",
+        action="store_true",
+        help="Use raw SAM3 masks directly instead of processor.postprocess_outputs.",
+    )
     parser.add_argument("--no-clip", action="store_true", help="Disable OpenCLIP crop ranking.")
     parser.add_argument("--contact-sheet-cols", type=int, default=4)
     parser.add_argument("--resume", action="store_true", help="Skip images already listed in processed_images.csv.")
@@ -225,14 +230,15 @@ def propose_for_prompt(
     masks = None
     boxes = None
     scores = None
-    try:
-        results = processor.postprocess_outputs(session, outputs)
-        if results:
-            masks = results.get("masks")
-            boxes = results.get("boxes")
-            scores = results.get("scores")
-    except RuntimeError as exc:
-        LOGGER.warning("SAM3 postprocess failed for prompt %r; using raw masks: %s", prompt, exc)
+    if not filters.skip_postprocess:
+        try:
+            results = processor.postprocess_outputs(session, outputs)
+            if results:
+                masks = results.get("masks")
+                boxes = results.get("boxes")
+                scores = results.get("scores")
+        except RuntimeError as exc:
+            LOGGER.warning("SAM3 postprocess failed for prompt %r; using raw masks: %s", prompt, exc)
 
     if masks is None and getattr(outputs, "obj_id_to_mask", None):
         masks = []

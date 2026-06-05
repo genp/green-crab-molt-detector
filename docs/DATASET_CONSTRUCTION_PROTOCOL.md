@@ -79,6 +79,8 @@ Required stratification tags:
 - `is_in_situ`
 - `color_state`, especially `red_green_crab`
 - `view`, especially `side`
+- `observation_id`, grouping dorsal, ventral, and side images of the same crab
+  from the same capture event
 - `species`
 - `negative_type`, especially human, glove, and equipment false positives
 - `source_dataset`
@@ -90,10 +92,13 @@ Required coverage:
 - Red-colored green crabs must appear in both `train` and `test`.
 - Side-view crabs should appear in both `train` and `test` when enough examples
   exist.
+- Complete same-crab multi-view observations should appear in both `train` and
+  `test` when enough distinct crabs or sessions exist.
 - Human/glove/equipment false positives must appear in detector `train`, with a
   reserved subset in detector `test`.
 
 The split is still assigned at `source_group_id`, never by individual image.
+All rows sharing an `observation_id` must inherit the same split.
 
 ## Dataset Products
 
@@ -177,6 +182,7 @@ image_path
 source_group_id
 split
 crab_id
+observation_id
 capture_date
 molt_date
 days_to_molt
@@ -185,6 +191,9 @@ view
 sex
 color_state
 is_in_situ
+has_dorsal_view
+has_ventral_view
+has_side_view
 crop_source
 bbox_xmin
 bbox_ymin
@@ -193,6 +202,19 @@ bbox_ymax
 label_confidence
 notes
 ```
+
+Estimator consistency rules:
+
+- Dorsal, ventral, and side views of the same crab from the same capture event
+  must share one `observation_id` and one `days_to_molt` target.
+- Estimator train/val/test rows must preserve complete observation groups; do
+  not place one view of an observation in train and another in validation or
+  test.
+- Estimator evaluation must report both MAE by view and same-observation
+  disagreement, defined as `max(pred_days) - min(pred_days)` across available
+  views for one `observation_id`.
+- Model selection should reject candidates that improve mean MAE while
+  materially increasing same-observation disagreement.
 
 ### SAM3 Review Manifest
 
@@ -218,6 +240,56 @@ is_in_situ
 negative_type
 box_quality
 ```
+
+### Molt-Cue Review Manifest
+
+Target:
+
+```text
+data/processed/molt_cue_review_manifest.csv
+```
+
+Purpose: review-first attribute labels for visible molt cues. These proposals
+can support estimator feature engineering and subgroup analysis, but they are
+not detector labels and they are not molt-date labels.
+
+Source proposal outputs should live under:
+
+```text
+data/bootstrap_molt_cues/
+```
+
+Required columns:
+
+```text
+image_path
+source_group_id
+split
+candidate_id
+prompt
+bbox_xmin
+bbox_ymin
+bbox_xmax
+bbox_ymax
+side_shell_split
+dusky_blue_dorsal
+dusky_blue_legs
+dull_ventral_plates
+view
+species
+image_quality
+cue_quality
+review_status
+review_notes
+```
+
+Rules:
+
+- Molt-cue proposals are reviewed as attributes, not as `days_to_molt`.
+- Molt-cue rows inherit split from `global_split_registry.csv`.
+- Cue regions are never exported as YOLO detector labels.
+- Reviewed cue attributes can be joined into estimator manifests only after
+  split validation passes.
 
 Accepted values for `review_status` include `accept`, `accepted`, and `keep`.
 Rejected rows should be retained because they are useful for hard-negative

@@ -7,6 +7,8 @@ This plan addresses five current issues:
 3. Expanded SAM3 bootstrap labels should improve the detector.
 4. New `data/raw` labels and layouts need review before estimator retraining.
 5. Streaming video can keep displaying a stale bbox after the crab is removed.
+6. Unlabeled images may contain visible molt cues that can bootstrap estimator
+   attribute labels after human review.
 
 The work is staged so detector-only data does not pollute estimator evaluation,
 and so all model types use one global split registry.
@@ -111,7 +113,8 @@ retained as hard-negative evidence and can become detector negative images.
 ## Phase 4: Estimator V2
 
 Goal: improve molt timing estimates, especially for red crabs, side views, in
-situ images with valid labels, and detector-crop deployment conditions.
+situ images with valid labels, detector-crop deployment conditions, and
+cross-view consistency for the same crab.
 
 Use only rows with reliable timing labels:
 
@@ -119,7 +122,23 @@ Use only rows with reliable timing labels:
 - `molt_date` or expert molt estimate
 - `days_to_molt`
 - `source_group_id`
+- `crab_id`
+- `observation_id` for the same crab on the same date/session
+- `view` for dorsal, ventral, side, or unknown
 - registry split
+
+Dataset construction requirement:
+
+- Group dorsal, ventral, and side images of the same crab from the same
+  capture event under one `observation_id`.
+- Assign the same `days_to_molt` target to all views in an observation.
+- Keep all views from an observation in the same split through
+  `source_group_id`.
+- Prefer balanced multi-view batches or sample weights so the estimator sees
+  dorsal, ventral, and side examples for the same target instead of learning
+  view-specific target drift.
+- Track whether a row is part of a complete multi-view set with
+  `has_dorsal_view`, `has_ventral_view`, and `has_side_view`.
 
 Train/evaluate candidates:
 
@@ -128,6 +147,9 @@ Train/evaluate candidates:
   `bbox_area_pct`, and `crop_source`.
 - Temporal model where repeated observations exist.
 - Optional side-view specialist if side examples behave differently.
+- Multi-view consistency regularization or post-hoc calibration that penalizes
+  different predictions for dorsal, ventral, and side images of the same
+  `observation_id`.
 
 Evaluate by subgroup:
 
@@ -138,8 +160,59 @@ Evaluate by subgroup:
 - Ventral.
 - Small bbox crops.
 - Detector crop vs reviewed crop.
+- Same-crab, same-observation view disagreement:
+  `max(pred_days) - min(pred_days)` across dorsal/ventral/side views.
 
 Use crab/source-group splits only. Do not split by individual image.
+
+Acceptance target: for complete same-observation multi-view sets, the estimator
+should predict a consistent molt window across views. Report MAE by view and
+view-disagreement separately; a lower overall MAE is not acceptable if it is
+achieved by returning materially different molt windows for different views of
+the same crab.
+
+### SAM3 Molt-Cue Attribute Bootstrap
+
+Use SAM3 as a review-first proposal tool for visible pre-molt cues. These
+outputs are not molt-time labels and must not be merged into estimator training
+until reviewed and joined through the global split registry.
+
+Target output:
+
+```text
+data/bootstrap_molt_cues/
+```
+
+Initial prompts:
+
+```text
+split in crab shell
+crack on side of crab shell
+blue crab legs
+dusky blue crab shell
+dull ventral crab plates
+pale dull underside of crab
+dead-looking crab underside
+```
+
+Review labels:
+
+```text
+side_shell_split
+dusky_blue_dorsal
+dusky_blue_legs
+dull_ventral_plates
+view
+species
+image_quality
+cue_quality
+review_status
+review_notes
+```
+
+Use reviewed cue attributes as auxiliary estimator metadata/features and for
+subgroup evaluation. Keep these proposals separate from detector bbox bootstrap
+outputs so cue regions do not become detector labels by accident.
 
 ## Phase 5: Stable Streaming Estimates
 
