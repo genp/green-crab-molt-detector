@@ -358,6 +358,21 @@ a {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
+.demo-video-frame {
+    display: inline-block;
+    justify-self: start;
+    margin: 0 auto;
+    height: clamp(320px, 60vh, 500px);
+    max-width: 100%;
+    width: fit-content;
+}
+
+.demo-video-frame video {
+    height: 100%;
+    object-fit: contain;
+    width: auto;
+}
+
 .demo-title-row {
     display: flex;
     justify-content: space-between;
@@ -403,6 +418,13 @@ a {
 .thumbnail-strip img {
     display: block;
     width: 100%;
+}
+
+.result-thumb {
+    display: block;
+    margin-top: 12px;
+    max-width: 240px;
+    width: min(100%, 240px);
 }
 
 .footer {

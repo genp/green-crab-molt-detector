@@ -2,7 +2,9 @@ const video = document.getElementById('demoVideo');
 const overlay = document.getElementById('demoOverlay');
 const statusEl = document.getElementById('demoStatus');
 const strip = document.getElementById('thumbnailStrip');
+const pausePlaybackBtn = document.getElementById('pausePlaybackBtn');
 const captureCanvas = document.createElement('canvas');
+const thumbCanvas = document.createElement('canvas');
 let clips = [];
 let currentIndex = 0;
 let autoRotate = true;
@@ -11,6 +13,9 @@ let streamInterval = null;
 let sendingFrame = false;
 let resetStreamOnNextFrame = true;
 let activeTimeline = [];
+let lastThumbSignature = '';
+let lastThumbMode = '';
+let lastExplainabilitySignature = '';
 const streamIntervalMs = 200;
 const streamMaxDimension = 416;
 const streamJpegQuality = 0.65;
@@ -28,15 +33,7 @@ function updateResult(clip) {
     document.getElementById('demoRecommendation').textContent = prediction.recommendation || '';
     document.getElementById('demoModel').textContent = prediction.model_display_name || prediction.feature_type || 'Cached demo result';
     renderExplainability(prediction, 'demoExplainability');
-    const thumb = document.getElementById('demoThumb');
-    if (clip.thumbnail || prediction.thumbnail) {
-        thumb.src = clip.thumbnail || prediction.thumbnail;
-        thumb.style.display = 'block';
-    } else {
-        thumb.removeAttribute('src');
-        thumb.style.display = 'none';
-    }
-    thumb.alt = `${clip.title || 'Demo clip'} cached MoltMeter detection`;
+    syncDemoThumb(clip, prediction);
     Array.from(strip.children).forEach((button, index) => {
         button.classList.toggle('active', index === currentIndex);
     });
@@ -51,6 +48,7 @@ function updateResultFromPrediction(prediction) {
     document.getElementById('demoRecommendation').textContent = activePrediction.recommendation || '';
     document.getElementById('demoModel').textContent = activePrediction.model_display_name || activePrediction.feature_type || 'Streaming video result';
     renderExplainability(activePrediction, 'demoExplainability');
+    syncDemoThumb(clips[currentIndex], activePrediction);
     drawOverlay();
 }
 
@@ -58,8 +56,13 @@ function renderExplainability(prediction, elementId) {
     const list = document.getElementById(elementId);
     if (!list) return;
     const reasons = [];
+    const signature = bboxSignature(prediction?.primary_bbox);
+    const cropChanged = signature && signature !== lastExplainabilitySignature;
+    lastExplainabilitySignature = signature || lastExplainabilitySignature;
     if (prediction?.crop_used) {
-        reasons.push('The estimate comes from a crab crop instead of the full frame, which usually gives the model a cleaner view.');
+        reasons.push(cropChanged
+            ? 'The crab crop changed to a new box, so the estimate refreshed on that closer view.'
+            : 'The model is using a crab crop instead of the full frame, so it can keep reading shell edge and joint cues from a steady view.');
     } else if (prediction?.whole_image_fallback_used) {
         reasons.push('The detector did not find a clean crab crop, so the estimate came from the whole image.');
     }
@@ -79,6 +82,96 @@ function renderExplainability(prediction, elementId) {
     list.innerHTML = reasons.map((reason) => `<li>${reason}</li>`).join('');
 }
 
+function bboxSignature(bbox) {
+    if (!bbox) return '';
+    const values = ['xmin', 'ymin', 'xmax', 'ymax', 'confidence'].map((key) => Number(bbox[key] ?? 0).toFixed(1));
+    return values.join(':');
+}
+
+function syncDemoThumb(clip, prediction) {
+    const thumb = document.getElementById('demoThumb');
+    if (!thumb) return;
+    const bbox = prediction?.primary_bbox;
+    const canCrop = Boolean(bbox && video && video.videoWidth > 0 && video.videoHeight > 0);
+    const canShowFrame = Boolean(video && video.videoWidth > 0 && video.videoHeight > 0);
+    const mode = canCrop
+        ? 'bbox'
+        : prediction?.whole_image_fallback_used && canShowFrame
+            ? 'whole-frame'
+            : prediction?.thumbnail
+                ? 'prediction-thumb'
+                : clip?.thumbnail
+                    ? 'clip-thumb'
+                    : 'none';
+    const signature = mode === 'bbox'
+        ? `${bboxSignature(bbox)}|${video.videoWidth}x${video.videoHeight}`
+        : mode === 'whole-frame'
+            ? `${video.videoWidth}x${video.videoHeight}|${video.currentTime.toFixed(2)}`
+        : mode === 'prediction-thumb'
+            ? `${prediction?.thumbnail || ''}`
+            : mode === 'clip-thumb'
+                ? `${clip?.thumbnail || ''}`
+                : '';
+    if (mode === lastThumbMode && signature === lastThumbSignature && thumb.src) {
+        return;
+    }
+    lastThumbMode = mode;
+    lastThumbSignature = signature;
+
+    if (mode === 'bbox') {
+        const sourceWidth = Number(prediction?.image_width || video.videoWidth || 1);
+        const sourceHeight = Number(prediction?.image_height || video.videoHeight || 1);
+        const scaleX = video.videoWidth / sourceWidth;
+        const scaleY = video.videoHeight / sourceHeight;
+        const sx = Math.max(0, Math.min(bbox.xmin * scaleX, video.videoWidth - 1));
+        const sy = Math.max(0, Math.min(bbox.ymin * scaleY, video.videoHeight - 1));
+        const sw = Math.max(1, Math.min((bbox.xmax - bbox.xmin) * scaleX, video.videoWidth - sx));
+        const sh = Math.max(1, Math.min((bbox.ymax - bbox.ymin) * scaleY, video.videoHeight - sy));
+        const targetWidth = 220;
+        const targetHeight = Math.max(1, Math.round(targetWidth * (sh / sw)));
+        thumbCanvas.width = targetWidth;
+        thumbCanvas.height = targetHeight;
+        const ctx = thumbCanvas.getContext('2d');
+        ctx.clearRect(0, 0, targetWidth, targetHeight);
+        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
+        thumb.src = thumbCanvas.toDataURL('image/jpeg', 0.82);
+        thumb.alt = `${clip?.title || 'Demo clip'} crab crop`;
+        thumb.style.display = 'block';
+        return;
+    }
+
+    if (mode === 'whole-frame') {
+        const targetWidth = 220;
+        const targetHeight = Math.max(1, Math.round(targetWidth * (video.videoHeight / video.videoWidth)));
+        thumbCanvas.width = targetWidth;
+        thumbCanvas.height = targetHeight;
+        const ctx = thumbCanvas.getContext('2d');
+        ctx.clearRect(0, 0, targetWidth, targetHeight);
+        ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
+        thumb.src = thumbCanvas.toDataURL('image/jpeg', 0.82);
+        thumb.alt = `${clip?.title || 'Demo clip'} current full frame`;
+        thumb.style.display = 'block';
+        return;
+    }
+
+    if (mode === 'prediction-thumb' && prediction?.thumbnail) {
+        thumb.src = prediction.thumbnail;
+        thumb.alt = `${clip?.title || 'Demo clip'} cached MoltMeter detection`;
+        thumb.style.display = 'block';
+        return;
+    }
+
+    if (mode === 'clip-thumb' && clip?.thumbnail) {
+        thumb.src = clip.thumbnail;
+        thumb.alt = `${clip?.title || 'Demo clip'} source thumbnail`;
+        thumb.style.display = 'block';
+        return;
+    }
+
+    thumb.removeAttribute('src');
+    thumb.style.display = 'none';
+}
+
 function playClip(index, manual = false) {
     if (!clips.length) return;
     if (manual) autoRotate = false;
@@ -86,13 +179,16 @@ function playClip(index, manual = false) {
     const clip = clips[currentIndex];
     resetStreamOnNextFrame = true;
     activePrediction = null;
+    lastThumbSignature = '';
     video.src = clip.video;
     video.load();
     updateResult(clip);
     loadTimeline(clip);
     if (statusEl) statusEl.textContent = `Playing ${currentIndex + 1} of ${clips.length}`;
+    if (pausePlaybackBtn) pausePlaybackBtn.textContent = 'Pause Playback';
     video.play().catch(() => {
-        if (statusEl) statusEl.textContent = 'Tap video to start';
+        if (statusEl) statusEl.textContent = 'Tap play to start';
+        if (pausePlaybackBtn) pausePlaybackBtn.textContent = 'Resume Playback';
     });
 }
 
@@ -250,6 +346,7 @@ async function loadDemo() {
 
 video.addEventListener('loadedmetadata', () => {
     drawOverlay();
+    syncDemoThumb(clips[currentIndex], activePrediction);
     startVideoProcessing();
 });
 video.addEventListener('play', startVideoProcessing);
@@ -268,6 +365,17 @@ video.addEventListener('ended', () => {
     playClip(autoRotate ? currentIndex + 1 : currentIndex);
 });
 video.addEventListener('click', () => video.play());
+pausePlaybackBtn.addEventListener('click', () => {
+    if (video.paused) {
+        video.play().catch(() => {});
+        pausePlaybackBtn.textContent = 'Pause Playback';
+        if (statusEl) statusEl.textContent = `Playing ${currentIndex + 1} of ${clips.length}`;
+        return;
+    }
+    video.pause();
+    pausePlaybackBtn.textContent = 'Resume Playback';
+    if (statusEl) statusEl.textContent = 'Playback paused';
+});
 document.getElementById('resumeRotationBtn').addEventListener('click', () => {
     autoRotate = true;
     playClip(currentIndex + 1);
