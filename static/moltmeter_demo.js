@@ -16,6 +16,7 @@ let activeTimeline = [];
 let lastThumbSignature = '';
 let lastThumbMode = '';
 let lastExplainabilitySignature = '';
+let activeClipToken = 0;
 const streamIntervalMs = 200;
 const streamMaxDimension = 416;
 const streamJpegQuality = 0.65;
@@ -177,13 +178,16 @@ function playClip(index, manual = false) {
     if (manual) autoRotate = false;
     currentIndex = index % clips.length;
     const clip = clips[currentIndex];
+    const clipToken = ++activeClipToken;
     resetStreamOnNextFrame = true;
     activePrediction = null;
     lastThumbSignature = '';
+    lastThumbMode = '';
+    activeTimeline = [];
     video.src = clip.video;
     video.load();
     updateResult(clip);
-    loadTimeline(clip);
+    loadTimeline(clip, clipToken);
     if (statusEl) statusEl.textContent = `Playing ${currentIndex + 1} of ${clips.length}`;
     if (pausePlaybackBtn) pausePlaybackBtn.textContent = 'Pause Playback';
     video.play().catch(() => {
@@ -192,15 +196,17 @@ function playClip(index, manual = false) {
     });
 }
 
-async function loadTimeline(clip) {
+async function loadTimeline(clip, clipToken) {
     activeTimeline = [];
     if (!clip.timeline) return;
     try {
         const response = await fetch(clip.timeline, { cache: 'no-store' });
         if (!response.ok) throw new Error(`timeline ${response.status}`);
         const data = await response.json();
+        if (clipToken !== activeClipToken) return;
         activeTimeline = Array.isArray(data.samples) ? data.samples : [];
     } catch (error) {
+        if (clipToken !== activeClipToken) return;
         console.warn('Demo timeline unavailable, using live fallback', error);
         activeTimeline = [];
     }
