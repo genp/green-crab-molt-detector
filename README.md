@@ -50,6 +50,17 @@ For harvesters and biologists using the app in the field, see:
 
 It explains bounding boxes, days-to-molt estimates, confidence, sorting bins, fallback/no-box estimates, debug captures for known bad estimates, and full-session exports.
 
+## Demo And Training Pages
+
+The web app now includes a few dedicated views for demos and onboarding:
+
+- `/demo` - canned video demo with precomputed detections
+- `/video` - live streaming detector without the debug menu
+- `/field-guide` - training and molt-cue guide for new harvesters
+- `/qr` - QR code page for quick mobile access
+
+Use the demo page on a laptop for demos, and send phone users to the QR code or directly to the app URL.
+
 ## Project Structure
 
 ```

@@ -13,6 +13,25 @@
 
 **User Need**: "The advice of the app has to be fast, easier to consume, more lightweight, more useful for the candidate user who is a marine fisheries worker, new to green crabs, who wants to process a large amount of crabs in a dynamic environment quickly while learning to discern the molt phase."
 
+## Current Status
+
+The phase-1 UI work is now implemented in the main app branch:
+
+- Shared nav is modularized and reused across pages.
+- `/demo` is the canned video demo with precomputed detections.
+- `/video` is the live streaming detector without the debug menu.
+- `/field-guide` is a training page with molt-cue sketches and examples.
+- The main page is kept clean for the primary workflow, with debug tools moved off the front page.
+
+## Educational Explainability
+
+The next useful layer is not just showing results, but teaching users why the model leaned one way:
+
+- Show the detection crop versus the full frame so harvesters can tell when the model had a clean crab view.
+- Surface when a box or estimate was reused from nearby frames so users understand stability versus novelty.
+- Translate raw cues into plain-language reminders tied to field observations: side split, halo at joints, and shell or limb opacity.
+- Keep the guidance short enough to scan during a demo, but explicit enough that new workers can connect the output to the crab image.
+
 ## Phase 1 Goals
 
 Create a real-time, interactive video experience with:

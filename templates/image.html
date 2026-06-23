@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoltMeter Image Upload</title>
+    <link rel="icon" type="image/png" href="/static/GreenCrab.png">
+    <link rel="stylesheet" href="/static/moltmeter.css">
+</head>
+<body>
+    <div data-nav-root></div>
+
+    <header class="hero">
+        <div class="hero-inner">
+            <div>
+                <div class="kicker">Image-only processing</div>
+                <h1>Upload a crab photo.</h1>
+                <p>Choose one clear image. MoltMeter will estimate days until molt and show the model recommendation.</p>
+            </div>
+            <img class="hero-logo" src="/static/GreenCrab.png" alt="MoltMeter crab">
+        </div>
+    </header>
+
+    <main class="content">
+        <div class="demo-layout">
+            <section class="panel">
+                <div id="uploadZone" class="upload-zone">
+                    <strong>Drop image here or click to browse</strong>
+                    <span class="muted">JPG, PNG, GIF, or BMP</span>
+                    <button class="button primary" type="button">Choose Image</button>
+                    <input id="fileInput" type="file" accept="image/*" hidden>
+                </div>
+                <div id="previewWrap" style="display:none;">
+                    <div class="preview-frame">
+                        <img id="previewImg" alt="Selected crab image">
+                    </div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+                        <button id="newImageBtn" class="button" type="button">Choose Another Image</button>
+                        <span id="status" class="status-pill">Waiting</span>
+                    </div>
+                </div>
+            </section>
+
+            <aside id="resultPanel" class="panel" style="display:none;">
+                <h2>Result</h2>
+                <div class="result-grid">
+                    <div class="metric">
+                        <div class="metric-label">Days Until Molt</div>
+                        <div id="daysUntilMolt" class="metric-value">N/A</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Phase</div>
+                        <div id="phase" class="metric-value" style="font-size:1.15rem;">N/A</div>
+                    </div>
+                </div>
+                <p id="recommendation" style="font-weight:800;"></p>
+                <p id="modelInfo" class="muted"></p>
+                <div class="guide-note explainability-panel">
+                    <strong>Why this estimate</strong>
+                    <ul id="imageExplainability" class="explainability-list"></ul>
+                </div>
+                <img id="thumbnail" alt="Processed thumbnail" style="display:none; width:100%; border-radius:8px; border:2px solid var(--crab-green-900);">
+            </aside>
+        </div>
+    </main>
+
+    <script src="/static/moltmeter_image.js"></script>
+    <script src="/static/moltmeter_nav.js"></script>
+</body>
+</html>

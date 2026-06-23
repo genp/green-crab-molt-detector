@@ -1,0 +1,3497 @@
+{
+  "video": "/static/demo_videos/demo_05.mp4",
+  "interval_seconds": 0.2,
+  "duration_seconds": 13.866666666666667,
+  "samples": [
+    {
+      "t": 0.0,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 6.91082763671875,
+        "raw_days_until_molt": 6.91082763671875,
+        "estimate_range_days": {
+          "low": 6.91,
+          "high": 6.91,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-29",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 3.0620100498199463,
+          "ymin": 144.94627380371094,
+          "xmax": 234.0,
+          "ymax": 411.3973083496094,
+          "confidence": 0.6612196564674377,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 3.0620100498199463,
+            "ymin": 144.94627380371094,
+            "xmax": 234.0,
+            "ymax": 411.3973083496094,
+            "confidence": 0.6612196564674377,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 0.2,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 6.91082763671875,
+        "raw_days_until_molt": 6.91082763671875,
+        "estimate_range_days": {
+          "low": 6.91,
+          "high": 6.91,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-29",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 3.9945404529571533,
+          "ymin": 149.2918243408203,
+          "xmax": 234.0,
+          "ymax": 400.481201171875,
+          "confidence": 0.651071310043335,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 3.9945404529571533,
+            "ymin": 149.2918243408203,
+            "xmax": 234.0,
+            "ymax": 400.481201171875,
+            "confidence": 0.651071310043335,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 0.4,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 6.91082763671875,
+        "raw_days_until_molt": 6.91082763671875,
+        "estimate_range_days": {
+          "low": 6.91,
+          "high": 6.91,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-29",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 3.9149367809295654,
+          "ymin": 149.2171630859375,
+          "xmax": 231.13668823242188,
+          "ymax": 339.6817932128906,
+          "confidence": 0.7405943274497986,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 3.9149367809295654,
+            "ymin": 149.2171630859375,
+            "xmax": 231.13668823242188,
+            "ymax": 339.6817932128906,
+            "confidence": 0.7405943274497986,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 0.6,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 6.91082763671875,
+        "raw_days_until_molt": 6.91082763671875,
+        "estimate_range_days": {
+          "low": 6.91,
+          "high": 6.91,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-29",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 15.257325172424316,
+          "ymin": 153.5727996826172,
+          "xmax": 233.6042938232422,
+          "ymax": 318.49029541015625,
+          "confidence": 0.7804357409477234,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 15.257325172424316,
+            "ymin": 153.5727996826172,
+            "xmax": 233.6042938232422,
+            "ymax": 318.49029541015625,
+            "confidence": 0.7804357409477234,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 0.8,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 6.91082763671875,
+        "raw_days_until_molt": 6.91082763671875,
+        "estimate_range_days": {
+          "low": 6.91,
+          "high": 6.91,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-29",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 6.5485992431640625,
+          "ymin": 150.3070068359375,
+          "xmax": 231.02687072753906,
+          "ymax": 320.6319274902344,
+          "confidence": 0.7722009420394897,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 6.5485992431640625,
+            "ymin": 150.3070068359375,
+            "xmax": 231.02687072753906,
+            "ymax": 320.6319274902344,
+            "confidence": 0.7722009420394897,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 1.0,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 6.91082763671875,
+        "raw_days_until_molt": 6.91082763671875,
+        "estimate_range_days": {
+          "low": 6.91,
+          "high": 6.91,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-29",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 7.5308990478515625,
+          "ymin": 157.35362243652344,
+          "xmax": 224.31399536132812,
+          "ymax": 320.6491394042969,
+          "confidence": 0.41702279448509216,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 7.5308990478515625,
+            "ymin": 157.35362243652344,
+            "xmax": 224.31399536132812,
+            "ymax": 320.6491394042969,
+            "confidence": 0.41702279448509216,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 1.2,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 6.91082763671875,
+        "raw_days_until_molt": 6.91082763671875,
+        "estimate_range_days": {
+          "low": 6.91,
+          "high": 6.91,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-29",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 5.0039963722229,
+          "ymin": 167.98973083496094,
+          "xmax": 225.9418487548828,
+          "ymax": 322.8052673339844,
+          "confidence": 0.3649049699306488,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 5.0039963722229,
+            "ymin": 167.98973083496094,
+            "xmax": 225.9418487548828,
+            "ymax": 322.8052673339844,
+            "confidence": 0.3649049699306488,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 1.4,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 6.91082763671875,
+        "raw_days_until_molt": 6.91082763671875,
+        "estimate_range_days": {
+          "low": 6.91,
+          "high": 6.91,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-29",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 4.141607761383057,
+          "ymin": 173.1067657470703,
+          "xmax": 229.31459045410156,
+          "ymax": 321.588134765625,
+          "confidence": 0.4213911294937134,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 4.141607761383057,
+            "ymin": 173.1067657470703,
+            "xmax": 229.31459045410156,
+            "ymax": 321.588134765625,
+            "confidence": 0.4213911294937134,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 1.6,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 6.91082763671875,
+        "raw_days_until_molt": 6.91082763671875,
+        "estimate_range_days": {
+          "low": 6.91,
+          "high": 6.91,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-29",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 90,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 1.8,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 4.44268798828125,
+        "raw_days_until_molt": 4.44268798828125,
+        "estimate_range_days": {
+          "low": 4.44,
+          "high": 4.44,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-27",
+        "phase": "Pre-molt (Near)",
+        "color": "#c2185b",
+        "recommendation": "Monitor closely. Harvest window approaching.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 14.925938606262207,
+          "ymin": 158.43556213378906,
+          "xmax": 143.095947265625,
+          "ymax": 292.1561584472656,
+          "confidence": 0.7311819791793823,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 14.925938606262207,
+            "ymin": 158.43556213378906,
+            "xmax": 143.095947265625,
+            "ymax": 292.1561584472656,
+            "confidence": 0.7311819791793823,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 2.0,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 4.44268798828125,
+        "raw_days_until_molt": 4.44268798828125,
+        "estimate_range_days": {
+          "low": 4.44,
+          "high": 4.44,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-27",
+        "phase": "Pre-molt (Near)",
+        "color": "#c2185b",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 337,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 2.2,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 8.63814640045166,
+        "raw_days_until_molt": 8.63814640045166,
+        "estimate_range_days": {
+          "low": 8.64,
+          "high": 8.64,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-07-01",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 63.6212272644043,
+          "ymin": 138.0537872314453,
+          "xmax": 167.2849578857422,
+          "ymax": 290.89007568359375,
+          "confidence": 0.4819563329219818,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 63.6212272644043,
+            "ymin": 138.0537872314453,
+            "xmax": 167.2849578857422,
+            "ymax": 290.89007568359375,
+            "confidence": 0.4819563329219818,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 2.4,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 7.20905876159668,
+        "raw_days_until_molt": 7.20905876159668,
+        "estimate_range_days": {
+          "low": 7.21,
+          "high": 7.21,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-30",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 51.737979888916016,
+          "ymin": 138.19830322265625,
+          "xmax": 191.85675048828125,
+          "ymax": 319.9580383300781,
+          "confidence": 0.7956474423408508,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 51.737979888916016,
+            "ymin": 138.19830322265625,
+            "xmax": 191.85675048828125,
+            "ymax": 319.9580383300781,
+            "confidence": 0.7956474423408508,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 2.6,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 7.20905876159668,
+        "raw_days_until_molt": 7.20905876159668,
+        "estimate_range_days": {
+          "low": 7.21,
+          "high": 7.21,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-30",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 38.26362991333008,
+          "ymin": 136.08302307128906,
+          "xmax": 205.84359741210938,
+          "ymax": 316.1412048339844,
+          "confidence": 0.6390224695205688,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 38.26362991333008,
+            "ymin": 136.08302307128906,
+            "xmax": 205.84359741210938,
+            "ymax": 316.1412048339844,
+            "confidence": 0.6390224695205688,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 2.8,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 7.20905876159668,
+        "raw_days_until_molt": 7.20905876159668,
+        "estimate_range_days": {
+          "low": 7.21,
+          "high": 7.21,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-30",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 32.28178024291992,
+          "ymin": 136.94297790527344,
+          "xmax": 201.663818359375,
+          "ymax": 333.35919189453125,
+          "confidence": 0.46902385354042053,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 32.28178024291992,
+            "ymin": 136.94297790527344,
+            "xmax": 201.663818359375,
+            "ymax": 333.35919189453125,
+            "confidence": 0.46902385354042053,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 3.0,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 7.20905876159668,
+        "raw_days_until_molt": 7.20905876159668,
+        "estimate_range_days": {
+          "low": 7.21,
+          "high": 7.21,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-30",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 23.818607330322266,
+          "ymin": 113.69640350341797,
+          "xmax": 205.98171997070312,
+          "ymax": 375.7398986816406,
+          "confidence": 0.7277700304985046,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 23.818607330322266,
+            "ymin": 113.69640350341797,
+            "xmax": 205.98171997070312,
+            "ymax": 375.7398986816406,
+            "confidence": 0.7277700304985046,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 3.2,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 7.695210933685303,
+        "raw_days_until_molt": 7.695210933685303,
+        "estimate_range_days": {
+          "low": 7.7,
+          "high": 7.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-30",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 14.601334571838379,
+          "ymin": 83.08902740478516,
+          "xmax": 205.8927764892578,
+          "ymax": 289.45562744140625,
+          "confidence": 0.710324227809906,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 14.601334571838379,
+            "ymin": 83.08902740478516,
+            "xmax": 205.8927764892578,
+            "ymax": 289.45562744140625,
+            "confidence": 0.710324227809906,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 3.4,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 7.695210933685303,
+        "raw_days_until_molt": 7.695210933685303,
+        "estimate_range_days": {
+          "low": 7.7,
+          "high": 7.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-30",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 14.113934516906738,
+          "ymin": 68.57003784179688,
+          "xmax": 215.13107299804688,
+          "ymax": 268.1080017089844,
+          "confidence": 0.7868724465370178,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 14.113934516906738,
+            "ymin": 68.57003784179688,
+            "xmax": 215.13107299804688,
+            "ymax": 268.1080017089844,
+            "confidence": 0.7868724465370178,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 3.6,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 7.695210933685303,
+        "raw_days_until_molt": 7.695210933685303,
+        "estimate_range_days": {
+          "low": 7.7,
+          "high": 7.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-30",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 14.12775993347168,
+          "ymin": 23.138694763183594,
+          "xmax": 231.5701904296875,
+          "ymax": 257.1451416015625,
+          "confidence": 0.783673107624054,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 14.12775993347168,
+            "ymin": 23.138694763183594,
+            "xmax": 231.5701904296875,
+            "ymax": 257.1451416015625,
+            "confidence": 0.783673107624054,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 3.8,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 7.695210933685303,
+        "raw_days_until_molt": 7.695210933685303,
+        "estimate_range_days": {
+          "low": 7.7,
+          "high": 7.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-30",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 2,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 0.0,
+          "ymin": 15.361407279968262,
+          "xmax": 231.2641143798828,
+          "ymax": 249.50457763671875,
+          "confidence": 0.7094997763633728,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 0.0,
+            "ymin": 15.361407279968262,
+            "xmax": 231.2641143798828,
+            "ymax": 249.50457763671875,
+            "confidence": 0.7094997763633728,
+            "class": 0,
+            "class_name": "green_crab"
+          },
+          {
+            "xmin": 31.375789642333984,
+            "ymin": 246.96640014648438,
+            "xmax": 151.61273193359375,
+            "ymax": 415.0022277832031,
+            "confidence": 0.5355419516563416,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 4.0,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 7.695210933685303,
+        "raw_days_until_molt": 7.695210933685303,
+        "estimate_range_days": {
+          "low": 7.7,
+          "high": 7.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-30",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 0.0,
+          "ymin": 4.6428937911987305,
+          "xmax": 233.44692993164062,
+          "ymax": 254.7685546875,
+          "confidence": 0.7405753135681152,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 0.0,
+            "ymin": 4.6428937911987305,
+            "xmax": 233.44692993164062,
+            "ymax": 254.7685546875,
+            "confidence": 0.7405753135681152,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 4.2,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 7.695210933685303,
+        "raw_days_until_molt": 7.695210933685303,
+        "estimate_range_days": {
+          "low": 7.7,
+          "high": 7.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-30",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 0.0,
+          "ymin": 0.0,
+          "xmax": 234.0,
+          "ymax": 271.282470703125,
+          "confidence": 0.8205420970916748,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 0.0,
+            "ymin": 0.0,
+            "xmax": 234.0,
+            "ymax": 271.282470703125,
+            "confidence": 0.8205420970916748,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 4.4,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 10.050767660140991,
+        "raw_days_until_molt": 12.40632438659668,
+        "estimate_range_days": {
+          "low": 8.87,
+          "high": 11.23,
+          "sample_count": 2
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-07-03",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 0.06954650580883026,
+          "ymin": 13.206021308898926,
+          "xmax": 234.0,
+          "ymax": 309.39935302734375,
+          "confidence": 0.7858588695526123,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 0.06954650580883026,
+            "ymin": 13.206021308898926,
+            "xmax": 234.0,
+            "ymax": 309.39935302734375,
+            "confidence": 0.7858588695526123,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 4.6,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 10.050767660140991,
+        "raw_days_until_molt": 12.40632438659668,
+        "estimate_range_days": {
+          "low": 8.87,
+          "high": 11.23,
+          "sample_count": 2
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-07-03",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 14.244656562805176,
+          "ymin": 20.798294067382812,
+          "xmax": 233.34812927246094,
+          "ymax": 329.68896484375,
+          "confidence": 0.7531686425209045,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 14.244656562805176,
+            "ymin": 20.798294067382812,
+            "xmax": 233.34812927246094,
+            "ymax": 329.68896484375,
+            "confidence": 0.7531686425209045,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 4.8,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 10.050767660140991,
+        "raw_days_until_molt": 12.40632438659668,
+        "estimate_range_days": {
+          "low": 8.87,
+          "high": 11.23,
+          "sample_count": 2
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-07-03",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 36.63393020629883,
+          "ymin": 48.964630126953125,
+          "xmax": 233.8708038330078,
+          "ymax": 371.9237060546875,
+          "confidence": 0.7067708373069763,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 36.63393020629883,
+            "ymin": 48.964630126953125,
+            "xmax": 233.8708038330078,
+            "ymax": 371.9237060546875,
+            "confidence": 0.7067708373069763,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 5.0,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 10.050767660140991,
+        "raw_days_until_molt": 12.40632438659668,
+        "estimate_range_days": {
+          "low": 8.87,
+          "high": 11.23,
+          "sample_count": 2
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-07-03",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 36.134071350097656,
+          "ymin": 64.42404174804688,
+          "xmax": 234.0,
+          "ymax": 359.394775390625,
+          "confidence": 0.7904916405677795,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 36.134071350097656,
+            "ymin": 64.42404174804688,
+            "xmax": 234.0,
+            "ymax": 359.394775390625,
+            "confidence": 0.7904916405677795,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 5.2,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 8.737569808959961,
+        "raw_days_until_molt": 8.737569808959961,
+        "estimate_range_days": {
+          "low": 8.22,
+          "high": 10.57,
+          "sample_count": 3
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-07-01",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 43.30474090576172,
+          "ymin": 95.51262664794922,
+          "xmax": 234.0,
+          "ymax": 365.02569580078125,
+          "confidence": 0.7476381659507751,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 43.30474090576172,
+            "ymin": 95.51262664794922,
+            "xmax": 234.0,
+            "ymax": 365.02569580078125,
+            "confidence": 0.7476381659507751,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 5.4,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 8.737569808959961,
+        "raw_days_until_molt": 8.737569808959961,
+        "estimate_range_days": {
+          "low": 8.22,
+          "high": 10.57,
+          "sample_count": 3
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-07-01",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 41.5441780090332,
+          "ymin": 101.94522094726562,
+          "xmax": 234.0,
+          "ymax": 377.1536865234375,
+          "confidence": 0.7502121329307556,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 41.5441780090332,
+            "ymin": 101.94522094726562,
+            "xmax": 234.0,
+            "ymax": 377.1536865234375,
+            "confidence": 0.7502121329307556,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 5.6,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 8.737569808959961,
+        "raw_days_until_molt": 8.737569808959961,
+        "estimate_range_days": {
+          "low": 8.22,
+          "high": 10.57,
+          "sample_count": 3
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-07-01",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 31.908437728881836,
+          "ymin": 91.73712921142578,
+          "xmax": 234.0,
+          "ymax": 345.22998046875,
+          "confidence": 0.7716556787490845,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 31.908437728881836,
+            "ymin": 91.73712921142578,
+            "xmax": 234.0,
+            "ymax": 345.22998046875,
+            "confidence": 0.7716556787490845,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 5.8,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 8.737569808959961,
+        "raw_days_until_molt": 8.737569808959961,
+        "estimate_range_days": {
+          "low": 8.22,
+          "high": 10.57,
+          "sample_count": 3
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-07-01",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 12.099525451660156,
+          "ymin": 68.7879409790039,
+          "xmax": 234.0,
+          "ymax": 310.85693359375,
+          "confidence": 0.7478039264678955,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 12.099525451660156,
+            "ymin": 68.7879409790039,
+            "xmax": 234.0,
+            "ymax": 310.85693359375,
+            "confidence": 0.7478039264678955,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 6.0,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 8.737569808959961,
+        "raw_days_until_molt": 8.737569808959961,
+        "estimate_range_days": {
+          "low": 8.22,
+          "high": 10.57,
+          "sample_count": 3
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-07-01",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 1.1621567010879517,
+          "ymin": 73.90233612060547,
+          "xmax": 222.37661743164062,
+          "ymax": 316.9460144042969,
+          "confidence": 0.7198013067245483,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 1.1621567010879517,
+            "ymin": 73.90233612060547,
+            "xmax": 222.37661743164062,
+            "ymax": 316.9460144042969,
+            "confidence": 0.7198013067245483,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 6.2,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 10.468770027160645,
+        "raw_days_until_molt": 12.199970245361328,
+        "estimate_range_days": {
+          "low": 8.48,
+          "high": 12.25,
+          "sample_count": 4
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-07-03",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 1.264373779296875,
+          "ymin": 76.06238555908203,
+          "xmax": 217.4194793701172,
+          "ymax": 313.59332275390625,
+          "confidence": 0.7075485587120056,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 1.264373779296875,
+            "ymin": 76.06238555908203,
+            "xmax": 217.4194793701172,
+            "ymax": 313.59332275390625,
+            "confidence": 0.7075485587120056,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 6.4,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 5.511128902435303,
+        "raw_days_until_molt": 5.511128902435303,
+        "estimate_range_days": {
+          "low": 5.51,
+          "high": 5.51,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-28",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 16.372211456298828,
+          "ymin": 103.3296890258789,
+          "xmax": 215.49658203125,
+          "ymax": 390.45361328125,
+          "confidence": 0.640908420085907,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 16.372211456298828,
+            "ymin": 103.3296890258789,
+            "xmax": 215.49658203125,
+            "ymax": 390.45361328125,
+            "confidence": 0.640908420085907,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 6.6,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 8.256223678588867,
+        "raw_days_until_molt": 8.256223678588867,
+        "estimate_range_days": {
+          "low": 8.26,
+          "high": 8.26,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-07-01",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 21.344589233398438,
+          "ymin": 123.5545883178711,
+          "xmax": 199.168701171875,
+          "ymax": 301.722412109375,
+          "confidence": 0.6891316771507263,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 21.344589233398438,
+            "ymin": 123.5545883178711,
+            "xmax": 199.168701171875,
+            "ymax": 301.722412109375,
+            "confidence": 0.6891316771507263,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 6.8,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 8.256223678588867,
+        "raw_days_until_molt": 8.256223678588867,
+        "estimate_range_days": {
+          "low": 8.26,
+          "high": 8.26,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-07-01",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 32.16886901855469,
+          "ymin": 132.8558807373047,
+          "xmax": 194.44241333007812,
+          "ymax": 289.451904296875,
+          "confidence": 0.698413610458374,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 32.16886901855469,
+            "ymin": 132.8558807373047,
+            "xmax": 194.44241333007812,
+            "ymax": 289.451904296875,
+            "confidence": 0.698413610458374,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 7.0,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 8.256223678588867,
+        "raw_days_until_molt": 8.256223678588867,
+        "estimate_range_days": {
+          "low": 8.26,
+          "high": 8.26,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-07-01",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 35.842891693115234,
+          "ymin": 127.28966522216797,
+          "xmax": 186.9866180419922,
+          "ymax": 279.8374938964844,
+          "confidence": 0.7807774543762207,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 35.842891693115234,
+            "ymin": 127.28966522216797,
+            "xmax": 186.9866180419922,
+            "ymax": 279.8374938964844,
+            "confidence": 0.7807774543762207,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 7.2,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 8.256223678588867,
+        "raw_days_until_molt": 8.256223678588867,
+        "estimate_range_days": {
+          "low": 8.26,
+          "high": 8.26,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-07-01",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 40.521854400634766,
+          "ymin": 132.89779663085938,
+          "xmax": 182.7599639892578,
+          "ymax": 275.2911682128906,
+          "confidence": 0.840826153755188,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 40.521854400634766,
+            "ymin": 132.89779663085938,
+            "xmax": 182.7599639892578,
+            "ymax": 275.2911682128906,
+            "confidence": 0.840826153755188,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 7.4,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 7.409628868103027,
+        "raw_days_until_molt": 6.5630340576171875,
+        "estimate_range_days": {
+          "low": 6.99,
+          "high": 7.83,
+          "sample_count": 2
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-06-30",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 39.706809997558594,
+          "ymin": 136.41433715820312,
+          "xmax": 182.3927764892578,
+          "ymax": 276.5516357421875,
+          "confidence": 0.8256494402885437,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 39.706809997558594,
+            "ymin": 136.41433715820312,
+            "xmax": 182.3927764892578,
+            "ymax": 276.5516357421875,
+            "confidence": 0.8256494402885437,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 7.6,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 7.409628868103027,
+        "raw_days_until_molt": 6.5630340576171875,
+        "estimate_range_days": {
+          "low": 6.99,
+          "high": 7.83,
+          "sample_count": 2
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-06-30",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 42.475440979003906,
+          "ymin": 136.69485473632812,
+          "xmax": 186.29989624023438,
+          "ymax": 275.23382568359375,
+          "confidence": 0.817155659198761,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 42.475440979003906,
+            "ymin": 136.69485473632812,
+            "xmax": 186.29989624023438,
+            "ymax": 275.23382568359375,
+            "confidence": 0.817155659198761,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 7.8,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 7.409628868103027,
+        "raw_days_until_molt": 6.5630340576171875,
+        "estimate_range_days": {
+          "low": 6.99,
+          "high": 7.83,
+          "sample_count": 2
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-06-30",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 43.64263916015625,
+          "ymin": 139.78500366210938,
+          "xmax": 158.7107696533203,
+          "ymax": 263.8005676269531,
+          "confidence": 0.8133889436721802,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 43.64263916015625,
+            "ymin": 139.78500366210938,
+            "xmax": 158.7107696533203,
+            "ymax": 263.8005676269531,
+            "confidence": 0.8133889436721802,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 8.0,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 9.986352920532227,
+        "raw_days_until_molt": 9.986352920532227,
+        "estimate_range_days": {
+          "low": 9.99,
+          "high": 9.99,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-07-02",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 42.01348876953125,
+          "ymin": 97.77973937988281,
+          "xmax": 163.3332061767578,
+          "ymax": 243.79019165039062,
+          "confidence": 0.5453994870185852,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 42.01348876953125,
+            "ymin": 97.77973937988281,
+            "xmax": 163.3332061767578,
+            "ymax": 243.79019165039062,
+            "confidence": 0.5453994870185852,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 8.2,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 8.09708309173584,
+        "raw_days_until_molt": 8.09708309173584,
+        "estimate_range_days": {
+          "low": 8.1,
+          "high": 8.1,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-07-01",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 2,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 33.23112869262695,
+          "ymin": 132.67933654785156,
+          "xmax": 145.87753295898438,
+          "ymax": 253.0653076171875,
+          "confidence": 0.442973792552948,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 33.23112869262695,
+            "ymin": 132.67933654785156,
+            "xmax": 145.87753295898438,
+            "ymax": 253.0653076171875,
+            "confidence": 0.442973792552948,
+            "class": 0,
+            "class_name": "green_crab"
+          },
+          {
+            "xmin": 31.915042877197266,
+            "ymin": 90.21341705322266,
+            "xmax": 219.95680236816406,
+            "ymax": 253.48544311523438,
+            "confidence": 0.36590030789375305,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 8.4,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 8.09708309173584,
+        "raw_days_until_molt": 8.09708309173584,
+        "estimate_range_days": {
+          "low": 8.1,
+          "high": 8.1,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-07-01",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 27.457679748535156,
+          "ymin": 138.25881958007812,
+          "xmax": 138.64381408691406,
+          "ymax": 243.65855407714844,
+          "confidence": 0.46649041771888733,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 27.457679748535156,
+            "ymin": 138.25881958007812,
+            "xmax": 138.64381408691406,
+            "ymax": 243.65855407714844,
+            "confidence": 0.46649041771888733,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 8.6,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 8.09708309173584,
+        "raw_days_until_molt": 8.09708309173584,
+        "estimate_range_days": {
+          "low": 8.1,
+          "high": 8.1,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-07-01",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 26.928831100463867,
+          "ymin": 140.6930389404297,
+          "xmax": 139.77880859375,
+          "ymax": 255.95948791503906,
+          "confidence": 0.5359135270118713,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 26.928831100463867,
+            "ymin": 140.6930389404297,
+            "xmax": 139.77880859375,
+            "ymax": 255.95948791503906,
+            "confidence": 0.5359135270118713,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 8.8,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 8.09708309173584,
+        "raw_days_until_molt": 8.09708309173584,
+        "estimate_range_days": {
+          "low": 8.1,
+          "high": 8.1,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-07-01",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 19.50339126586914,
+          "ymin": 138.81837463378906,
+          "xmax": 140.9682159423828,
+          "ymax": 247.36671447753906,
+          "confidence": 0.5198508501052856,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 19.50339126586914,
+            "ymin": 138.81837463378906,
+            "xmax": 140.9682159423828,
+            "ymax": 247.36671447753906,
+            "confidence": 0.5198508501052856,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 9.0,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 6.4131247997283936,
+        "raw_days_until_molt": 4.729166507720947,
+        "estimate_range_days": {
+          "low": 5.57,
+          "high": 7.26,
+          "sample_count": 2
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-06-29",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Check again in a few days.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 13.121626853942871,
+          "ymin": 137.0631866455078,
+          "xmax": 148.76622009277344,
+          "ymax": 231.32057189941406,
+          "confidence": 0.43568727374076843,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 13.121626853942871,
+            "ymin": 137.0631866455078,
+            "xmax": 148.76622009277344,
+            "ymax": 231.32057189941406,
+            "confidence": 0.43568727374076843,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 9.2,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 6.4131247997283936,
+        "raw_days_until_molt": 4.729166507720947,
+        "estimate_range_days": {
+          "low": 5.57,
+          "high": 7.26,
+          "sample_count": 2
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-06-29",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 314,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 9.4,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 6.4131247997283936,
+        "raw_days_until_molt": 4.729166507720947,
+        "estimate_range_days": {
+          "low": 5.57,
+          "high": 7.26,
+          "sample_count": 2
+        },
+        "estimate_smoothed": true,
+        "estimated_molt_event_date": "2026-06-29",
+        "phase": "Pre-molt (Early)",
+        "color": "#a0ff00",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 394,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 9.6,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 3.0265557765960693,
+        "raw_days_until_molt": 3.0265557765960693,
+        "estimate_range_days": {
+          "low": 3.03,
+          "high": 3.03,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-26",
+        "phase": "Pre-molt (Near)",
+        "color": "#c2185b",
+        "recommendation": "Monitor closely. Harvest window approaching.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 38.88552474975586,
+          "ymin": 106.5636215209961,
+          "xmax": 234.0,
+          "ymax": 412.9888916015625,
+          "confidence": 0.4181167483329773,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 38.88552474975586,
+            "ymin": 106.5636215209961,
+            "xmax": 234.0,
+            "ymax": 412.9888916015625,
+            "confidence": 0.4181167483329773,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 9.8,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 4.704157829284668,
+        "raw_days_until_molt": 4.704157829284668,
+        "estimate_range_days": {
+          "low": 4.7,
+          "high": 4.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-27",
+        "phase": "Pre-molt (Near)",
+        "color": "#c2185b",
+        "recommendation": "Monitor closely. Harvest window approaching.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 68.33585357666016,
+          "ymin": 83.21277618408203,
+          "xmax": 216.28726196289062,
+          "ymax": 268.0877380371094,
+          "confidence": 0.7696135640144348,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 68.33585357666016,
+            "ymin": 83.21277618408203,
+            "xmax": 216.28726196289062,
+            "ymax": 268.0877380371094,
+            "confidence": 0.7696135640144348,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 10.0,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 4.704157829284668,
+        "raw_days_until_molt": 4.704157829284668,
+        "estimate_range_days": {
+          "low": 4.7,
+          "high": 4.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-27",
+        "phase": "Pre-molt (Near)",
+        "color": "#c2185b",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": false,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 398,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 10.2,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 1.5449364185333252,
+        "raw_days_until_molt": 1.5449364185333252,
+        "estimate_range_days": {
+          "low": 1.54,
+          "high": 1.54,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-24",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "HARVEST NOW! Crab will molt within 3 days.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 69.90290832519531,
+          "ymin": 84.78096008300781,
+          "xmax": 234.0,
+          "ymax": 411.9955749511719,
+          "confidence": 0.44658252596855164,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 69.90290832519531,
+            "ymin": 84.78096008300781,
+            "xmax": 234.0,
+            "ymax": 411.9955749511719,
+            "confidence": 0.44658252596855164,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 10.4,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 1.5449364185333252,
+        "raw_days_until_molt": 1.5449364185333252,
+        "estimate_range_days": {
+          "low": 1.54,
+          "high": 1.54,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-24",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 479,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 10.6,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 1.5449364185333252,
+        "raw_days_until_molt": 1.5449364185333252,
+        "estimate_range_days": {
+          "low": 1.54,
+          "high": 1.54,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-24",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 678,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 10.8,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 1.5449364185333252,
+        "raw_days_until_molt": 1.5449364185333252,
+        "estimate_range_days": {
+          "low": 1.54,
+          "high": 1.54,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-24",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 918,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 11.0,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "HARVEST NOW! Crab will molt within 3 days.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": false,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 33.17290496826172,
+          "ymin": 93.14578247070312,
+          "xmax": 194.5708770751953,
+          "ymax": 415.8464050292969,
+          "confidence": 0.6249499320983887,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 33.17290496826172,
+            "ymin": 93.14578247070312,
+            "xmax": 194.5708770751953,
+            "ymax": 415.8464050292969,
+            "confidence": 0.6249499320983887,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 11.2,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 334,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 11.4,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 494,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 11.6,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 633,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 11.8,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 784,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 12.0,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "HARVEST NOW! Crab will molt within 3 days.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": false,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 1,
+        "crop_used": true,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": null,
+        "last_detection_age_ms": 0,
+        "estimate_cached": true,
+        "estimate_stale": false,
+        "primary_bbox": {
+          "xmin": 33.14152526855469,
+          "ymin": 91.67483520507812,
+          "xmax": 195.8833770751953,
+          "ymax": 413.43951416015625,
+          "confidence": 0.793945848941803,
+          "class": 0,
+          "class_name": "green_crab"
+        },
+        "bboxes": [
+          {
+            "xmin": 33.14152526855469,
+            "ymin": 91.67483520507812,
+            "xmax": 195.8833770751953,
+            "ymax": 413.43951416015625,
+            "confidence": 0.793945848941803,
+            "class": 0,
+            "class_name": "green_crab"
+          }
+        ],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 12.2,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 144,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 12.4,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 291,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 12.6,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 451,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 12.8,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 611,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 13.0,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 794,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 13.2,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 983,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 13.4,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 1170,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 13.6,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 1351,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    },
+    {
+      "t": 13.8,
+      "prediction": {
+        "success": true,
+        "days_until_molt": 2.7037672996520996,
+        "raw_days_until_molt": 2.7037672996520996,
+        "estimate_range_days": {
+          "low": 2.7,
+          "high": 2.7,
+          "sample_count": 1
+        },
+        "estimate_smoothed": false,
+        "estimated_molt_event_date": "2026-06-25",
+        "phase": "Imminent Molt",
+        "color": "#ff6600",
+        "recommendation": "Crab detection was lost. Showing the last estimate; center the crab for a fresh reading.",
+        "harvest_ready": true,
+        "confidence": "High",
+        "app_estimate_input": "yolo_crop",
+        "whole_image_fallback_used": true,
+        "feature_type": "VIT_BASE",
+        "model_display_name": "bootstrapv1 detector and transformer based molt estimator",
+        "bbox_count": 0,
+        "crop_used": false,
+        "stream_mode": true,
+        "bbox_cached": false,
+        "bbox_stale": false,
+        "bbox_cleared_reason": "no_detection",
+        "last_detection_age_ms": 1533,
+        "estimate_cached": true,
+        "estimate_stale": true,
+        "primary_bbox": null,
+        "bboxes": [],
+        "image_width": 234,
+        "image_height": 416
+      }
+    }
+  ]
+}

@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Crab Molt Phase Detector</title>
+    <link rel="icon" type="image/png" href="/static/GreenCrab.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/moltmeter.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .hero-section {
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+        }
+        .upload-area {
+            border: 3px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 3rem;
+            text-align: center;
+            transition: all 0.3s;
+            background-color: white;
+        }
+        .upload-area:hover {
+            border-color: #0d6efd;
+            background-color: #f8f9fa;
+        }
+        .upload-area.dragover {
+            border-color: #198754;
+            background-color: #e7f3ff;
+        }
+        .result-card {
+            display: none;
+            margin-top: 2rem;
+        }
+        .phase-badge {
+            font-size: 1.2rem;
+            padding: 0.5rem 1rem;
+        }
+        .info-card {
+            border-left: 4px solid #0d6efd;
+        }
+        .harvest-alert {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .footer {
+            margin-top: 4rem;
+            padding: 2rem 0;
+            background-color: #e9ecef;
+        }
+        .stream-card video {
+            width: 100%;
+            border-radius: 8px;
+            background: #000;
+        }
+        .stream-status {
+            font-size: 0.95rem;
+        }
+        body {
+            background-color: var(--crab-paper);
+            color: var(--crab-ink);
+        }
+        .navbar {
+            border-bottom: 3px solid var(--crab-green-900);
+        }
+        .navbar-brand,
+        .text-success,
+        .text-primary,
+        .text-info,
+        .text-warning,
+        .text-danger {
+            color: var(--crab-green-900) !important;
+        }
+        .hero-section img {
+            max-width: 120px !important;
+        }
+        .card,
+        .upload-area {
+            border: 2px solid var(--crab-green-900);
+            border-radius: 8px;
+            box-shadow: var(--shadow-soft);
+        }
+        .btn-primary,
+        .btn-success {
+            background-color: var(--crab-green-900);
+            border-color: var(--crab-green-900);
+        }
+        .btn-primary:hover,
+        .btn-success:hover {
+            background-color: var(--crab-green-700);
+            border-color: var(--crab-green-700);
+        }
+        .btn-outline-primary,
+        .btn-outline-success {
+            color: var(--crab-green-900);
+            border-color: var(--crab-green-900);
+        }
+        .btn-outline-primary:hover,
+        .btn-outline-success:hover {
+            background-color: var(--crab-green-900);
+            border-color: var(--crab-green-900);
+        }
+        .info-card {
+            border-left-color: var(--crab-green-900);
+        }
+        .footer {
+            background-color: var(--crab-green-200);
+            border-top: 2px solid var(--crab-green-900);
+        }
+    </style>
+</head>
+<body>
+    <div data-nav-root></div>
+
+    <div class="alert alert-warning text-center mb-0" role="alert">
+        <strong>Live Demo</strong> — For quick tests only. Lighting and camera angle affect results.
+        <button class="btn btn-sm btn-outline-dark ms-2" type="button" id="resetDemoBtn">Reset Demo</button>
+    </div>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-4 fw-bold">Green Crab Molt Phase Detector</h1>
+                    <p class="lead">AI-powered tool for sustainable green crab harvesting in New Hampshire and Maine</p>
+                    <p>Stream video or upload a photo of a green crab to predict when it will molt and determine the optimal harvest time.</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <img class="hero-logo" src="/static/GreenCrab.png" alt="Green Crab" style="max-width: 200px; height: auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <!-- Live Stream Section (Primary) -->
+                <div class="card shadow-sm stream-card">
+                    <div class="card-body">
+                        <h3 class="card-title mb-3">Live Camera Stream</h3>
+                        <p class="text-muted">Point your camera at a crab to see real-time molt phase detection.</p>
+
+                        <!-- Camera Controls -->
+	                        <div class="mb-3 d-flex flex-wrap gap-2">
+                            <button class="btn btn-success btn-lg" id="startStreamBtn">
+                                <i class="bi bi-camera-video"></i> Start Camera
+                            </button>
+                            <button class="btn btn-danger btn-lg" id="stopStreamBtn" disabled>
+                                <i class="bi bi-stop-circle"></i> Stop Camera
+                            </button>
+	                            <button class="btn btn-outline-dark btn-lg" id="debugModeBtn" disabled>
+	                                <i class="bi bi-bug"></i> Debug
+	                            </button>
+	                            <div class="ms-auto">
+	                                <span class="badge bg-secondary fs-6 py-2" id="streamStatus">Camera Off</span>
+	                            </div>
+                        </div>
+
+                        <div class="border rounded-3 bg-white p-3 mb-3">
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <div class="small text-muted me-auto">Record every live detection into one export bundle.</div>
+                                <button class="btn btn-outline-primary btn-sm" id="startExportSessionBtn" disabled>
+                                    <i class="bi bi-record-circle"></i> Start Export Session
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" id="stopExportSessionBtn" disabled>
+                                    <i class="bi bi-stop-circle"></i> Stop Export Session
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm" id="downloadExportSessionBtn" disabled>
+                                    <i class="bi bi-download"></i> Download Zip
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="border rounded-3 bg-light p-3 mb-3" id="debugPanel" style="display:none;">
+	                            <div class="d-flex justify-content-between align-items-center gap-3 mb-2">
+	                                <div class="fw-semibold">
+	                                    <i class="bi bi-bug"></i> Expert Review
+	                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-success btn-sm" id="captureReviewBtn" disabled>
+                                        <i class="bi bi-camera"></i> Capture
+                                    </button>
+                                    <button class="btn btn-outline-primary btn-sm" id="downloadReviewZipBtn" disabled>
+                                        <i class="bi bi-download"></i> Download Zip
+	                                    </button>
+	                                </div>
+	                            </div>
+	                            <div class="small text-muted mb-3">
+	                                Capture reviewed frames with your field tags. The download bundle includes source images, detection overlays, crab crops, metadata JSON, and a spreadsheet or CSV summary.
+	                            </div>
+	                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <div class="small text-muted mb-1">Run</div>
+                                    <div id="debugRunName" class="form-control form-control-sm bg-white text-muted">off</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="small text-muted mb-1">Location</div>
+                                    <input type="text" id="debugRunLocation" class="form-control form-control-sm" value="local" placeholder="local">
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="small text-muted mb-1">Captures</div>
+                                    <div id="debugCaptureCount" class="form-control form-control-sm bg-white text-muted">0</div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="small text-muted mb-1">View</div>
+                                    <div class="btn-group btn-group-sm" role="group" aria-label="View">
+                                        <input type="radio" class="btn-check" name="viewRadio" id="viewUnknown" value="unknown" checked>
+                                        <label class="btn btn-outline-secondary" for="viewUnknown">unknown</label>
+                                        <input type="radio" class="btn-check" name="viewRadio" id="viewDorsal" value="dorsal">
+                                        <label class="btn btn-outline-secondary" for="viewDorsal">dorsal</label>
+                                        <input type="radio" class="btn-check" name="viewRadio" id="viewVentral" value="ventral">
+                                        <label class="btn btn-outline-secondary" for="viewVentral">ventral</label>
+                                        <input type="radio" class="btn-check" name="viewRadio" id="viewSide" value="side">
+                                        <label class="btn btn-outline-secondary" for="viewSide">side</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="small text-muted mb-1">Sex</div>
+                                    <div class="btn-group btn-group-sm" role="group" aria-label="Sex">
+                                        <input type="radio" class="btn-check" name="sexRadio" id="sexUnknown" value="unknown" checked>
+                                        <label class="btn btn-outline-secondary" for="sexUnknown">unknown</label>
+                                        <input type="radio" class="btn-check" name="sexRadio" id="sexMale" value="male">
+                                        <label class="btn btn-outline-secondary" for="sexMale">male</label>
+                                        <input type="radio" class="btn-check" name="sexRadio" id="sexFemale" value="female">
+                                        <label class="btn btn-outline-secondary" for="sexFemale">female</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="small text-muted mb-1">Incorrect detections</div>
+                                    <div class="btn-group btn-group-sm" role="group" aria-label="Incorrect detections">
+                                        <input type="radio" class="btn-check" name="incorrectDetectionRadio" id="incorrectNone" value="none" checked>
+                                        <label class="btn btn-outline-secondary" for="incorrectNone">none</label>
+                                        <input type="radio" class="btn-check" name="incorrectDetectionRadio" id="incorrectGlove" value="glove">
+                                        <label class="btn btn-outline-secondary" for="incorrectGlove">glove</label>
+                                        <input type="radio" class="btn-check" name="incorrectDetectionRadio" id="incorrectHuman" value="human">
+                                        <label class="btn btn-outline-secondary" for="incorrectHuman">human</label>
+                                        <input type="radio" class="btn-check" name="incorrectDetectionRadio" id="incorrectCage" value="cage">
+                                        <label class="btn btn-outline-secondary" for="incorrectCage">cage</label>
+                                        <input type="radio" class="btn-check" name="incorrectDetectionRadio" id="incorrectEquipment" value="equipment">
+                                        <label class="btn btn-outline-secondary" for="incorrectEquipment">equipment</label>
+                                        <input type="radio" class="btn-check" name="incorrectDetectionRadio" id="incorrectOther" value="other">
+                                        <label class="btn btn-outline-secondary" for="incorrectOther">other</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+                                        <div class="small text-muted">Molt details</div>
+                                        <div class="btn-group btn-group-sm" role="group" aria-label="Molt detail actions">
+                                            <button class="btn btn-outline-secondary" type="button" id="selectAllMoltDetailsBtn">All</button>
+                                            <button class="btn btn-outline-secondary" type="button" id="clearMoltDetailsBtn">Clear</button>
+                                        </div>
+                                    </div>
+                                    <div class="border rounded bg-white p-2">
+                                        <div class="row g-1">
+                                            <div class="col-sm-6">
+                                                <input type="checkbox" class="btn-check molt-detail-check" id="moltHaloSlight" value="halo slight">
+                                                <label class="btn btn-outline-secondary btn-sm w-100 text-start" for="moltHaloSlight">halo slight</label>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <input type="checkbox" class="btn-check molt-detail-check" id="moltHaloVisible" value="halo visible">
+                                                <label class="btn btn-outline-secondary btn-sm w-100 text-start" for="moltHaloVisible">halo visible</label>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <input type="checkbox" class="btn-check molt-detail-check" id="moltSplitSlight" value="split slight">
+                                                <label class="btn btn-outline-secondary btn-sm w-100 text-start" for="moltSplitSlight">split slight</label>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <input type="checkbox" class="btn-check molt-detail-check" id="moltSplitVisible" value="split visible">
+                                                <label class="btn btn-outline-secondary btn-sm w-100 text-start" for="moltSplitVisible">split visible</label>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <input type="checkbox" class="btn-check molt-detail-check" id="moltBlueHue" value="blue hue">
+                                                <label class="btn btn-outline-secondary btn-sm w-100 text-start" for="moltBlueHue">blue hue</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small mb-1" for="expertMoltEstimate">Expert molt time estimate</label>
+                                    <input type="text" class="form-control form-control-sm mb-2" id="expertMoltEstimate" placeholder="e.g. 2 days, tomorrow">
+                                    <label class="form-label small mb-1" for="reviewNotes">Notes</label>
+                                    <textarea class="form-control form-control-sm" id="reviewNotes" rows="4" placeholder="Optional expert review notes"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Video Container -->
+                        <div id="videoContainer" style="position: relative; display: inline-block; width: 100%; background: #000; border-radius: 8px; overflow: hidden;">
+                            <video id="cameraPreview" autoplay playsinline muted style="width: 100%; height: auto; display: block;"></video>
+                            <canvas id="overlayCanvas" style="position: absolute; top: 0; left: 0; pointer-events: none; width: 100%; height: 100%;"></canvas>
+                        </div>
+                        <canvas id="captureCanvas" style="display:none;"></canvas>
+
+                        <!-- Detection Info for Video -->
+                        <div id="videoDetectionInfo" class="mt-3 p-3 bg-light rounded small text-muted" style="display: none;">
+                            <div class="mb-1"><strong>Detection Details:</strong></div>
+                            <div id="videoInfoText"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Section (Secondary) -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">Upload Crab Image</h3>
+
+                        <div class="upload-area" id="uploadArea">
+                            <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #6c757d;"></i>
+                            <h4 class="mt-3">Drop image here or click to browse</h4>
+                            <p class="text-muted">Supports JPG, PNG, GIF up to 16MB</p>
+                            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                            <button class="btn btn-primary mt-3" type="button" id="chooseFileBtn">
+                                <i class="bi bi-folder2-open"></i> Choose File
+                            </button>
+                        </div>
+
+                        <div class="mt-3" id="imagePreview" style="display: none;">
+                            <div style="position: relative; display: inline-block;">
+                                <img id="previewImg" class="img-fluid rounded" style="max-width: 100%;">
+                                <canvas id="photoOverlay" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+                            </div>
+                            <div class="mt-3">
+                                <button class="btn btn-primary" type="button" id="uploadNewImageBtn">
+                                    <i class="bi bi-upload"></i> Upload New Image
+                                </button>
+                                <span class="ms-2 badge bg-info" id="uploadStatus">Analyzing...</span>
+                            </div>
+
+                            <!-- Detection Info for Upload -->
+                            <div id="uploadDetectionInfo" class="mt-3 p-3 bg-light rounded small text-muted" style="display: none;">
+                                <div class="mb-1"><strong>Detection Details:</strong></div>
+                                <div id="uploadInfoText"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prediction Summary -->
+                <div class="card shadow-sm mt-4" id="resultCard" style="display: none;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-3">
+                            <div>
+                                <h3 class="card-title mb-1">Prediction Summary</h3>
+                                <p class="text-muted mb-0">Primary molt estimate returned by the model.</p>
+                            </div>
+                            <img id="resultThumbnail" alt="Prediction thumbnail" class="img-fluid rounded" style="max-width: 220px; display: none;">
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <div class="p-3 bg-light rounded h-100">
+                                    <div class="text-muted small text-uppercase mb-1">Days Until Molt</div>
+                                    <div id="daysUntilMolt" class="h4 mb-0">N/A</div>
+                                    <div id="estimatedMoltDate" class="small text-muted mt-1"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 bg-light rounded h-100">
+                                    <div class="text-muted small text-uppercase mb-1">Phase</div>
+                                    <span id="phaseBadge" class="badge phase-badge">N/A</span>
+                                    <div id="confidenceBadge" class="small text-muted mt-2">Low Confidence</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="recommendationAlert" class="alert alert-secondary h-100 mb-0">
+                                    <div class="fw-semibold mb-2">Recommendation</div>
+                                    <div id="recommendationText">No recommendation available.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-12">
+                                <div class="p-3 bg-light rounded h-100">
+                                    <div class="text-muted small text-uppercase mb-1">Model</div>
+                                    <div id="modelType" class="fw-semibold">N/A</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Cards -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card info-card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-info-circle"></i> How It Works
+                                </h5>
+                                <ol class="small">
+                                    <li>Take a clear photo of the crab (top or underside view)</li>
+                                    <li>Upload the image using the form above</li>
+                                    <li>Our AI analyzes visual features to predict molt timing</li>
+                                    <li>Follow the harvest recommendations</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card info-card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-lightbulb"></i> Best Practices
+                                </h5>
+                                <ul class="small">
+                                    <li>Use good lighting for clear photos</li>
+                                    <li>Include the entire crab in frame</li>
+                                    <li>Harvest "peeler" crabs (0-3 days before molt)</li>
+                                    <li>Handle crabs carefully to avoid stress</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container text-center text-muted">
+            <p>Green Crab Molt Detection System | Supporting sustainable fisheries in NH & ME</p>
+            <p><small>Developed for marine biology research and commercial harvesting</small></p>
+            <p><small>Version {{APP_VERSION}} | Released {{APP_RELEASE_DATE}}</small></p>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5>Analyzing Crab Image...</h5>
+                    <p class="text-muted mb-0">This may take a few seconds</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/moltmeter_nav.js"></script>
+    <script>
+        // File upload handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        const resultCard = document.getElementById('resultCard');
+        const cameraPreview = document.getElementById('cameraPreview');
+        const captureCanvas = document.getElementById('captureCanvas');
+	        const startStreamBtn = document.getElementById('startStreamBtn');
+	        const stopStreamBtn = document.getElementById('stopStreamBtn');
+	        const debugModeBtn = document.getElementById('debugModeBtn');
+	        const startExportSessionBtn = document.getElementById('startExportSessionBtn');
+	        const stopExportSessionBtn = document.getElementById('stopExportSessionBtn');
+	        const downloadExportSessionBtn = document.getElementById('downloadExportSessionBtn');
+	        const streamStatus = document.getElementById('streamStatus');
+        const debugPanel = document.getElementById('debugPanel');
+        const debugRunName = document.getElementById('debugRunName');
+        const debugRunLocation = document.getElementById('debugRunLocation');
+        const debugCaptureCount = document.getElementById('debugCaptureCount');
+        const captureReviewBtn = document.getElementById('captureReviewBtn');
+        const downloadReviewZipBtn = document.getElementById('downloadReviewZipBtn');
+        const moltDetailChecks = Array.from(document.querySelectorAll('.molt-detail-check'));
+        const selectAllMoltDetailsBtn = document.getElementById('selectAllMoltDetailsBtn');
+        const clearMoltDetailsBtn = document.getElementById('clearMoltDetailsBtn');
+        const expertMoltEstimate = document.getElementById('expertMoltEstimate');
+        const reviewNotes = document.getElementById('reviewNotes');
+        const viewRadios = Array.from(document.querySelectorAll('input[name="viewRadio"]'));
+        const sexRadios = Array.from(document.querySelectorAll('input[name="sexRadio"]'));
+        const incorrectDetectionRadios = Array.from(document.querySelectorAll('input[name="incorrectDetectionRadio"]'));
+        
+        // Store the selected file globally
+        let selectedFile = null;
+	        let debugSession = null;
+	        let debugSessionRunName = null;
+	        let debugSessionLocationName = null;
+	        let debugSessionCaptureCount = 0;
+	        let exportSession = null;
+	        let exportSessionActive = false;
+	        let exportSessionReadyForDownload = false;
+	        let exportSessionCaptureCount = 0;
+        
+        // Store modal instance globally
+        let loadingModal = null;
+        let mediaStream = null;
+        let streamInterval = null;
+        let streamTimeout = null;
+        let sendingFrame = false;
+        let debugCaptureCooldownUntil = 0;
+        let pendingDebugCaptures = 0;
+        let activeDebugUploads = 0;
+        const maxActiveDebugUploads = 2;
+        const debugCaptureCooldownMs = 500;
+        let streamIntervalMs = 200; // 5 FPS for smooth interactive feel
+        const streamMaxDimension = 416;
+        const streamJpegQuality = 0.65;
+        let locationLookupPromise = null;
+
+        function currentViewValue() {
+            const selected = viewRadios.find((radio) => radio.checked);
+            return selected ? selected.value : 'unknown';
+        }
+
+        function currentSexValue() {
+            const selected = sexRadios.find((radio) => radio.checked);
+            return selected ? selected.value : 'unknown';
+        }
+
+        function currentIncorrectDetectionValue() {
+            const selected = incorrectDetectionRadios.find((radio) => radio.checked);
+            return selected ? selected.value : 'none';
+        }
+
+        function currentMoltDetails() {
+            return moltDetailChecks.filter((check) => check.checked).map((check) => check.value);
+        }
+
+        function generateSessionRunName(locationName) {
+            const now = new Date();
+            const stamp = now.toISOString().replace('T', '_').slice(0, 19).replace(/[:]/g, '').replace(/-/g, '');
+            const locationSlug = String(locationName || 'local')
+                .trim()
+                .replace(/[^A-Za-z0-9]+/g, '_')
+                .replace(/_+/g, '_')
+                .replace(/^_|_$/g, '');
+            return `${stamp}_${locationSlug || 'local'}`;
+        }
+
+        function previewRunNameFromLocation(locationName) {
+            return generateSessionRunName(locationName || 'local');
+        }
+
+        async function resolveSessionLocation() {
+            if (locationLookupPromise) {
+                return locationLookupPromise;
+            }
+            locationLookupPromise = (async () => {
+                try {
+                    const response = await fetch('https://ipapi.co/json/', { cache: 'no-store' });
+                    if (!response.ok) {
+                        throw new Error(`ip lookup failed: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    const city = (data.city || '').trim();
+                    const region = (data.region || data.region_code || '').trim();
+                    const country = (data.country_name || '').trim();
+                    const townBits = [city, region, country].filter(Boolean);
+                    if (townBits.length > 0) {
+                        return townBits.join(', ');
+                    }
+                } catch (error) {
+                    console.warn('Location lookup failed, falling back to local', error);
+                }
+                return 'local';
+            })();
+            return locationLookupPromise;
+        }
+
+        function getReviewTagsPayload() {
+            return {
+                view: currentViewValue(),
+                sex: currentSexValue(),
+                incorrect_detection: currentIncorrectDetectionValue(),
+                molt_details: currentMoltDetails(),
+                expert_molt_estimate: expertMoltEstimate.value.trim(),
+                review_notes: reviewNotes.value.trim()
+            };
+        }
+
+        function appendReviewFields(formData) {
+            const tags = getReviewTagsPayload();
+            formData.append('view_angle', tags.view);
+            formData.append('sex', tags.sex);
+            formData.append('incorrect_detection', tags.incorrect_detection);
+            formData.append('quality_tag', tags.molt_details.length > 0 ? tags.molt_details[0] : 'unknown');
+            formData.append('expert_molt_estimate', tags.expert_molt_estimate);
+            formData.append('review_notes', tags.review_notes);
+            formData.append('aux_tags_json', JSON.stringify(tags));
+            formData.append('molt_details_json', JSON.stringify(tags.molt_details));
+        }
+
+	        function updateDebugUi() {
+	            const active = Boolean(debugSession && debugSession.active);
+            debugPanel.style.display = debugSession ? 'block' : 'none';
+            debugModeBtn.classList.remove('btn-outline-dark', 'btn-dark', 'btn-warning');
+            debugModeBtn.classList.add(active ? 'btn-warning' : 'btn-outline-dark');
+            debugModeBtn.innerHTML = active ? '<i class="bi bi-bug"></i> Debug On' : '<i class="bi bi-bug"></i> Debug';
+            debugRunName.textContent = debugSessionRunName || previewRunNameFromLocation(debugRunLocation.value) || 'off';
+            debugRunLocation.value = debugSessionLocationName || debugRunLocation.value || 'local';
+            debugCaptureCount.textContent = String(debugSessionCaptureCount || 0);
+            captureReviewBtn.disabled = !active || Date.now() < debugCaptureCooldownUntil;
+            captureReviewBtn.innerHTML = pendingDebugCaptures > 0
+                ? `<i class="bi bi-camera"></i> Capture (${pendingDebugCaptures} saving)`
+                : '<i class="bi bi-camera"></i> Capture';
+	            downloadReviewZipBtn.disabled = !debugSession;
+	        }
+
+	        function updateExportSessionUi() {
+	            startExportSessionBtn.disabled = !mediaStream || exportSessionActive;
+	            stopExportSessionBtn.disabled = !mediaStream || !exportSessionActive;
+	            downloadExportSessionBtn.disabled = !exportSessionReadyForDownload;
+	            debugModeBtn.disabled = !mediaStream || exportSessionActive;
+	            startExportSessionBtn.classList.toggle('btn-primary', exportSessionActive);
+	            startExportSessionBtn.classList.toggle('btn-outline-primary', !exportSessionActive);
+	        }
+
+        async function startDebugSession() {
+            if (!mediaStream) return;
+            const locationName = (debugRunLocation.value || await resolveSessionLocation() || 'local').trim() || 'local';
+            const formData = new FormData();
+            formData.append('location_name', locationName);
+            const response = await fetch('/debug-session/start', { method: 'POST', body: formData });
+            if (!response.ok) {
+                throw new Error('Failed to start debug session');
+            }
+            const data = await response.json();
+            debugSession = data.session || null;
+            debugSessionRunName = debugSession?.run_name || previewRunNameFromLocation(locationName);
+            debugSessionLocationName = debugSession?.location_name || locationName;
+            debugSessionCaptureCount = debugSession?.capture_count || 0;
+	        updateDebugUi();
+	        updateExportSessionUi();
+        }
+
+	        async function stopDebugSession() {
+	            try {
+	                const response = await fetch('/debug-session/stop', { method: 'POST' });
+                if (response.ok) {
+                    const data = await response.json();
+                    debugSession = data.session || debugSession;
+                    debugSessionRunName = debugSession?.run_name || debugSessionRunName;
+                    debugSessionLocationName = debugSession?.location_name || debugSessionLocationName;
+                    debugSessionCaptureCount = debugSession?.capture_count || debugSessionCaptureCount;
+                }
+            } catch (error) {
+                console.warn('Failed to stop debug session cleanly', error);
+            }
+	            updateDebugUi();
+	        }
+
+	        async function startExportSession() {
+	            if (!mediaStream || exportSessionActive) return;
+	            if (debugSession && debugSession.active) {
+	                await stopDebugSession();
+	                debugPanel.style.display = 'none';
+	            }
+	            const locationName = (debugRunLocation.value || await resolveSessionLocation() || 'local').trim() || 'local';
+	            const formData = new FormData();
+	            formData.append('location_name', locationName);
+	            formData.append('run_name', generateSessionRunName(`${locationName}_full_export`));
+	            const response = await fetch('/debug-session/start', { method: 'POST', body: formData });
+	            if (!response.ok) {
+	                throw new Error('Failed to start export session');
+	            }
+	            const data = await response.json();
+	            exportSession = data.session || null;
+	            exportSessionActive = Boolean(exportSession && exportSession.active);
+	            exportSessionReadyForDownload = false;
+	            exportSessionCaptureCount = 0;
+	            streamStatus.textContent = 'Camera Active • export session started';
+	            updateExportSessionUi();
+	        }
+
+	        async function stopExportSession() {
+	            if (!exportSessionActive) return;
+	            const response = await fetch('/debug-session/stop', { method: 'POST' });
+	            if (!response.ok) {
+	                throw new Error('Failed to stop export session');
+	            }
+	            const data = await response.json();
+	            exportSession = data.session || exportSession;
+	            exportSessionActive = false;
+	            exportSessionReadyForDownload = Boolean(exportSession && exportSession.session_id);
+	            exportSessionCaptureCount = exportSession?.capture_count || exportSessionCaptureCount;
+		            streamStatus.textContent = mediaStream
+		                ? `Camera Active • export stopped (${exportSessionCaptureCount} captures)`
+		                : `Camera Off • export stopped (${exportSessionCaptureCount} captures)`;
+	            updateExportSessionUi();
+	        }
+
+	        async function syncDebugLocationChange() {
+            const locationName = (debugRunLocation.value || 'local').trim() || 'local';
+            if (!debugSession || !debugSession.active) {
+                debugSessionLocationName = locationName;
+                debugSessionRunName = previewRunNameFromLocation(locationName);
+                updateDebugUi();
+                return;
+            }
+            const formData = new FormData();
+            formData.append('location_name', locationName);
+            const response = await fetch('/debug-session/update', { method: 'POST', body: formData });
+            if (!response.ok) {
+                throw new Error('Failed to update debug session location');
+            }
+            const data = await response.json();
+            debugSession = data.session || debugSession;
+            debugSessionLocationName = debugSession?.location_name || locationName;
+            debugSessionRunName = debugSession?.run_name || previewRunNameFromLocation(locationName);
+            debugSessionCaptureCount = debugSession?.capture_count || debugSessionCaptureCount;
+            updateDebugUi();
+        }
+
+        updateDebugUi();
+        updateExportSessionUi();
+
+        selectAllMoltDetailsBtn.addEventListener('click', () => {
+            moltDetailChecks.forEach((check) => {
+                check.checked = true;
+            });
+        });
+
+        clearMoltDetailsBtn.addEventListener('click', () => {
+            moltDetailChecks.forEach((check) => {
+                check.checked = false;
+            });
+        });
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        
+        // Click to upload
+        uploadArea.addEventListener('click', (e) => {
+            if (e.target.closest('#chooseFileBtn')) {
+                return;
+            }
+            fileInput.click();
+        });
+
+        document.getElementById('chooseFileBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            fileInput.click();
+        });
+
+        document.getElementById('uploadNewImageBtn').addEventListener('click', () => {
+            fileInput.value = '';
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload an image file');
+                return;
+            }
+
+            // Store the file globally
+            selectedFile = file;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                previewImg.onload = () => {
+                    // Auto-analyze as soon as image loads
+                    uploadArea.style.display = 'none';
+                    imagePreview.style.display = 'block';
+                    document.getElementById('uploadStatus').style.display = 'inline';
+                    predictMoltPhase();
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function resetUpload() {
+            selectedFile = null;
+            fileInput.value = '';
+            uploadArea.style.display = 'block';
+            imagePreview.style.display = 'none';
+            if (resultCard) {
+                resultCard.style.display = 'none';
+            }
+        }
+        
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function submitPrediction(formData, attempt = 1) {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                if (attempt < 2) {
+                    await delay(600);
+                    return submitPrediction(formData, attempt + 1);
+                }
+                throw new Error('Prediction failed');
+            }
+
+            const data = await response.json();
+            if (!data.success && attempt < 2) {
+                await delay(600);
+                return submitPrediction(formData, attempt + 1);
+            }
+            return data;
+        }
+
+        async function predictMoltPhase() {
+            if (!selectedFile) {
+                alert('Please select an image first');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            appendReviewFields(formData);
+
+            document.getElementById('uploadStatus').textContent = 'Analyzing...';
+            document.getElementById('uploadStatus').className = 'ms-2 badge bg-info';
+
+            try {
+                const response = await fetch('/predict', {method: 'POST', body: formData});
+                const data = await response.json();
+
+                if (data.success) {
+                    // Draw detection on photo
+                    drawPhotoDetection(data, 'photoOverlay');
+
+                    // Display detection info
+                    displayDetectionInfo(data, 'uploadInfoText');
+                    displayResults(data);
+
+                    // Update status
+                    document.getElementById('uploadStatus').textContent = 'Complete';
+                    document.getElementById('uploadStatus').className = 'ms-2 badge bg-success';
+                } else {
+                    document.getElementById('uploadStatus').textContent = 'Failed';
+                    document.getElementById('uploadStatus').className = 'ms-2 badge bg-danger';
+                    alert(data.error || 'Prediction failed');
+                }
+            } catch (error) {
+                document.getElementById('uploadStatus').textContent = 'Error';
+                document.getElementById('uploadStatus').className = 'ms-2 badge bg-danger';
+                alert('Error: ' + error.message + '. Please try again.');
+            }
+        }
+        
+        function showLoadingModal() {
+            // Get modal element
+            const modalEl = document.getElementById('loadingModal');
+            
+            // Clean up any existing instance
+            const existingModal = bootstrap.Modal.getInstance(modalEl);
+            if (existingModal) {
+                existingModal.dispose();
+            }
+            
+            // Remove any lingering backdrops
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            
+            // Reset body classes
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            
+            // Create and show new modal
+            loadingModal = new bootstrap.Modal(modalEl);
+            loadingModal.show();
+        }
+        
+        function hideLoadingModal() {
+            // Force close everything modal-related
+            const modalEl = document.getElementById('loadingModal');
+            
+            // Hide via Bootstrap if instance exists
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+                modal.hide();
+                // Give it time to animate then force cleanup
+                setTimeout(() => {
+                    modal.dispose();
+                }, 300);
+            }
+            
+            // Force remove modal backdrop and classes after a delay
+            setTimeout(() => {
+                // Remove all backdrops
+                document.querySelectorAll('.modal-backdrop').forEach(el => {
+                    el.parentNode.removeChild(el);
+                });
+                
+                // Remove modal-open class from body
+                document.body.classList.remove('modal-open');
+                
+                // Reset body styles
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+                
+                // Ensure modal is hidden
+                modalEl.classList.remove('show');
+                modalEl.style.display = 'none';
+                modalEl.setAttribute('aria-hidden', 'true');
+                
+                // Clear global reference
+                loadingModal = null;
+            }, 400);
+        }
+        
+        function displayResults(data) {
+            if (!resultCard) return;
+
+            // Update result elements
+            const thumbnailEl = document.getElementById('resultThumbnail');
+            if (data.thumbnail) {
+                thumbnailEl.src = data.thumbnail;
+                thumbnailEl.style.display = 'block';
+            } else {
+                thumbnailEl.removeAttribute('src');
+                thumbnailEl.style.display = 'none';
+            }
+            document.getElementById('daysUntilMolt').textContent = 
+                data.days_until_molt !== undefined ? data.days_until_molt.toFixed(1) + ' days' : 'N/A';
+            document.getElementById('estimatedMoltDate').textContent =
+                data.estimated_molt_event_date ? `Estimated molt date: ${data.estimated_molt_event_date}` : '';
+            
+            // Phase badge
+            const phaseBadge = document.getElementById('phaseBadge');
+            phaseBadge.textContent = data.phase;
+            phaseBadge.style.backgroundColor = data.color || '#6c757d';
+            phaseBadge.style.color = '#ffffff';
+            phaseBadge.style.border = '1px solid rgba(0,0,0,0.08)';
+
+            // Confidence badge
+            document.getElementById('confidenceBadge').textContent = 
+                data.confidence ? `${data.confidence} Confidence` : 'Low Confidence';
+
+            // Recommendation
+            const recommendationAlert = document.getElementById('recommendationAlert');
+            recommendationAlert.className = 'alert mb-0 h-100';
+            recommendationAlert.style.borderLeft = `6px solid ${data.color || '#6c757d'}`;
+            recommendationAlert.style.backgroundColor = '#f8f9fa';
+            document.getElementById('recommendationText').textContent = data.recommendation || 'No recommendation available.';
+            
+            // Add harvest alert animation if ready
+            if (data.harvest_ready) {
+                recommendationAlert.classList.add('harvest-alert');
+            }
+            
+            // Model type
+            document.getElementById('modelType').textContent = data.model_display_name || data.feature_type || 'N/A';
+
+            // Show results
+            resultCard.style.display = 'block';
+            resultCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updateFrameInterval() {
+            streamIntervalMs = Number(frameInterval.value);
+            frameIntervalValue.textContent = (streamIntervalMs / 1000).toFixed(1);
+            if (streamInterval) {
+                clearInterval(streamInterval);
+                streamInterval = setInterval(captureAndSendFrame, streamIntervalMs);
+            }
+        }
+
+        // Streaming helpers
+        async function startCameraStream() {
+            if (mediaStream) return;
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+                cameraPreview.srcObject = mediaStream;
+                await cameraPreview.play();
+	                startStreamBtn.disabled = true;
+	                stopStreamBtn.disabled = false;
+	                debugModeBtn.disabled = false;
+	                updateExportSessionUi();
+	                streamStatus.textContent = 'Camera Active';
+                streamStatus.classList.remove('bg-secondary');
+                streamStatus.classList.add('bg-success');
+
+                streamInterval = setInterval(captureAndSendFrame, streamIntervalMs);
+            } catch (err) {
+                alert('Unable to access camera: ' + err.message);
+            }
+        }
+
+	        function stopCameraStream() {
+	            const hadDebugSession = Boolean(debugSession && debugSession.active);
+	            const hadExportSession = exportSessionActive;
+            if (streamInterval) {
+                clearInterval(streamInterval);
+                streamInterval = null;
+            }
+            if (streamTimeout) {
+                clearTimeout(streamTimeout);
+                streamTimeout = null;
+            }
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(t => t.stop());
+                mediaStream = null;
+            }
+            sendingFrame = false;
+	            startStreamBtn.disabled = false;
+	            stopStreamBtn.disabled = true;
+		            debugModeBtn.disabled = true;
+		            streamStatus.textContent = 'Camera Off';
+            streamStatus.classList.remove('bg-success');
+            streamStatus.classList.add('bg-secondary');
+	            if (hadDebugSession) {
+	                stopDebugSession();
+	            }
+	            if (hadExportSession) {
+	                stopExportSession().catch((error) => {
+	                    console.warn('Failed to stop export session cleanly', error);
+	                });
+	            }
+	            updateDebugUi();
+	            updateExportSessionUi();
+	        }
+
+        async function toggleDebugMode() {
+            if (!mediaStream) return;
+            if (debugSession && debugSession.active) {
+                await stopDebugSession();
+                debugPanel.style.display = 'none';
+                return;
+            }
+            try {
+                await startDebugSession();
+            } catch (error) {
+                console.warn('Failed to start debug session', error);
+                alert('Could not start debug session: ' + error.message);
+            }
+        }
+
+        async function captureDebugFrame() {
+            if (!debugSession || !debugSession.active || !mediaStream) return;
+            if (cameraPreview.videoWidth === 0 || cameraPreview.videoHeight === 0) return;
+            if (Date.now() < debugCaptureCooldownUntil) return;
+
+            debugCaptureCooldownUntil = Date.now() + debugCaptureCooldownMs;
+            captureReviewBtn.disabled = true;
+            window.setTimeout(updateDebugUi, debugCaptureCooldownMs);
+            const ctx = captureCanvas.getContext('2d');
+            const sourceWidth = cameraPreview.videoWidth;
+            const sourceHeight = cameraPreview.videoHeight;
+            const scale = Math.min(1, streamMaxDimension / Math.max(sourceWidth, sourceHeight));
+            captureCanvas.width = Math.max(1, Math.round(sourceWidth * scale));
+            captureCanvas.height = Math.max(1, Math.round(sourceHeight * scale));
+            ctx.drawImage(cameraPreview, 0, 0, captureCanvas.width, captureCanvas.height);
+
+            captureCanvas.toBlob(async (blob) => {
+                if (!blob) {
+                    updateDebugUi();
+                    return;
+                }
+                const formData = new FormData();
+                formData.append('file', blob, 'debug_capture.jpg');
+                appendReviewFields(formData);
+                enqueueDebugCapture(formData);
+            }, 'image/jpeg', streamJpegQuality);
+        }
+
+        function enqueueDebugCapture(formData) {
+            pendingDebugCaptures += 1;
+            updateDebugUi();
+            runDebugCaptureUpload(formData);
+        }
+
+        async function runDebugCaptureUpload(formData) {
+            while (activeDebugUploads >= maxActiveDebugUploads) {
+                await delay(100);
+            }
+            activeDebugUploads += 1;
+            try {
+                const response = await fetch('/debug-session/capture', { method: 'POST', body: formData });
+                if (!response.ok) {
+                    throw new Error('Debug capture failed');
+                }
+                const data = await response.json();
+                debugSession = data.debug_session || debugSession;
+                debugSessionCaptureCount = debugSession?.capture_count || (debugSessionCaptureCount + 1);
+                drawDetection(data);
+                displayDetectionInfo(data, 'videoInfoText');
+                streamStatus.textContent = `Camera Active • captured ${debugSessionCaptureCount}`;
+            } catch (error) {
+                console.warn('Debug capture upload failed', error);
+                streamStatus.textContent = `Camera Active • capture save failed`;
+            } finally {
+                pendingDebugCaptures = Math.max(0, pendingDebugCaptures - 1);
+                activeDebugUploads = Math.max(0, activeDebugUploads - 1);
+                updateDebugUi();
+            }
+        }
+
+        // Display detection info in text format
+        function displayDetectionInfo(data, elementId) {
+            const infoElement = document.getElementById(elementId);
+            if (!infoElement) return;
+
+            let infoText = '';
+
+	            // Molt phase and timing
+	            if (data.days_until_molt !== undefined) {
+	                infoText += `<div class="p-2 mb-2 bg-white rounded border border-primary">`;
+	                infoText += `<div class="text-muted small text-uppercase">Days to Molt</div>`;
+	                infoText += `<div class="h3 mb-0 text-primary">${data.days_until_molt.toFixed(2)} days</div>`;
+                    if (data.estimate_range_days && data.estimate_range_days.sample_count > 1) {
+                        infoText += `<div class="small text-muted">range ${Number(data.estimate_range_days.low).toFixed(1)}-${Number(data.estimate_range_days.high).toFixed(1)} days from ${data.estimate_range_days.sample_count} frames</div>`;
+                    }
+	                infoText += `</div>`;
+	            }
+	            if (data.phase) {
+	                infoText += `<div><strong>Molt Phase:</strong> ${data.phase}</div>`;
+	            }
+	            if (data.estimated_molt_event_date) {
+	                infoText += `<div><strong>Estimated Molt Date:</strong> ${data.estimated_molt_event_date}</div>`;
+	            }
+
+            infoText += `<div class="mt-2 mb-1"><strong>Molt Estimate Details:</strong></div>`;
+            infoText += `<div><strong>Crabs Detected:</strong> ${data.bbox_count || 0}</div>`;
+
+            // Bbox detection confidence
+            if (data.primary_bbox && data.primary_bbox.confidence !== undefined) {
+                infoText += `<div><strong>Bbox Confidence:</strong> ${(data.primary_bbox.confidence * 100).toFixed(1)}%</div>`;
+            }
+
+            // Molt estimate confidence
+            if (data.confidence) {
+                infoText += `<div><strong>Estimate Confidence:</strong> ${data.confidence}</div>`;
+            }
+
+            infoText += `<div><strong>Crop Used:</strong> ${data.crop_used ? 'Yes' : 'No'}</div>`;
+            infoText += `<div><strong>Input Source:</strong> ${data.app_estimate_input || 'N/A'}</div>`;
+
+            // Fallback warning
+            if (data.whole_image_fallback_used) {
+                infoText += `<div class="text-warning mt-1"><strong>⚠ Fallback:</strong> No confident crab detection - using whole image estimate</div>`;
+            }
+            if (data.estimate_stale) {
+                infoText += `<div class="text-warning mt-1"><strong>Last estimate:</strong> crab detection was lost${data.last_detection_age_ms ? ` ${data.last_detection_age_ms}ms ago` : ''}</div>`;
+            }
+            if (data.bbox_cleared_reason) {
+                infoText += `<div class="text-muted"><strong>Bbox cleared:</strong> ${escapeHtml(data.bbox_cleared_reason)}</div>`;
+            }
+
+            if (data.stream_mode) {
+                const cacheFlags = [];
+                if (data.bbox_cached) cacheFlags.push('bbox reused');
+                if (data.estimate_cached) cacheFlags.push('estimate reused');
+                if (data.estimate_smoothed) cacheFlags.push('estimate smoothed');
+                infoText += `<div class="mt-2 mb-1"><strong>Stream Performance:</strong></div>`;
+                infoText += `<div><strong>Client Round Trip:</strong> ${data.client_round_trip_ms ? data.client_round_trip_ms.toFixed(0) + 'ms' : 'N/A'}</div>`;
+                if (data.server_timing_ms && data.server_timing_ms.total !== undefined) {
+                    infoText += `<div><strong>Server Total:</strong> ${data.server_timing_ms.total.toFixed(0)}ms</div>`;
+                    infoText += `<div class="text-muted">detect ${formatTiming(data.server_timing_ms.detect)}, estimate ${formatTiming(data.server_timing_ms.estimate || data.server_timing_ms.estimate_cache)}, decode ${formatTiming(data.server_timing_ms.decode)}</div>`;
+                }
+                if (cacheFlags.length > 0) {
+                    infoText += `<div class="text-muted">${cacheFlags.join(', ')}</div>`;
+                }
+            }
+
+            const auxTags = data.aux_tags || {};
+            infoText += `<div class="mt-2 mb-1"><strong>Debug Tags:</strong></div>`;
+            infoText += `<div><strong>View:</strong> ${escapeHtml(auxTags.view_angle || 'unknown')}</div>`;
+            infoText += `<div><strong>Sex:</strong> ${escapeHtml(auxTags.sex || 'unknown')}</div>`;
+            infoText += `<div><strong>Incorrect Det:</strong> ${escapeHtml(auxTags.incorrect_detection || 'none')}</div>`;
+            const moltDetails = Array.isArray(auxTags.molt_details)
+                ? auxTags.molt_details.join(', ')
+                : (auxTags.molt_details || 'none');
+            infoText += `<div><strong>Molt Details:</strong> ${escapeHtml(moltDetails)}</div>`;
+            if (auxTags.review_notes) {
+                infoText += `<div><strong>Notes:</strong> ${escapeHtml(auxTags.review_notes)}</div>`;
+            }
+            if (auxTags.expert_molt_estimate) {
+                infoText += `<div><strong>Expert Estimate:</strong> ${escapeHtml(auxTags.expert_molt_estimate)}</div>`;
+            }
+
+            infoElement.innerHTML = infoText;
+            infoElement.parentElement.style.display = 'block';
+        }
+
+        function formatTiming(value) {
+            return value !== undefined ? `${Number(value).toFixed(0)}ms` : 'N/A';
+        }
+
+        function getPredictionBboxes(prediction) {
+            if (Array.isArray(prediction.bboxes) && prediction.bboxes.length > 0) {
+                return prediction.bboxes;
+            }
+            return prediction.primary_bbox ? [prediction.primary_bbox] : [];
+        }
+
+        function isPrimaryBbox(prediction, bbox) {
+            const primary = prediction.primary_bbox;
+            if (!primary || !bbox) return false;
+            return ['xmin', 'ymin', 'xmax', 'ymax'].every(key => Math.abs(Number(primary[key]) - Number(bbox[key])) < 0.5);
+        }
+
+	        function drawBboxLabel(ctx, text, x, y, color, fontSize, canvasWidth) {
+	            let resolvedFontSize = fontSize;
+	            ctx.font = `bold ${resolvedFontSize}px Arial`;
+	            const maxTextWidth = Math.max(80, canvasWidth - 32);
+	            while (resolvedFontSize > 14 && ctx.measureText(text).width > maxTextWidth) {
+	                resolvedFontSize -= 2;
+	                ctx.font = `bold ${resolvedFontSize}px Arial`;
+	            }
+	            const paddingX = Math.max(8, Math.round(resolvedFontSize * 0.45));
+	            const paddingY = Math.max(5, Math.round(resolvedFontSize * 0.25));
+	            const textWidth = ctx.measureText(text).width;
+	            const labelWidth = Math.min(textWidth + paddingX * 2, canvasWidth - 8);
+	            const labelHeight = resolvedFontSize + paddingY * 2;
+	            let labelX = x;
+	            let labelY = y - labelHeight - 4;
+            if (labelY < 0) labelY = y + 4;
+            if (labelX + labelWidth > canvasWidth) labelX = canvasWidth - labelWidth - 4;
+            if (labelX < 4) labelX = 4;
+
+	            ctx.fillStyle = color;
+	            ctx.fillRect(labelX, labelY, labelWidth, labelHeight);
+	            ctx.fillStyle = 'white';
+	            ctx.fillText(text, labelX + paddingX, labelY + resolvedFontSize + paddingY - 2);
+	        }
+
+	        function getBboxLabelText(prediction, bbox) {
+	            const daysText = prediction.days_until_molt !== undefined
+	                ? `${prediction.days_until_molt.toFixed(1)} days to molt`
+	                : 'N/A';
+	            const confidenceText = bbox.confidence !== undefined
+	                ? `${(bbox.confidence * 100).toFixed(0)}%`
+	                : prediction.confidence || 'N/A';
+	            return `${daysText} | ${confidenceText}`;
+        }
+
+        // Draw detection overlay on photo
+        function drawPhotoDetection(prediction, photoOverlayId) {
+            const canvas = document.getElementById(photoOverlayId);
+            const img = document.getElementById('previewImg');
+
+            if (!canvas || !img) return;
+
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            canvas.style.width = img.clientWidth + 'px';
+            canvas.style.height = img.clientHeight + 'px';
+
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const bboxes = getPredictionBboxes(prediction);
+            if (bboxes.length === 0) return;
+
+            bboxes.forEach((bbox, index) => {
+                const x = bbox.xmin;
+                const y = bbox.ymin;
+                const w = bbox.xmax - bbox.xmin;
+                const h = bbox.ymax - bbox.ymin;
+                const isPrimary = isPrimaryBbox(prediction, bbox);
+                const labelText = getBboxLabelText(prediction, bbox);
+
+                ctx.strokeStyle = prediction.color || '#0d6efd';
+                ctx.lineWidth = isPrimary ? 6 : 4;
+                ctx.strokeRect(x, y, w, h);
+                drawBboxLabel(ctx, labelText, x, y, prediction.color || '#0d6efd', isPrimary ? 32 : 24, canvas.width);
+            });
+        }
+
+        // Draw detection overlay on canvas
+        function drawDetection(prediction) {
+            const overlayCanvas = document.getElementById('overlayCanvas');
+            const video = document.getElementById('cameraPreview');
+
+            if (!overlayCanvas || !video) return;
+
+            // Sync canvas size with video display size
+            overlayCanvas.width = video.videoWidth;
+            overlayCanvas.height = video.videoHeight;
+
+            const ctx = overlayCanvas.getContext('2d');
+            ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+            // Check if we have detection data
+            const bboxes = getPredictionBboxes(prediction);
+            if (bboxes.length === 0 || !prediction.image_width || !prediction.image_height) {
+                // Show "No crab detected" message
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(10, 10, overlayCanvas.width - 20, 60);
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 20px Arial';
+                ctx.fillText('No crab detected', 20, 40);
+                ctx.font = '14px Arial';
+                ctx.fillText('Point camera at a crab for molt analysis', 20, 60);
+                return;
+            }
+
+            // Scale bbox coordinates from original image to video display size
+            const scaleX = overlayCanvas.width / prediction.image_width;
+            const scaleY = overlayCanvas.height / prediction.image_height;
+
+            bboxes.forEach((bbox, index) => {
+                const x = bbox.xmin * scaleX;
+                const y = bbox.ymin * scaleY;
+                const w = (bbox.xmax - bbox.xmin) * scaleX;
+                const h = (bbox.ymax - bbox.ymin) * scaleY;
+                const isPrimary = isPrimaryBbox(prediction, bbox);
+                const labelText = getBboxLabelText(prediction, bbox);
+
+                ctx.strokeStyle = prediction.color || '#0d6efd';
+                ctx.lineWidth = isPrimary ? 6 : 4;
+                ctx.strokeRect(x, y, w, h);
+	                drawBboxLabel(ctx, labelText, x, y, prediction.color || '#0d6efd', isPrimary ? 28 : 22, overlayCanvas.width);
+            });
+        }
+
+        async function captureAndSendFrame() {
+            if (!mediaStream || sendingFrame) return;
+            if (cameraPreview.videoWidth === 0 || cameraPreview.videoHeight === 0) return;
+
+            sendingFrame = true;
+            const ctx = captureCanvas.getContext('2d');
+            const sourceWidth = cameraPreview.videoWidth;
+            const sourceHeight = cameraPreview.videoHeight;
+            const scale = Math.min(1, streamMaxDimension / Math.max(sourceWidth, sourceHeight));
+            captureCanvas.width = Math.max(1, Math.round(sourceWidth * scale));
+            captureCanvas.height = Math.max(1, Math.round(sourceHeight * scale));
+            ctx.drawImage(cameraPreview, 0, 0, captureCanvas.width, captureCanvas.height);
+            const requestStartedAt = performance.now();
+
+            captureCanvas.toBlob(async (blob) => {
+                if (!blob) {
+                    sendingFrame = false;
+                    return;
+                }
+	                const formData = new FormData();
+	                formData.append('file', blob, 'frame.jpg');
+	                appendReviewFields(formData);
+	                if (exportSessionActive) {
+	                    formData.append('export_capture', 'true');
+	                }
+	                try {
+	                    const res = await fetch('/predict_stream', { method: 'POST', body: formData });
+	                    const data = await res.json();
+	                    data.client_round_trip_ms = performance.now() - requestStartedAt;
+	                    if (data.debug_session) {
+	                        exportSession = data.debug_session;
+	                        exportSessionCaptureCount = exportSession?.capture_count || exportSessionCaptureCount;
+	                    }
+
+                    // Draw detection overlay on video (clears if no detection)
+                    drawDetection(data);
+
+                    // Display detection info
+                    displayDetectionInfo(data, 'videoInfoText');
+                    const serverMs = data.server_timing_ms && data.server_timing_ms.total !== undefined
+                        ? ` / server ${data.server_timing_ms.total.toFixed(0)}ms`
+                        : '';
+	                    streamStatus.textContent = exportSessionActive
+	                        ? `Camera Active • exporting ${exportSessionCaptureCount} • ${data.client_round_trip_ms.toFixed(0)}ms${serverMs}`
+	                        : `Camera Active • ${data.client_round_trip_ms.toFixed(0)}ms${serverMs}`;
+                } catch (err) {
+                    console.warn('Stream frame failed', err);
+                    // Clear overlay on error
+                    const canvas = document.getElementById('overlayCanvas');
+                    if (canvas) {
+                        const ctx = canvas.getContext('2d');
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    }
+                } finally {
+                    sendingFrame = false;
+                }
+            }, 'image/jpeg', streamJpegQuality);
+        }
+
+        startStreamBtn.addEventListener('click', startCameraStream);
+        stopStreamBtn.addEventListener('click', stopCameraStream);
+	        debugModeBtn.addEventListener('click', async () => {
+	            await toggleDebugMode();
+	        });
+	        startExportSessionBtn.addEventListener('click', async () => {
+	            try {
+	                await startExportSession();
+	            } catch (error) {
+	                console.warn('Failed to start export session', error);
+	                alert('Could not start export session: ' + error.message);
+	            }
+	        });
+	        stopExportSessionBtn.addEventListener('click', async () => {
+	            try {
+	                await stopExportSession();
+	            } catch (error) {
+	                console.warn('Failed to stop export session', error);
+	                alert('Could not stop export session: ' + error.message);
+	            }
+	        });
+	        downloadExportSessionBtn.addEventListener('click', () => {
+	            const link = document.createElement('a');
+	            link.href = '/debug-session/download';
+	            link.rel = 'noopener';
+	            document.body.appendChild(link);
+	            link.click();
+	            link.remove();
+	        });
+	        debugRunLocation.addEventListener('input', () => {
+            const currentLocation = debugRunLocation.value.trim();
+            if (!debugSession || !debugSession.active) {
+                debugSessionLocationName = currentLocation || 'local';
+                debugSessionRunName = previewRunNameFromLocation(debugSessionLocationName);
+                updateDebugUi();
+                return;
+            }
+            syncDebugLocationChange().catch((error) => {
+                console.warn('Failed to update debug session location', error);
+            });
+        });
+        captureReviewBtn.addEventListener('click', async () => {
+            await captureDebugFrame();
+        });
+        downloadReviewZipBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.href = '/debug-session/download';
+            link.rel = 'noopener';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        });
+        document.getElementById('resetDemoBtn').addEventListener('click', () => {
+            stopCameraStream();
+            resetUpload();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>

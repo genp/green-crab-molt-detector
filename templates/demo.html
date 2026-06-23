@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoltMeter Demo</title>
+    <link rel="icon" type="image/png" href="/static/GreenCrab.png">
+    <link rel="stylesheet" href="/static/moltmeter.css">
+</head>
+<body>
+    <div data-nav-root></div>
+
+    <main class="content">
+        <div class="demo-title-row">
+            <div>
+                <h1 style="margin:4px 0 0;">Video Demo</h1>
+                <p class="muted" style="margin:6px 0 0; font-weight:800;">Videos from UNH Sea Grant, Jackson Estuarine Lab, June 2026</p>
+            </div>
+            <span id="demoStatus" class="status-pill">Loading demo</span>
+        </div>
+
+        <div class="demo-layout demo-compact-layout">
+            <section class="panel">
+                <div class="video-frame">
+                    <video id="demoVideo" muted playsinline autoplay></video>
+                    <canvas id="demoOverlay" class="video-overlay"></canvas>
+                </div>
+                <div class="demo-controls">
+                    <button id="resumeRotationBtn" class="button primary" type="button">Resume Video Rotation</button>
+                    <span id="rotationMode" class="status-pill">Auto-rotating</span>
+                </div>
+                <div id="thumbnailStrip" class="thumbnail-strip"></div>
+            </section>
+
+            <aside class="panel">
+                <h2 id="clipTitle">Demo clip</h2>
+                <div class="result-grid">
+                    <div class="metric">
+                        <div class="metric-label">Days Until Molt</div>
+                        <div id="demoDays" class="metric-value">N/A</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Phase</div>
+                        <div id="demoPhase" class="metric-value" style="font-size:1.15rem;">N/A</div>
+                    </div>
+                </div>
+                <p id="demoRecommendation" style="font-weight:900;"></p>
+                <p id="demoModel" class="muted"></p>
+                <div class="guide-note explainability-panel">
+                    <strong>Why this estimate</strong>
+                    <ul id="demoExplainability" class="explainability-list"></ul>
+                </div>
+                <img id="demoThumb" alt="Cached prediction thumbnail" style="display:none; width:100%; border-radius:8px; border:2px solid var(--crab-green-900);">
+            </aside>
+        </div>
+    </main>
+
+    <script src="/static/moltmeter_demo.js"></script>
+    <script src="/static/moltmeter_nav.js"></script>
+</body>
+</html>

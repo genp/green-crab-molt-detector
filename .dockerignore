@@ -78,6 +78,11 @@ docs/
 *.tar
 *.gz
 *.pdf
+!static/demo_videos/
+!static/demo_videos/*.mp4
+!static/demo_videos/*.jpg
+!static/demo_videos/*.json
+!static/moltmeter_qr.png
 
 # Exclude unused model files
 models/*.npy

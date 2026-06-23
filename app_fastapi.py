@@ -75,6 +75,7 @@ async def add_security_headers(request, call_next):
         "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
         "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
         "img-src 'self' data: blob:; "
+        "media-src 'self' blob:; "
         "font-src 'self' https://cdn.jsdelivr.net;"
     )
     return response
@@ -515,6 +516,12 @@ def refresh_stream_cache_detection(
                 "primary_bbox": dict(primary_bbox) if primary_bbox else None,
             }
         )
+
+
+def clear_stream_cache() -> None:
+    """Reset stream detection/estimate state."""
+    with stream_cache_lock:
+        stream_cache.clear()
 
 
 def smooth_stream_estimate(
@@ -1319,15 +1326,25 @@ def build_debug_session_zip() -> Path:
     return zip_path
 
 
-def render_ui_html() -> str:
-    """Render the main UI template with deployment metadata."""
-    if not TEMPLATE_PATH.exists():
+def render_template_html(template_name: str) -> str:
+    """Render a static HTML template with deployment metadata."""
+    template_path = BASE_PATH / "templates" / template_name
+    if not template_path.exists():
         raise FileNotFoundError("UI not found")
-    html = TEMPLATE_PATH.read_text(encoding="utf-8")
-    return (
+    nav_path = BASE_PATH / "templates" / "partials" / "nav.html"
+    nav_html = nav_path.read_text(encoding="utf-8") if nav_path.exists() else ""
+    html = template_path.read_text(encoding="utf-8")
+    rendered = (
         html.replace("{{APP_VERSION}}", APP_VERSION)
         .replace("{{APP_RELEASE_DATE}}", APP_RELEASE_DATE)
+        .replace("{{NAV}}", nav_html)
     )
+    return rendered
+
+
+def render_ui_html() -> str:
+    """Render the main UI template with deployment metadata."""
+    return render_template_html("index.html")
 
 
 async def predict_image(
@@ -1667,10 +1684,13 @@ async def predict_stream(
     quality_tag: Optional[str] = Form(None),
     expert_molt_estimate: Optional[str] = Form(None),
     export_capture: bool = Form(False),
+    stream_reset: bool = Form(False),
     review_notes: Optional[str] = Form(None),
 ):
     async with inference_semaphore:
         try:
+            if stream_reset:
+                clear_stream_cache()
             aux_tags = parse_aux_tags(
                 aux_tags_json=aux_tags_json,
                 view_angle=view_angle,
@@ -1819,6 +1839,60 @@ def ui():
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
+@app.get("/demo", response_class=HTMLResponse)
+def demo_page():
+    """Serve the canned-video demo page."""
+    try:
+        return HTMLResponse(render_template_html("demo.html"))
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/image", response_class=HTMLResponse)
+def image_page():
+    """Serve the image-only upload page."""
+    try:
+        return HTMLResponse(render_template_html("image.html"))
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/video", response_class=HTMLResponse)
+def video_page():
+    """Serve the video-only demo page."""
+    try:
+        return HTMLResponse(render_template_html("video.html"))
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/field-guide", response_class=HTMLResponse)
+def field_guide_page():
+    """Serve the placeholder field guide page."""
+    try:
+        return HTMLResponse(render_template_html("field_guide.html"))
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/debug", response_class=HTMLResponse)
+def debug_page():
+    """Serve the full diagnostic UI."""
+    try:
+        return HTMLResponse(render_template_html("debug.html"))
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/qr", response_class=HTMLResponse)
+def qr_page():
+    """Serve a printable QR page for the public website."""
+    try:
+        return HTMLResponse(render_template_html("qr.html"))
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
 @app.get("/api")
 def api_info():
     """API information endpoint."""
@@ -1856,10 +1930,10 @@ def about():
 @app.get("/about-page", response_class=HTMLResponse)
 async def about_page():
     """Serve the About Us page."""
-    about_path = BASE_PATH / "templates" / "about.html"
-    if not about_path.exists():
-        raise HTTPException(status_code=404, detail="About page not found")
-    return HTMLResponse(about_path.read_text(encoding="utf-8"))
+    try:
+        return HTMLResponse(render_template_html("about.html"))
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="About page not found") from exc
 
 
 @app.get("/robots.txt", response_class=PlainTextResponse)

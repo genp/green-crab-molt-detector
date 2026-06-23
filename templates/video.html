@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoltMeter Video Detector</title>
+    <link rel="icon" type="image/png" href="/static/GreenCrab.png">
+    <link rel="stylesheet" href="/static/moltmeter.css">
+</head>
+<body>
+    <div data-nav-root></div>
+    <header class="hero">
+        <div class="hero-inner">
+            <div>
+                <div class="kicker">Video-only processing</div>
+                <h1>Scan with your camera.</h1>
+                <p>Point the laptop or phone camera at a crab to see live MoltMeter detections without debug controls.</p>
+            </div>
+            <img class="hero-logo" src="/static/GreenCrab.png" alt="MoltMeter crab">
+        </div>
+    </header>
+    <main class="content">
+        <div class="demo-layout">
+            <section class="panel">
+                <div class="video-frame">
+                    <video id="cameraPreview" muted playsinline autoplay></video>
+                    <canvas id="overlayCanvas" class="video-overlay"></canvas>
+                </div>
+                <div class="demo-controls">
+                    <button id="startStreamBtn" class="button primary" type="button">Start Camera</button>
+                    <button id="stopStreamBtn" class="button" type="button" disabled>Stop Camera</button>
+                    <span id="streamStatus" class="status-pill">Camera Off</span>
+                </div>
+                <canvas id="captureCanvas" style="display:none;"></canvas>
+            </section>
+            <aside class="panel">
+                <h2>Live Result</h2>
+                <div class="result-grid">
+                    <div class="metric">
+                        <div class="metric-label">Days Until Molt</div>
+                        <div id="daysUntilMolt" class="metric-value">N/A</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Phase</div>
+                        <div id="phase" class="metric-value" style="font-size:1.15rem;">N/A</div>
+                    </div>
+                </div>
+                <p id="recommendation" style="font-weight:900;">Start the camera to begin scanning.</p>
+                <p id="modelInfo" class="muted"></p>
+            </aside>
+        </div>
+    </main>
+    <script src="/static/moltmeter_video.js"></script>
+    <script src="/static/moltmeter_nav.js"></script>
+</body>
+</html>
