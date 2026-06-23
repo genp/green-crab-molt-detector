@@ -247,11 +247,11 @@ CMD exec uvicorn app_fastapi:app --host 0.0.0.0 --port $PORT
 #### 3. Build and Deploy
 ```bash
 # Build container
-gcloud builds submit --tag gcr.io/YOUR-PROJECT-ID/green-crab-molt
+gcloud builds submit --tag gcr.io/YOUR-PROJECT-ID/green-crabs
 
 # Deploy to Cloud Run
-gcloud run deploy green-crab-molt \
-  --image gcr.io/YOUR-PROJECT-ID/green-crab-molt \
+gcloud run deploy green-crabs \
+  --image gcr.io/YOUR-PROJECT-ID/green-crabs \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
@@ -368,7 +368,7 @@ sudo systemctl restart nginx
 ### Local Docker
 ```bash
 # Build image
-docker build -t green-crab-molt:latest .
+docker build -t green-crabs:latest .
 
 # Run container
 docker run -d \
@@ -376,7 +376,7 @@ docker run -d \
   -v $(pwd)/models:/app/models \
   -v $(pwd)/data:/app/data \
   --name green-crab \
-  green-crab-molt:latest
+  green-crabs:latest
 ```
 
 ### Docker Compose
