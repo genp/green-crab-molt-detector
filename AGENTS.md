@@ -52,6 +52,7 @@ Green crab molt phase prediction from images to support harvest timing (peeler s
 ## Notes for future agents
 - If choosing a model for real-time use, temporal models are most accurate but require sequences; ViT or YOLO regressors are likely faster per frame.
 - Validate latency before selecting the “fastest acceptable” model for live video.
+- Centralized per-year label workbook: `label_sheet/` package + `tools/build_label_sheet.py` (extract/predict/assemble stages). Output: `data/processed/green_crab_label_sheet.xlsx` (one sheet per year: 2016/2017/2018/crate/2026, embedded thumbnails, ground-truth + aux labels, m1/m2 model estimates with provenance comments, expert confirm/reject/update columns). Full design in `docs/LABEL_SHEET_PIPELINE.md`. Apple Photos album copy is a separate explicit tool: `tools/sync_photos_album.py`.
 
 ## Future updates TODO (created 2026-01-25)
 - 2026-02-01: Inventory label sources in `data/sam3_orientation/`, `data/raw/`, and any `.docx` label files; document how labels map to species and molt timing.
